@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { createServer as createViteServer } from "vite";
 
 dotenv.config();
@@ -34,45 +34,95 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", aiEnabled: Boolean(process.env.GEMINI_API_KEY) });
 });
 
-// Chat with the Virtual Piano Instructor
+// Text-to-Speech endpoint for Maestro Aurelio (Uruguayan natural instructor voice)
+app.post("/api/instructor/speak", async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ error: "Missing or invalid text parameter" });
+    }
+
+    const ai = getAI();
+    if (!ai) {
+      return res.status(503).json({ error: "No Gemini API key available" });
+    }
+
+    // Direct Gemini TTS to speak with natural Uruguayan / Rioplatense warmth and human cadence
+    const prompt = `Leé el siguiente texto con tono cálido, humano, amigable, pausado y pedagógico, como el Maestro Aurelio, un querido profesor de piano de Uruguay (acento rioplatense uruguayo, muy natural, sin sonar a robot):\n\n${text}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-tts-preview",
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: "Fenrir" },
+          },
+        },
+      },
+    });
+
+    const candidate = response.candidates?.[0];
+    const part = candidate?.content?.parts?.[0];
+    const base64Audio = part?.inlineData?.data;
+    const mimeType = part?.inlineData?.mimeType || "audio/wav";
+
+    if (!base64Audio) {
+      return res.status(500).json({ error: "No audio stream returned" });
+    }
+
+    res.json({
+      audioBase64: base64Audio,
+      mimeType,
+    });
+  } catch (error: any) {
+    console.error("Error in /api/instructor/speak:", error);
+    res.status(500).json({ error: error?.message || "TTS generation failed" });
+  }
+});
+
+// Chat with the Virtual Piano Instructor (Maestro Aurelio - Uruguay)
 app.post("/api/instructor/chat", async (req, res) => {
   try {
     const { message, lessonContext, userLevel, recentScore } = req.body;
     const ai = getAI();
 
     if (!ai) {
-      // Graceful pedagogical fallback when no API key is set
+      // Graceful Uruguayan pedagogical fallback when no API key is set
       return res.json({
-        reply: `Como tu instructor virtual de piano, te recuerdo que la clave en esta etapa (${userLevel || "Principiante"}) es mantener la relajación de hombros y muñecas. En la lección actual "${lessonContext?.title || 'Fundamentos'}", practica a tempo lento con metrónomo. ¿Qué duda específica tienes sobre las notas o la digitación?`
+        reply: `¡Buenas! Como tu maestro acá al lado del piano, acordate que la clave en esta etapa (${userLevel || "Principiante"}) es no tensionar los hombros ni las muñecas. En la lección actual "${lessonContext?.title || 'Fundamentos'}", tocá despacito con el metrónomo. ¿Qué duda tenés con las notas o la digitación, che? ¡Vamos arriba!`
       });
     }
 
-    const systemInstruction = `Eres el "Maestro Aurelio", un instructor virtual de piano de clase mundial, paciente, sumamente pedagógico, inspirador y exigente con el rigor técnico pero empático.
+    const systemInstruction = `Eres el "Maestro Aurelio", un queridísimo y sabio profesor de piano de Montevideo, Uruguay.
+Hablas con la calidez, la calma y la pasión típica uruguaya, con un acento rioplatense inconfundible y profundamente natural (usando siempre voseo uruguayo: "mirá", "fijate", "acordate", "tenés", "tocá", "sentate derecho", "vamos arriba", "che", "dale", "impecable", "tranquilo").
+Jamás suenas como un robot ni usas español neutro o acartonado. Hablas como un mentor entrañable sentado al lado de tu alumno frente al piano, transmitiendo confianza, paciencia y amor por la música.
 El alumno está aprendiendo de 0 a 100 con un currículo estructurado.
 Nivel actual del alumno: ${userLevel || "Principiante desde cero"}.
 Lección activa: "${lessonContext?.title || 'Fundamentos'}" (${lessonContext?.description || ''}).
 Último resultado en evaluación: ${recentScore !== undefined ? `${recentScore}%` : 'Aún no evaluado'}.
 
 Directrices pedagógicas:
-1. Responde en español de forma concisa, clara, directa y muy práctica (máximo 2-3 párrafos).
-2. Usa metáforas físicas útiles (por ejemplo: "como si sostuvieras una manzana o pelota de tenis", "el peso del brazo como un péndulo").
+1. Habla en primera persona con tono rioplatense uruguayo cercano, pedagógico y muy humano (máximo 2-3 párrafos).
+2. Usa metáforas físicas vivas (por ejemplo: "como si tuvieras una manzana o pelota de tenis en la mano", "el peso del brazo como un péndulo que cae libre").
 3. Si el alumno pregunta sobre notas, digitación (1=pulgar a 5=meñique), escalas o acordes, sé exacto y musicalmente impecable.
-4. Anima siempre al alumno a tocar y escuchar, no solo a memorizar teoría vacía.`;
+4. Alentalo con calidez ("¡Vamos arriba!", "Tranqui, que esto al principio cuesta pero sale", "Metéle paciencia y dedicación").`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.8-flash",
-      contents: message || "¿Cómo puedo mejorar mi práctica hoy?",
+      contents: message || "¿Cómo puedo mejorar mi práctica hoy, Maestro?",
       config: {
         systemInstruction,
         temperature: 0.7,
       },
     });
 
-    res.json({ reply: response.text || "Sigue practicando con dedicación, cada tecla cuenta." });
+    res.json({ reply: response.text || "Seguí practicando con ganas, che, cada tecla que tocás con atención suma un montón." });
   } catch (error: any) {
     console.error("Error in /api/instructor/chat:", error);
     res.status(500).json({
-      reply: "He tenido una pequeña interferencia en el conservatorio virtual. Recuerda mantener los dedos curvados y tocar con paciencia. ¿Podrías repetirme tu consulta?",
+      reply: "Che, se me cortó un segundo la señal acá en el conservatorio. Pero acordate siempre: manos flojas, dedos curvados y mucha paciencia. ¿Me repetís la pregunta?",
       error: error?.message,
     });
   }
@@ -87,11 +137,11 @@ app.post("/api/instructor/evaluate-feedback", async (req, res) => {
     if (!ai) {
       if (passed) {
         return res.json({
-          feedback: `¡Excelente ejecución en "${lessonTitle}"! Has demostrado dominio técnico y precisión rítmica. Avanza a la siguiente lección manteniendo esta disciplina.`
+          feedback: `¡Impecable, che! Tremenda ejecución en "${lessonTitle}". Se nota que le estás metiendo cabeza y cariño al teclado. ¡Vamos arriba y pasemos a la siguiente lección!`
         });
       } else {
         return res.json({
-          feedback: `No te desanimes. En "${lessonTitle}", la clave está en verificar cada intervalo antes de presionar las teclas. Revisa las notas requeridas (${expectedNotes?.join(', ') || ''}) y vuelve a intentarlo despacio.`
+          feedback: `Tranqui, no te bajonees que a todos nos pasa al principio. En "${lessonTitle}", la clave está en mirar bien las notas (${expectedNotes?.join(', ') || ''}) antes de tocar. Relajá la mano y dale otra vuelta despacito, que sale seguro.`
         });
       }
     }
@@ -102,9 +152,10 @@ Notas esperadas: ${JSON.stringify(expectedNotes || [])}.
 Notas tocadas por el alumno: ${JSON.stringify(userNotes || [])}.
 Detalle de fallos o aciertos: ${JSON.stringify(errors || [])}.
 
-Como Maestro de Piano, dale una retroalimentación en 2-3 oraciones:
-- Si aprobó: Felicítalo con calidez profesional y dale un reto para la siguiente fase.
-- Si reprobó: Explica exactamente qué corregir con cariño pedagógico, sin frustrarlo, y aliéntalo a repetir despacio.`;
+Como el Maestro Aurelio (profesor de piano uruguayo, cálido, motivador, que habla con acento y expresiones de Uruguay: "¡Qué grande!", "Impecable, che", "Vamos arriba", "Fijate con calma"):
+Dale una devolución en 2 o 3 oraciones en voseo uruguayo muy natural:
+- Si aprobó: Felicítalo con entusiasmo sincero y desafíalo para la siguiente etapa.
+- Si reprobó: Dale ánimo sincero, explicale con cariño exactamente en qué erró y decile que repita despacio sin frustrarse.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.8-flash",
@@ -114,11 +165,11 @@ Como Maestro de Piano, dale una retroalimentación en 2-3 oraciones:
       }
     });
 
-    res.json({ feedback: response.text || "Gran esfuerzo. La repetición consciente es el secreto del virtuosismo." });
+    res.json({ feedback: response.text || "¡Gran esfuerzo! La repetición consciente y relajada es el secreto del verdadero pianista." });
   } catch (error: any) {
     console.error("Error in /api/instructor/evaluate-feedback:", error);
     res.json({
-      feedback: "Excelente esfuerzo. Escucha atentamente cada sonido y continúa tu práctica."
+      feedback: "¡Lindo intento! Escuchá con atención cómo resuena cada nota y dale otra pasada despacio."
     });
   }
 });

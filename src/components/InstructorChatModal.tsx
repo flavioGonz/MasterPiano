@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Sparkles, MessageSquare, Bot, User, RefreshCw } from 'lucide-react';
+import { X, Send, Sparkles, MessageSquare, Bot, User, RefreshCw, Volume2, Pause } from 'lucide-react';
 import { Lesson } from '../types';
+import { maestroVoice } from '../lib/speech';
 
 interface InstructorChatModalProps {
   isOpen: boolean;
@@ -34,11 +35,47 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
     {
       id: 'welcome',
       sender: 'maestro',
-      text: `¡Saludos! Soy el Maestro Aurelio, tu instructor virtual. Estoy aquí para acompañarte de 0 a 100 en tu aprendizaje del piano. Ahora estás en la lección "${currentLesson?.title || 'Fundamentos'}". ¿Qué duda técnica, teórica o física tienes en este momento?`
+      text: `¡Hola che! Soy el Maestro Aurelio, tu instructor de piano desde Montevideo. Estoy acá para acompañarte de cero a cien, paso a pasito y sin apuros. Ahora estás en la lección "${currentLesson?.title || 'Fundamentos'}". Decime, ¿qué duda técnica, teórica o de postura tenés en este momento? Preguntá tranquilo.`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      maestroVoice.stop();
+      setPlayingMessageId(null);
+      setLoadingMessageId(null);
+    }
+  }, [isOpen]);
+
+  const handleSpeakMessage = async (id: string, text: string) => {
+    if (playingMessageId === id) {
+      maestroVoice.stop();
+      setPlayingMessageId(null);
+      return;
+    }
+
+    maestroVoice.stop();
+    setLoadingMessageId(id);
+
+    await maestroVoice.speak(text, {
+      onStart: () => {
+        setLoadingMessageId(null);
+        setPlayingMessageId(id);
+      },
+      onEnd: () => {
+        setPlayingMessageId(null);
+        setLoadingMessageId(null);
+      },
+      onError: () => {
+        setPlayingMessageId(null);
+        setLoadingMessageId(null);
+      }
+    });
+  };
 
   const sendMessage = async (textToSend?: string) => {
     const text = textToSend || input.trim();
@@ -69,7 +106,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
       const maestroReply: ChatMessage = {
         id: Math.random().toString(),
         sender: 'maestro',
-        text: data.reply || 'La música requiere paciencia y constancia. Continúa practicando cada compás despacio.',
+        text: data.reply || 'Mirá, che, la música requiere paciencia y constancia. Continúa practicando cada compás despacito.',
       };
       setMessages(prev => [...prev, maestroReply]);
     } catch (err) {
@@ -78,7 +115,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
         {
           id: Math.random().toString(),
           sender: 'maestro',
-          text: 'Recuerda que la relajación del peso del brazo es la base de todo buen sonido pianístico. Toca a tempo lento con metrónomo.',
+          text: 'Acordate che de aflojar los hombros y muñecas; el peso del brazo es la base de un sonido hermoso. Probá de nuevo despacio.',
         },
       ]);
     } finally {
@@ -100,14 +137,14 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
           {/* Header */}
           <div className="p-5 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-transparent to-transparent flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-inner">
-                <Bot size={22} />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-serif text-lg font-bold shadow-md">
+                🇺🇾
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-serif font-bold text-lg text-white">Maestro Aurelio</h3>
                   <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                    Instructor IA
+                    Uruguay 🇺🇾 • Voz Rioplatense
                   </span>
                 </div>
                 <p className="text-xs text-white/50">
@@ -134,17 +171,41 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
               >
                 {m.sender === 'maestro' && (
                   <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/40 flex-shrink-0 flex items-center justify-center text-amber-400 text-xs font-bold">
-                    A
+                    🇺🇾
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                     m.sender === 'student'
                       ? 'bg-amber-400 text-black font-medium rounded-tr-none'
                       : 'glass text-white/90 border border-white/10 rounded-tl-none font-light'
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{m.text}</p>
+                  {m.sender === 'maestro' && (
+                    <button
+                      type="button"
+                      onClick={() => handleSpeakMessage(m.id, m.text)}
+                      className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-amber-300 hover:text-amber-200 bg-amber-400/10 hover:bg-amber-400/20 px-2.5 py-1 rounded-lg border border-amber-400/20 transition-all"
+                    >
+                      {playingMessageId === m.id ? (
+                        <>
+                          <Pause size={12} />
+                          <span>Pausar voz 🇺🇾</span>
+                        </>
+                      ) : loadingMessageId === m.id ? (
+                        <>
+                          <RefreshCw size={12} className="animate-spin" />
+                          <span>Conectando voz...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 size={12} />
+                          <span>Escuchar al Maestro 🇺🇾</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
                 {m.sender === 'student' && (
                   <div className="w-8 h-8 rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center text-white/70 text-xs">
@@ -157,7 +218,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
             {isLoading && (
               <div className="flex gap-3 items-center text-amber-300 text-xs font-mono">
                 <RefreshCw size={14} className="animate-spin" />
-                <span>El Maestro Aurelio está formulando una respuesta pedagógica...</span>
+                <span>El Maestro Aurelio está respondiendo con calidez rioplatense...</span>
               </div>
             )}
           </div>

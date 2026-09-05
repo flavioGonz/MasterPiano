@@ -124,7 +124,7 @@ export const LESSONS: Lesson[] = [
     level: 'Principiante',
     description: 'Aprende a ubicar todas las notas sin memorizar a ciegas usando los grupos de teclas negras.',
     image: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Hola, soy tu instructor virtual. El piano parece infinito con sus 88 teclas, pero en realidad es un patrón de solo doce notas que se repite una y otra vez. Mira las teclas negras: están agrupadas en bloques de dos y tres. Para encontrar la nota Do, busca cualquier grupo de dos teclas negras. La tecla blanca que está inmediatamente a la izquierda es siempre un Do. Toca los Do en octavas para familiarizar tu oído y tu vista.',
+    dictationScript: '¡Buenas! ¿Cómo andás? Soy Aurelio, tu maestro de piano. Mirá, a primera vista el teclado parece infinito con sus 88 teclas, pero en realidad es un patrón de apenas doce notas que se repite una y otra vez. Fijate en las teclas negras: vienen en grupitos de dos y de tres. Para encontrar el Do, buscá cualquier grupito de dos teclas negras: la tecla blanca que tenés pegadita a la izquierda es siempre un Do. Tocá los Do que encuentres para que tu oído y tu vista se vayan acostumbrando. ¡Vamos arriba!',
     demonstrationNotes: ['C3', 'C4', 'C5'],
     targetKeys: ['C3', 'C4', 'C5'],
     content: `
@@ -188,7 +188,7 @@ No mires el teclado como 88 teclas individuales. Míralo como una escalera circu
     level: 'Principiante',
     description: 'Protege tus tendones, adopta la postura del concertista y domina la numeración 1 al 5.',
     image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'La técnica no es para lucirse, es para tener libertad y evitar lesiones. En el piano nunca hablamos de nombres de dedos, usamos números: el pulgar es el uno, el índice es el dos, el medio es el tres, el anular es el cuatro y el meñique es el cinco. Coloca tu mano curva, como si sostuvieras una manzana fresca, y deja que el peso del brazo caiga sobre la tecla sin empujar.',
+    dictationScript: 'Mirá, che, la técnica no es para hacerse el virtuoso, es para tocar con libertad y no lastimarse los tendones. En el piano nos manejamos con números de dedos: el pulgar es el uno, el índice es el dos, el mayor es el tres, el anular es el cuatro y el meñique es el cinco. Poné la mano curva, como si estuvieras sosteniendo una mandarina o una pelota de tenis, y dejá que el peso del brazo caiga flojito sobre la tecla sin empujar. Sentate derecho y relajá los hombros.',
     demonstrationNotes: ['C4', 'D4', 'E4', 'F4', 'G4'],
     fingerGuide: { 'C4': 1, 'D4': 2, 'E4': 3, 'F4': 4, 'G4': 5 },
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4'],
@@ -256,7 +256,7 @@ Coloca tu mano derecha:
     level: 'Principiante',
     description: 'El latido del corazón de la música. Domina las figuras rítmicas y el metrónomo.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Las notas sin ritmo son solo ruido disperso. El pulso es el latido continuo y regular sobre el cual vive toda la música. En un compás de cuatro cuartos, contamos constantemente uno, dos, tres, cuatro. Una redonda dura cuatro tiempos completos. Una blanca dura dos tiempos. Una negra dura un tiempo. Practiquemos tocar notas sintiendo exactamente la duración de cada pulso.',
+    dictationScript: 'Mirá que las notas sin ritmo no dicen nada, che. El pulso es el corazón de la música, ese latido constante que te hace mover el pie sin darte cuenta. En un compás de cuatro cuartos contamos parejito: uno, dos, tres, cuatro. Una redonda dura cuatro tiempos enteros. Una blanca dura dos. Y una negra dura un pulso. Vamos a tocar sintiendo el ritmo en el cuerpo, bien acompasado. Dale, metéle ganas.',
     demonstrationNotes: ['C4', 'E4', 'G4', 'C5'],
     targetKeys: ['C4', 'E4', 'G4', 'C5'],
     content: `
@@ -312,7 +312,7 @@ Empieza siempre lento: a **60 BPM** (un golpe por segundo). No aumentes la veloc
     level: 'Principiante',
     description: 'Aprende a medir distancias en el piano y descubre la fórmula secreta de las escalas mayores.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Toda la música occidental se construye sobre dos distancias fundamentales: el semitono y el tono. Un semitono es la distancia más corta posible entre dos teclas adyacentes en el piano, sin importar si son blancas o negras. Por ejemplo, de Mi a Fa hay un semitono natural. Un tono completo son dos semitonos. Con la fórmula tono, tono, semitono, tono, tono, tono, semitono, podrás construir la escala mayor de cualquier nota del universo.',
+    dictationScript: 'Fijate que toda la música se construye sobre dos distancias básicas: el semitono y el tono. El semitono es la distancia más cortita entre dos teclas pegadas del piano, sean blancas o negras. Por ejemplo, de Mi a Fa tenés un semitono natural porque no hay tecla negra en el medio. Un tono entero son dos semitonos. Con la fórmula mágica: tono, tono, semitono, tono, tono, tono, semitono, armás la escala mayor de cualquier nota que se te ocurra. Mirá qué belleza.',
     demonstrationNotes: ['C4', 'D4', 'E4', 'F4'],
     targetKeys: ['C4', 'D4', 'E4', 'F4'],
     content: `
@@ -374,7 +374,7 @@ Desde cualquier nota raíz, aplica esta fórmula:
     level: 'Principiante',
     description: 'Domina la técnica legendaria del cruce del pulgar para tocar líneas melódicas continuas.',
     image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Tenemos solo cinco dedos por mano, pero las escalas tienen siete notas y continúan a lo largo de todo el piano. ¿Cómo lo logramos? Mediante el paso del pulgar. Con la mano derecha tocas los dedos uno, dos, tres, y en cuanto el dedo tres presiona el Mi, pasas suavemente el pulgar por debajo de la palma para tocar el Fa con el dedo uno. Es el movimiento más importante de la técnica pianística clásica.',
+    dictationScript: 'Mirá qué detalle curioso: tenemos solo cinco dedos en la mano, pero las escalas tienen siete notas y el teclado sigue de largo. ¿Cómo hacemos? Con el paso del pulgar, che. Tocás con la derecha los dedos uno, dos, tres, y apenas el tres toca el Mi, pasás el pulgar suavecito por abajo de la palma para tocar el Fa con el uno. Es el movimiento madre del piano clásico. Relajá la muñeca y practicalo con paciencia.',
     demonstrationNotes: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
     fingerGuide: { 'C4': 1, 'D4': 2, 'E4': 3, 'F4': 1, 'G4': 2, 'A4': 3, 'B4': 4, 'C5': 5 },
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
@@ -433,7 +433,7 @@ No levantes el codo de golpe. El pulgar debe comenzar a deslizarse hacia adentro
     level: 'Principiante',
     description: 'Decodifica la notación clásica sin estrés: Clave de Sol para la derecha y Clave de Fa para la izquierda.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Leer música es como leer un mapa. El Gran Pentagrama une dos sistemas de cinco líneas: el superior tiene la Clave de Sol y se toca generalmente con la mano derecha, mientras que el inferior tiene la Clave de Fa y se toca con la mano izquierda. Justo en el medio, como un puente entre ambos mundos, vive el Do Central, sostenido por su propia línea adicional.',
+    dictationScript: 'Che, leer partituras no es ningún cuco, pensalo como un mapa de la ciudad. El gran pentagrama junta dos sistemas de cinco líneas: arriba la Clave de Sol para la mano derecha y los agudos, y abajo la Clave de Fa para la mano izquierda y los graves. Y justo en el medio, como un puente uniendo los dos mundos, está el Do Central con su propia rayita. Miralo con calma, que el ojo se acostumbra enseguida.',
     demonstrationNotes: ['C4', 'G4', 'C3'],
     targetKeys: ['C3', 'C4', 'G4'],
     content: `
@@ -492,7 +492,7 @@ El Do central se dibuja con una **línea adicional** flotante entre ambos pentag
     level: 'Principiante',
     description: 'Comprende la emoción armónica: por qué un acorde suena radiante o melancólico.',
     image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Un acorde es un coro de notas sonando al unísono. La tríada básica se compone de tres notas: la fundamental o raíz, la tercera que define el sentimiento, y la quinta que da estabilidad. En Do Mayor tocamos Do, Mi y Sol. Si bajamos ese Mi un semitono a Mi bemol, el acorde se transforma en Do menor. Solo un milímetro de diferencia en una tecla altera por completo la carga emocional del oyente.',
+    dictationScript: 'Un acorde es un coro de notas sonando al mismo tiempo, che. La tríada básica tiene tres notas: la fundamental que le da el nombre, la tercera que define el sentimiento, y la quinta que le da estabilidad. En Do Mayor tocamos Do, Mi y Sol. Si a ese Mi lo bajás apenas un semitono a Mi bemol, el acorde se transforma en Do menor, melancólico e íntimo. Mirá cómo un milímetro de diferencia cambia toda la emoción del alma.',
     demonstrationNotes: ['C4', 'E4', 'G4'],
     fingerGuide: { 'C4': 1, 'E4': 3, 'G4': 5 },
     targetKeys: ['C4', 'D#4', 'E4', 'G4'],
@@ -554,7 +554,7 @@ Se apilan terceras sobre una nota raíz:
     level: 'Intermedio',
     description: 'Descubre la familia completa de acordes que nacen de las teclas blancas.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Cada una de las siete notas de la escala de Do puede ser la raíz de su propio acorde usando solo las teclas blancas. Al subir por la escala manteniendo la posición de dedos uno, tres y cinco, creamos los siete acordes diatónicos: Do Mayor, Re menor, Mi menor, Fa Mayor, Sol Mayor, La menor y Si disminuido. Memorizar los grados romanos te permitirá entender cualquier canción moderna.',
+    dictationScript: 'Mirá qué maravilla: cada una de las siete notas de la escala de Do puede ser la raíz de su propio acorde usando solo las teclas blancas. Si subís por el teclado manteniendo la posición fija de dedos uno, tres y cinco, vas a sacar los siete acordes de la tonalidad: Do Mayor, Re menor, Mi menor, Fa Mayor, Sol Mayor, La menor y Si disminuido. Acordate de los grados romanos, que con eso sacás cualquier tema de oído.',
     demonstrationNotes: ['C4', 'E4', 'G4', 'D4', 'F4', 'A4', 'E4', 'G4', 'B4'],
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'],
     content: `
@@ -605,7 +605,7 @@ En cualquier tonalidad mayor, los acordes formados sobre cada grado tienen una c
     level: 'Intermedio',
     description: 'La fórmula armónica detrás de cientos de éxitos mundiales desde los Beatles hasta el pop actual.',
     image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Si aprendes esta progresión, podrás acompañar literalmente más de cien canciones famosas en un solo día. Se trata de la progresión uno, cinco, seis menor, cuatro. En Do Mayor tocamos Do Mayor, Sol Mayor, La menor y Fa Mayor. Escucha cómo viaja la energía: de la calma del Do a la brillantez del Sol, a la melancolía del La menor y al despegue esperanzador del Fa.',
+    dictationScript: 'Che, si te aprendés esta progresión te juro que podés acompañar más de cien temas famosos de corrido. Es la progresión uno, cinco, seis menor, cuatro. En Do Mayor tocamos: Do Mayor, Sol Mayor, La menor y Fa Mayor. Escuchá cómo viaja la energía: de la paz del Do al brillo del Sol, a la nostalgia del La menor y al despegue del Fa. Una fórmula redonda que nunca falla.',
     demonstrationNotes: ['C4', 'E4', 'G4', 'G3', 'B3', 'D4', 'A3', 'C4', 'E4', 'F3', 'A3', 'C4'],
     targetKeys: ['C4', 'E4', 'G4', 'A4', 'F4', 'B4', 'D4'],
     content: `
@@ -668,7 +668,7 @@ La progresión **I - V - vi - IV** es el ciclo armónico más exitoso en la hist
     level: 'Intermedio',
     description: 'Elimina los saltos bruscos de la mano y conecta acordes con la elegancia de un profesional.',
     image: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Un pianista novato salta con toda la mano por el teclado para cambiar de acorde. Un pianista profesional apenas mueve los dedos unos milímetros. Esto se logra mediante las inversiones. En lugar de tocar siempre la raíz abajo, reorganizamos las notas del acorde. Para Do Mayor: posición fundamental es Do-Mi-Sol. Primera inversión es Mi-Sol-Do. Segunda inversión es Sol-Do-Mi. Son exactamente las mismas notas, pero con una riqueza sonora y ergonomía inigualable.',
+    dictationScript: 'Mirá, un pianista principiante pega saltos bruscos con toda la mano para cambiar de acorde. En cambio, un maestro apenas mueve los dedos unos milímetros. Eso se logra con las inversiones, che. En vez de tocar siempre la raíz abajo, damos vuelta las notas del acorde. En Do Mayor tenés: posición fundamental Do-Mi-Sol, primera inversión Mi-Sol-Do, y segunda inversión Sol-Do-Mi. Son las mismas notas pero con una suavidad hermosa.',
     demonstrationNotes: ['C4', 'E4', 'G4', 'E4', 'G4', 'C5', 'G4', 'C5', 'E5'],
     targetKeys: ['C4', 'E4', 'G4', 'C5', 'E5'],
     content: `
@@ -725,7 +725,7 @@ Al pasar de **Do Mayor** a **Fa Mayor**:
     level: 'Intermedio',
     description: 'El mayor desafío psicológico del principiante: disociar la mano izquierda de la derecha.',
     image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'La independencia de manos no se logra forzando el cerebro, sino creando automatismos. La mano izquierda asume el papel del bajista y la batería, marcando las notas fundamentales en redondas o blancas, mientras la mano derecha toca acordes o melodías. La regla para dominar esto es tocar ridículamente lento. Si tu cerebro se traba, baja la velocidad a la mitad.',
+    dictationScript: 'La independencia de manos no se logra a los tirones, sino con paciencia y automatismo. La mano izquierda hace de bajista, marcando las notas graves bien firmes, mientras la derecha se encarga de los acordes o la melodía. El secreto acá es tocar ridículamente despacio. Si el cerebro se te traba, bajá la velocidad a la mitad y respirá hondo. Tranqui, que con constancia sale seguro.',
     demonstrationNotes: ['C3', 'C4', 'E4', 'G4', 'G3', 'G4', 'B4', 'D5'],
     targetKeys: ['C3', 'G3', 'C4', 'E4', 'G4'],
     content: `
@@ -785,7 +785,7 @@ Al tocar con dos manos no estás haciendo dos cosas a la vez: estás creando una
     level: 'Intermedio',
     description: 'Añade una cuarta nota a tus tríadas y descubre la sofisticación del sonido contemporáneo.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'Las tríadas son sólidas y directas, pero los acordes de séptima tienen perfume y textura. Añadir una séptima nota encima de una tríada abre el universo del Jazz, R&B, Bossa Nova y Pop sofisticado. Hay tres tipos esenciales: la séptima mayor o Maj7, que suena etérea y nostálgica; la séptima dominante, llena de tensión eléctrica; y la séptima menor, suave y aterciopelada.',
+    dictationScript: 'Las tríadas son sólidas y directas, pero los acordes de séptima tienen perfume y elegancia pura, che. Agregarle una cuarta nota a la tríada te abre la puerta al Jazz, a la Bossa Nova y al Soul. Tenés la séptima mayor o Maj7, que suena soñadora y cinematográfica; la séptima dominante, con esa tensión del Blues; y la séptima menor, suave como una seda. Escuchá la riqueza que tienen.',
     demonstrationNotes: ['C4', 'E4', 'G4', 'B4', 'C4', 'E4', 'G4', 'A#4'],
     targetKeys: ['C4', 'E4', 'G4', 'A#4', 'B4'],
     content: `
@@ -852,7 +852,7 @@ Un acorde de 7ma se forma añadiendo una tercera más sobre la quinta de una tr�
     level: 'Avanzado',
     description: 'El mapa definitivo de la armonía tonal: cómo navegar entre todas las 12 tonalidades del mundo.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'El Círculo de Quintas es el mapa astronómico de los músicos. Si te desplazas hacia la derecha, cada tonalidad está separada por un intervalo de quinta justa y añade un sostenido a la armadura. Do Mayor no tiene alteraciones. Sol Mayor tiene un sostenido: Fa sostenido. Re Mayor tiene dos. Además, el círculo te revela las tonalidades relativas menores en el anillo interior. Con esta herramienta podrás transportar cualquier canción a la voz de cualquier cantante en segundos.',
+    dictationScript: 'El Círculo de Quintas es la brújula sagrada de los músicos. Si te movés en sentido horario, cada parada está a una distancia de quinta justa y le suma un sostenido a la armadura. Do Mayor no tiene alteraciones, Sol tiene un Fa sostenido, Re tiene dos. Y adentro tenés las tonalidades relativas menores. Con esta brújula en la cabeza podés transportar cualquier canción al tono que te pida un cantante.',
     demonstrationNotes: ['C4', 'G4', 'D5', 'A5'],
     targetKeys: ['C4', 'G4', 'D4', 'A4'],
     content: `
@@ -909,7 +909,7 @@ Los acordes que están juntos en el círculo comparten casi todas sus notas. Si 
     level: 'Avanzado',
     description: 'Enriquece tus acordes suspendiendo la tercera o añadiendo la novena para sonar a estudio profesional.',
     image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=800',
-    dictationScript: 'A veces queremos crear expectativa sin definir si un acorde es mayor o menor. Para eso inventamos los acordes suspendidos: Sus4 y Sus2. Al reemplazar la tercera por la cuarta o por la segunda, creamos una atmósfera flotante, como si la música contuviera el aliento. Y cuando añadimos la novena a un acorde mayor, logramos ese brillo cristalino característico del pop moderno y la música ambiental.',
+    dictationScript: 'Fijate qué interesante: a veces queremos generar suspenso sin definir si el acorde es alegre o triste. Para eso usamos los acordes suspendidos: Sus4 y Sus2. Al cambiar la tercera por la cuarta o por la segunda, queda flotando en el aire como si contuviera la respiración. Y si le sumás la novena, lográs ese brillo cristalino moderno que queda bárbaro. Escuchá cómo respira la armonía.',
     demonstrationNotes: ['C4', 'F4', 'G4', 'C4', 'D4', 'G4', 'C4', 'E4', 'G4', 'D5'],
     targetKeys: ['C4', 'D4', 'F4', 'G4', 'D5'],
     content: `
@@ -973,7 +973,7 @@ Los acordes básicos son blanco y negro; las extensiones son toda la gama cromá
     level: 'Avanzado',
     description: 'La cima del viaje: libera tu creatividad con la escala pentatónica y recibe tu certificación virtual.',
     image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
-    dictationScript: '¡Has llegado a la lección final de tu instructor virtual! Has recorrido desde ubicar el primer Do en la oscuridad del teclado, hasta comprender inversiones, armonía de jazz y el círculo de quintas. Ahora el piano te pertenece. La escala pentatónica contiene cinco notas mágicas: Do, Re, Mi, Sol y La. No contiene notas que choquen entre sí. Cualquier melodía que improvises con estas cinco notas sobre un bajo sonará pura, espontánea y poética.',
+    dictationScript: '¡Qué momento, che! Llegaste a la lección final de tu instructor virtual. Arrancamos de cero ubicando el Do Central y mirá todo lo que caminaste: inversiones, acordes de séptima y el círculo de quintas. Ahora el teclado es tuyo. La escala pentatónica mayor tiene cinco notas sagradas: Do, Re, Mi, Sol y La. Con esas cinco notas podés improvisar libremente sobre cualquier bajo sin errarle a ninguna nota. Tocá con el corazón, que la música ya vive en vos. ¡Un abrazo enorme y vamos arriba!',
     demonstrationNotes: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
     targetKeys: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
     content: `

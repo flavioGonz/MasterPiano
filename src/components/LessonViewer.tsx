@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Markdown from 'react-markdown';
 import { motion } from 'motion/react';
 import { 
-  ChevronLeft, ChevronRight, BookOpen, Volume2, VolumeX, Play, 
-  Sparkles, Award, CheckCircle2, Lock, MessageSquare, Music2, Pause 
+  ChevronLeft, ChevronRight, BookOpen, Volume2, Play, 
+  Sparkles, Award, CheckCircle2, Lock, MessageSquare, Pause, Radio, Music2
 } from 'lucide-react';
 import { Lesson, LESSONS, UserProgress } from '../types';
 import { Piano } from './Piano';
 import { LessonEvaluationModal } from './LessonEvaluationModal';
 import { InstructorChatModal } from './InstructorChatModal';
 import { cn } from '../lib/utils';
+import { maestroVoice } from '../lib/speech';
 import * as Tone from 'tone';
 
 interface LessonViewerProps {
@@ -30,9 +31,9 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
   const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Text-to-Speech Virtual Teacher Voice
+  // Natural Uruguayan Voice State
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const synthVoiceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [isVoiceLoading, setIsVoiceLoading] = useState(false);
 
   // Auto-demonstration playback
   const [isDemonstrating, setIsDemonstrating] = useState(false);
@@ -48,46 +49,37 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
 
   // Cleanup speech on unmount or lesson change
   useEffect(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    maestroVoice.stop();
     setIsSpeaking(false);
+    setIsVoiceLoading(false);
     setIsDemonstrating(false);
     setDemonstrationActiveNote(null);
   }, [lesson.id]);
 
-  const toggleSpeech = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Tu navegador no soporta síntesis de voz.');
-      return;
-    }
-
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
+  const toggleSpeech = async () => {
+    if (isSpeaking || isVoiceLoading) {
+      maestroVoice.stop();
       setIsSpeaking(false);
+      setIsVoiceLoading(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const textToSpeak = `${lesson.title}. ${lesson.dictationScript}`;
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'es-ES';
-    utterance.rate = 0.95; // Natural calm pacing for teaching
-    utterance.pitch = 1.0;
-
-    // Try to pick a natural Spanish voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const spanishVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Pablo') || v.name.includes('Jorge')));
-    if (spanishVoice) {
-      utterance.voice = spanishVoice;
-    }
-
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    synthVoiceRef.current = utterance;
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    setIsVoiceLoading(true);
+    const speechText = `${lesson.title}. ${lesson.dictationScript}`;
+    await maestroVoice.speak(speechText, {
+      onStart: () => {
+        setIsVoiceLoading(false);
+        setIsSpeaking(true);
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        setIsVoiceLoading(false);
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setIsVoiceLoading(false);
+      }
+    });
   };
 
   // Demonstration playback: Virtual maestro plays the notes
@@ -149,20 +141,28 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-amber-400 text-black flex items-center justify-center font-serif text-2xl font-bold shadow-lg">
-                🎹
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-serif text-2xl font-bold shadow-lg">
+                🇺🇾
               </div>
-              <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-[#12151f] rounded-full animate-pulse" />
+              <span className={cn(
+                "absolute -bottom-1 -right-1 w-4 h-4 border-2 border-[#12151f] rounded-full",
+                isSpeaking ? "bg-amber-400 animate-ping" : "bg-emerald-500 animate-pulse"
+              )} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-serif font-bold text-lg text-white">Maestro Aurelio</h3>
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  Instructor Activo
+                  Uruguay 🇺🇾 • Voz Rioplatense
                 </span>
+                {isSpeaking && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse">
+                    Hablando...
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-white/60 font-light mt-0.5 max-w-md">
-                "{lesson.dictationScript.slice(0, 110)}..."
+              <p className="text-xs text-white/70 font-light mt-0.5 max-w-md italic">
+                "{lesson.dictationScript.slice(0, 115)}..."
               </p>
             </div>
           </div>
@@ -172,22 +172,30 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
             <button
               type="button"
               onClick={toggleSpeech}
+              disabled={isVoiceLoading}
               className={cn(
                 "flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow",
                 isSpeaking
                   ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                  : isVoiceLoading
+                  ? "bg-amber-400/50 text-black cursor-wait"
                   : "bg-amber-400 hover:bg-amber-300 text-black"
               )}
             >
               {isSpeaking ? (
                 <>
                   <Pause size={15} />
-                  <span>Pausar Dictado</span>
+                  <span>Pausar Voz 🇺🇾</span>
+                </>
+              ) : isVoiceLoading ? (
+                <>
+                  <Sparkles size={15} className="animate-spin text-black" />
+                  <span>Cargando Voz...</span>
                 </>
               ) : (
                 <>
                   <Volume2 size={15} />
-                  <span>Profesor Dicta Lección</span>
+                  <span>Escuchar al Maestro 🇺🇾</span>
                 </>
               )}
             </button>
@@ -209,7 +217,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               title="Preguntar una duda al Maestro IA"
             >
               <MessageSquare size={14} />
-              <span className="hidden sm:inline">Dudas</span>
+              <span className="hidden sm:inline">Consultar al Maestro</span>
             </button>
           </div>
         </div>
