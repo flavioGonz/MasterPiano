@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, CheckCircle2, Lock, ArrowRight, Award, Sparkles, Trophy } from 'lucide-react';
+import { BookOpen, CheckCircle2, Lock, ArrowRight, Award, Sparkles, Trophy, Check, PartyPopper } from 'lucide-react';
 import { Lesson, LESSONS, UserProgress } from '../types';
 import { cn } from '../lib/utils';
+import { CurriculumProgressBar } from './CurriculumProgressBar';
+import { triggerCurriculumConfetti } from '../lib/celebration';
 
 interface CurriculumRoadmapProps {
   userProgress: UserProgress;
@@ -28,61 +30,51 @@ export const CurriculumRoadmap: React.FC<CurriculumRoadmapProps> = ({
 
   return (
     <div className="space-y-12">
-      {/* Top Progress & Diagnostic Level Switcher */}
-      <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-mono uppercase tracking-widest">
-              <Sparkles size={14} />
-              <span>Currículo Oficial de 0 a 100</span>
-            </div>
-            <h3 className="text-2xl md:text-3xl font-serif font-bold text-white">
-              Tu Progreso en el Conservatorio Virtual
-            </h3>
-            <p className="text-xs text-white/50 font-light">
-              {completedCount} de {LESSONS.length} lecciones aprobadas mediante evaluación técnica.
-            </p>
-          </div>
-
-          {/* Quick Level Diagnostic Selector */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-xs font-mono">
-            <span className="text-white/40">Punto de partida:</span>
-            <div className="flex gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/10">
-              {(['Principiante', 'Intermedio', 'Avanzado'] as const).map(lvl => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => onSetLevel(lvl)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl transition-all",
-                    userProgress.userLevel === lvl
-                      ? "bg-amber-400 text-black font-semibold shadow"
-                      : "text-white/50 hover:text-white"
-                  )}
-                >
-                  {lvl}
-                </button>
-              ))}
-            </div>
+      {/* Top Level Diagnostic Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-black/40 border border-white/10 text-xs font-mono">
+        <div className="flex items-center gap-2">
+          <span className="text-white/40">Nivel de partida:</span>
+          <div className="flex gap-1.5 p-1 bg-black/50 rounded-xl border border-white/10">
+            {(['Principiante', 'Intermedio', 'Avanzado'] as const).map(lvl => (
+              <button
+                key={lvl}
+                type="button"
+                onClick={() => onSetLevel(lvl)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg transition-all text-xs",
+                  userProgress.userLevel === lvl
+                    ? "bg-amber-400 text-black font-bold shadow"
+                    : "text-white/50 hover:text-white"
+                )}
+              >
+                {lvl}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Global Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs font-mono">
-            <span className="text-white/60">Dominio Técnico del Piano</span>
-            <span className="text-amber-400 font-bold">{overallPercentage}% COMPLETADO</span>
-          </div>
-          <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.max(overallPercentage, 4)}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]"
-            />
-          </div>
-        </div>
+        {completedCount > 0 && (
+          <button
+            type="button"
+            onClick={() => triggerCurriculumConfetti('grand')}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/30 text-xs font-bold transition-all hover:scale-105 active:scale-95"
+            title="Lanzar confeti de celebración por tu progreso"
+          >
+            <PartyPopper size={14} className="text-amber-400" />
+            <span>Celebrar Logro</span>
+          </button>
+        )}
       </div>
+
+      {/* Visual Curriculum Progress Bar Dashboard Component */}
+      <CurriculumProgressBar
+        userProgress={userProgress}
+        variant="full"
+        onSelectLesson={(lessonId) => {
+          const l = LESSONS.find(x => x.id === lessonId);
+          if (l) onSelectLesson(l);
+        }}
+      />
 
       {/* Modules List */}
       <div className="space-y-12">
@@ -102,7 +94,7 @@ export const CurriculumRoadmap: React.FC<CurriculumRoadmapProps> = ({
                       ? "bg-emerald-500 text-black"
                       : "bg-amber-400/20 text-amber-300 border border-amber-400/30"
                   )}>
-                    {isModuleDone ? '✓' : `M${module.number}`}
+                    {isModuleDone ? <Check size={14} className="stroke-[3]" /> : `M${module.number}`}
                   </div>
                   <h4 className="text-lg md:text-xl font-serif font-bold text-white">
                     {module.title}

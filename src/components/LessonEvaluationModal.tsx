@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, XCircle, Trophy, ArrowRight, RotateCcw, Award, Sparkles, BookOpen, Music } from 'lucide-react';
-import { Lesson } from '../types';
+import { CheckCircle2, XCircle, Trophy, ArrowRight, RotateCcw, Award, Sparkles, BookOpen, Music, GraduationCap, Clock, X, PartyPopper } from 'lucide-react';
+import { Lesson, UserProgress, LESSONS } from '../types';
 import { Piano } from './Piano';
 import { cn } from '../lib/utils';
+import { triggerCurriculumConfetti } from '../lib/celebration';
+import { CurriculumProgressBar } from './CurriculumProgressBar';
 
 interface LessonEvaluationModalProps {
   lesson: Lesson;
   isOpen: boolean;
   onClose: () => void;
   onPassLesson: (lessonId: string, score: number) => void;
+  userProgress?: UserProgress;
 }
 
 export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
@@ -17,6 +20,7 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
   isOpen,
   onClose,
   onPassLesson,
+  userProgress,
 }) => {
   const [stage, setStage] = useState<'intro' | 'theory' | 'practical' | 'results'>('intro');
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -122,6 +126,7 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
 
     if (passed) {
       onPassLesson(lesson.id, finalScore);
+      triggerCurriculumConfetti('grand');
     }
 
     try {
@@ -184,9 +189,10 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-white/40 hover:text-white text-sm uppercase font-mono tracking-wider px-3 py-1 rounded-lg hover:bg-white/5"
+            className="flex items-center gap-1 text-white/40 hover:text-white text-xs uppercase font-mono tracking-wider px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
           >
-            Cerrar ✕
+            <X size={14} />
+            <span>Cerrar</span>
           </button>
         </div>
 
@@ -387,13 +393,13 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
           <div className="space-y-6 text-center py-4">
             <div
               className={cn(
-                "w-24 h-24 rounded-full mx-auto flex items-center justify-center text-4xl shadow-2xl transition-all",
+                "w-24 h-24 rounded-full mx-auto flex items-center justify-center shadow-2xl transition-all",
                 passed
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_40px_rgba(16,185,129,0.4)]"
                   : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
               )}
             >
-              {passed ? '🎓' : '⏳'}
+              {passed ? <GraduationCap size={44} /> : <Clock size={44} />}
             </div>
 
             <div className="space-y-2">
@@ -413,6 +419,27 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
               </p>
             </div>
 
+            {/* Visual Progress Bar on Completion */}
+            {passed && (
+              <div className="max-w-md mx-auto">
+                <CurriculumProgressBar
+                  userProgress={
+                    userProgress || {
+                      completedLessons: [lesson.id],
+                      unlockedLessons: [lesson.id],
+                      lessonScores: { [lesson.id]: finalScore },
+                      xp: 150,
+                      streak: 1,
+                      notesPlayedCount: 50,
+                      userLevel: 'Principiante',
+                    }
+                  }
+                  variant="celebration"
+                  highlightNewCompletion={true}
+                />
+              </div>
+            )}
+
             {/* Maestro Aurelio personalized message */}
             <div className="glass p-5 rounded-2xl border border-amber-500/30 max-w-md mx-auto text-left space-y-1.5">
               <div className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -424,7 +451,17 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
             </div>
 
             {/* Action buttons */}
-            <div className="flex justify-center gap-3 pt-4">
+            <div className="flex flex-wrap justify-center gap-3 pt-4">
+              {passed && (
+                <button
+                  type="button"
+                  onClick={() => triggerCurriculumConfetti('grand')}
+                  className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-mono text-xs uppercase tracking-wider rounded-xl transition-all border border-white/15 flex items-center gap-2"
+                >
+                  <PartyPopper size={15} className="text-amber-400" />
+                  <span>Lanzar Confeti</span>
+                </button>
+              )}
               {passed ? (
                 <button
                   type="button"

@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, Sparkles, CheckCircle2, 
-  HelpCircle, Trophy, Lightbulb, ChevronRight, Zap, Award, Flame, Heart
+  HelpCircle, Trophy, Lightbulb, ChevronRight, Zap, Award, Flame, Heart,
+  Footprints, Puzzle, Compass, RotateCw, Hand, ArrowRight, AlertCircle, ListOrdered, GraduationCap
 } from 'lucide-react';
 import { 
   SCALES_DATABASE, COMMON_SCALE_ROOTS, ScaleInfo, 
   calculateScaleNotes, ENHARMONIC_MAP, FINGER_NAMES 
 } from '../lib/musicGymTheory';
 import { Piano } from './Piano';
+import { AcousticPianoListener } from './AcousticPianoListener';
+import { pianoPitchDetector } from '../lib/pitchDetector';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
@@ -143,6 +146,14 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
     }
   }, [gameMode, isScaleCompleted, scaleNotes, currentStepIndex, completedSteps, selectedRoot, activeScale, onScoreGain, missingIndex]);
 
+  // Subscribe to real-time acoustic microphone pitch detector
+  useEffect(() => {
+    const unsub = pianoPitchDetector.subscribeNoteOnset((info) => {
+      handleNotePlay(info.note);
+    });
+    return unsub;
+  }, [handleNotePlay]);
+
   // Demo playback of the full scale
   const playScaleDemo = async () => {
     if (isPlayingDemo) {
@@ -207,39 +218,48 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
         {/* Gamified Mode Pills */}
         <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
           {[
-            { id: 'pathway', label: 'Camino de Notas', icon: '🚶‍♂️' },
-            { id: 'missingNote', label: 'Nota Faltante', icon: '🧩' },
-            { id: 'formula', label: 'Fórmula T - S', icon: '📐' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setGameMode(tab.id as GameMode)}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all",
-                gameMode === tab.id
-                  ? "bg-amber-400 text-black font-semibold shadow"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-              )}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+            { id: 'pathway', label: 'Camino de Notas', Icon: Footprints },
+            { id: 'missingNote', label: 'Nota Faltante', Icon: Puzzle },
+            { id: 'formula', label: 'Fórmula T - S', Icon: Compass },
+          ].map(tab => {
+            const TabIcon = tab.Icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setGameMode(tab.id as GameMode)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all",
+                  gameMode === tab.id
+                    ? "bg-amber-400 text-black font-semibold shadow"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <TabIcon size={14} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
 
           {onSwitchToCircleSequence && (
             <button
               type="button"
               onClick={onSwitchToCircleSequence}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/40 shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/40 shadow-sm"
               title="Ir al Generador de Secuencias de Escalas por Ciclo de Quintas"
             >
-              <span>🔄</span>
+              <RotateCw size={14} />
               <span className="font-semibold">Secuencias Ciclo de Quintas</span>
             </button>
           )}
         </div>
       </div>
+
+      {/* Real Acoustic Piano Microphone Analyzer */}
+      <AcousticPianoListener
+        currentTargetNote={gameMode === 'pathway' ? scaleNotes[currentStepIndex] : scaleNotes[missingIndex]}
+        exerciseName={`Escala ${selectedRoot} ${activeScale.name}`}
+      />
 
       {/* Root Note & Scale Selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -307,7 +327,7 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
             </span>
           </div>
           <p className="text-xs text-white/80 font-light italic">
-            💡 {activeScale.mnemonic}
+            <span className="inline-flex items-center gap-1"><Lightbulb size={12} className="text-amber-400 inline shrink-0" /><span>{activeScale.mnemonic}</span></span>
           </p>
         </div>
 
@@ -332,8 +352,8 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-all"
             title="Escuchar consejo del Maestro Aurelio"
           >
-            <Volume2 size={13} />
-            <span>Maestro 🇺🇾</span>
+            <GraduationCap size={14} />
+            <span>Maestro Aurelio</span>
           </button>
         </div>
       </div>
@@ -372,7 +392,7 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
                   )}
                   title="Practicar digitación para Mano Derecha (clave de Sol)"
                 >
-                  <span>✋</span>
+                  <Hand size={13} />
                   <span>Mano Der</span>
                 </button>
 
@@ -391,7 +411,7 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
                   )}
                   title="Practicar digitación para Mano Izquierda (clave de Fa)"
                 >
-                  <span>🤚</span>
+                  <Hand size={13} className="scale-x-[-1]" />
                   <span>Mano Izq</span>
                 </button>
               </div>
@@ -409,7 +429,7 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
                 )}
                 title="Mostrar u ocultar los números de dedo (1-5) recomendados sobre las teclas"
               >
-                <span>🖐️</span>
+                <ListOrdered size={14} />
                 <span className="hidden md:inline">Números 1-5</span>
                 <span className={cn(
                   "px-1.5 py-0.2 rounded text-[9px] font-extrabold font-mono",
@@ -502,9 +522,15 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
               : "bg-amber-400/10 border-amber-400/30 text-amber-300"
           )}>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">
-                {isScaleCompleted ? '🏆' : isNoteError ? '⚠️' : '👉'}
-              </span>
+              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                {isScaleCompleted ? (
+                  <Trophy size={18} className="text-emerald-400" />
+                ) : isNoteError ? (
+                  <AlertCircle size={18} className="text-red-400" />
+                ) : (
+                  <ArrowRight size={18} className="text-amber-400" />
+                )}
+              </div>
               <div>
                 <div className="font-bold text-sm flex flex-wrap items-center gap-2">
                   <span>
@@ -581,9 +607,16 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
 
             {/* Score & Lives */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-sm font-mono text-red-400">
+              <div className="flex items-center gap-1.5 text-sm font-mono text-rose-400">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <span key={i} className={i < missingLives ? 'opacity-100' : 'opacity-20'}>❤️</span>
+                  <Heart
+                    key={i}
+                    size={15}
+                    className={cn(
+                      "transition-opacity",
+                      i < missingLives ? "text-rose-500 fill-rose-500 opacity-100" : "text-white/20 opacity-30"
+                    )}
+                  />
                 ))}
               </div>
               <div className="text-sm font-mono font-bold text-amber-400">
@@ -609,8 +642,8 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
                   <span className="text-[9px] uppercase tracking-wider opacity-50">
                     Grado {index + 1}
                   </span>
-                  <span className="text-2xl font-bold my-1">
-                    {isMissing ? '❓' : note.replace(/\d/, '')}
+                  <span className="text-2xl font-bold my-1 flex items-center justify-center">
+                    {isMissing ? <HelpCircle size={24} className="text-amber-300 animate-pulse" /> : note.replace(/\d/, '')}
                   </span>
                   <span className="text-[10px] opacity-60">
                     {isMissing ? '¿Cuál es?' : `oct ${note.slice(-1)}`}

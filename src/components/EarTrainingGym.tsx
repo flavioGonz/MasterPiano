@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Headphones, Volume2, Sparkles, Trophy, Flame, RefreshCw, 
   Lightbulb, CheckCircle2, XCircle, Play, Eye, EyeOff, 
-  Music, Layers, ArrowUpRight, ArrowDownRight, Award, MessageSquare
+  Music, Layers, ArrowUpRight, ArrowDownRight, Award, MessageSquare,
+  GraduationCap, Gauge
 } from 'lucide-react';
 import * as Tone from 'tone';
 import { cn } from '../lib/utils';
@@ -368,7 +369,11 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
           </div>
           <div>
             <div className="text-[10px] font-mono text-white/40 uppercase">Racha de Aciertos</div>
-            <div className="text-lg font-mono font-bold text-rose-300">{streak} 🔥 <span className="text-xs text-white/30 font-normal">(Récord: {bestStreak})</span></div>
+            <div className="text-lg font-mono font-bold text-rose-300 flex items-center gap-1.5">
+              <span>{streak}</span>
+              <Flame size={15} className="text-rose-400 inline" />
+              <span className="text-xs text-white/30 font-normal">(Récord: {bestStreak})</span>
+            </div>
           </div>
         </div>
 
@@ -464,7 +469,8 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               disabled={isPlayingAudio}
               className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 text-xs font-mono transition-all disabled:opacity-50"
             >
-              <span>🐢 Más Lento</span>
+              <Gauge size={13} className="text-amber-400" />
+              <span>Más Lento</span>
             </button>
           </div>
 
@@ -601,12 +607,14 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   <span>Pista del Maestro:</span>
                 </div>
                 {earMode === 'intervals' && intervalChallenge ? (
-                  <p className="text-white/80">
-                    💡 <em>Canción guía:</em> Este intervalo suena exactamente en el inicio de <strong>"{intervalChallenge.interval.famousSong}"</strong>. {intervalChallenge.interval.moodDescription}
+                  <p className="text-white/80 flex items-start gap-1.5">
+                    <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                    <span><em>Canción guía:</em> Este intervalo suena exactamente en el inicio de <strong>"{intervalChallenge.interval.famousSong}"</strong>. {intervalChallenge.interval.moodDescription}</span>
                   </p>
                 ) : triadChallenge ? (
-                  <p className="text-white/80">
-                    💡 <em>Carácter acústico:</em> La tríada {triadChallenge.qualityInfo.name} transmite una emoción de <strong>{triadChallenge.qualityInfo.description}</strong>.
+                  <p className="text-white/80 flex items-start gap-1.5">
+                    <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                    <span><em>Carácter acústico:</em> La tríada {triadChallenge.qualityInfo.name} transmite una emoción de <strong>{triadChallenge.qualityInfo.description}</strong>.</span>
                   </p>
                 ) : null}
               </motion.div>
@@ -745,7 +753,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               <div className="flex items-start justify-between gap-4 p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0 font-serif text-lg">
-                    🇺🇾
+                    <GraduationCap size={20} className="text-amber-400" />
                   </div>
                   <div>
                     <div className="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">

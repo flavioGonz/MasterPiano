@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, Sparkles, CheckCircle2, 
-  HelpCircle, Trophy, Lightbulb, ArrowRight, RefreshCw, Eye, Music
+  HelpCircle, Trophy, Lightbulb, ArrowRight, RefreshCw, Eye, Music,
+  RotateCw, Target, ArrowRightLeft, Hand, GraduationCap, AlertCircle
 } from 'lucide-react';
 import { 
   CHROMATIC_NOTES, INVERSIONS_GUIDE, TRIAD_QUALITIES, 
   calculateTriadInversion, validateTriadInversionSubmission 
 } from '../lib/musicGymTheory';
 import { Piano } from './Piano';
+import { AcousticPianoListener } from './AcousticPianoListener';
+import { pianoPitchDetector } from '../lib/pitchDetector';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
@@ -166,6 +169,14 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
     }
   }, [gameMode, userPlayedNotes, currentTriad, carouselStep, selectedRoot, selectedQuality, onScoreGain, missionTarget, generateNewMission]);
 
+  // Subscribe to real-time acoustic microphone pitch detector
+  useEffect(() => {
+    const unsub = pianoPitchDetector.subscribeNoteOnset((info) => {
+      handleNotePlay(info.note);
+    });
+    return unsub;
+  }, [handleNotePlay]);
+
   // Play current chord audio
   const playCurrentChordSound = async (notesToPlay: string[]) => {
     await Tone.start();
@@ -208,28 +219,37 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
         {/* Game Mode Selector */}
         <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
           {[
-            { id: 'carousel', label: 'Carrusel 1-2-3', icon: '🎢' },
-            { id: 'identify', label: '¿Qué Inversión es?', icon: '👁️' },
-            { id: 'mission', label: 'Misión del Bajo', icon: '🎯' },
-            { id: 'voiceLeading', label: 'Voice Leading', icon: '🤝' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setGameMode(tab.id as InversionGameMode)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                gameMode === tab.id
-                  ? "bg-amber-400 text-black font-semibold shadow"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-              )}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+            { id: 'carousel', label: 'Carrusel 1-2-3', Icon: RotateCw },
+            { id: 'identify', label: '¿Qué Inversión es?', Icon: Eye },
+            { id: 'mission', label: 'Misión del Bajo', Icon: Target },
+            { id: 'voiceLeading', label: 'Voice Leading', Icon: ArrowRightLeft },
+          ].map(tab => {
+            const TabIcon = tab.Icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setGameMode(tab.id as InversionGameMode)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
+                  gameMode === tab.id
+                    ? "bg-amber-400 text-black font-semibold shadow"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <TabIcon size={14} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* Real Acoustic Piano Microphone Analyzer */}
+      <AcousticPianoListener
+        currentTargetNotes={gameMode === 'carousel' ? currentTriad.keys : missionTarget.keys}
+        exerciseName={gameMode === 'carousel' ? `Tríada ${selectedRoot} ${selectedQuality} (${currentTriad.chordName})` : `Misión del Bajo: ${missionTarget.root} ${missionTarget.quality}`}
+      />
 
       {/* ------------------------------------------------------------- */}
       {/* MODE 1: CARRUSEL DE INVERSIONES (LOOP CONSECUTIVO) */}
@@ -347,8 +367,9 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                     Bajo en: <strong className="text-emerald-300">{invInfo.bassRole}</strong>
                   </div>
 
-                  <div className="text-[10px] text-white/40 pt-1 border-t border-white/10">
-                    🖐️ Digitación: {invInfo.fingeringRightHand}
+                  <div className="flex items-center gap-1 text-[10px] text-white/40 pt-1 border-t border-white/10">
+                    <Hand size={11} className="text-amber-400" />
+                    <span>Digitación: {invInfo.fingeringRightHand}</span>
                   </div>
                 </motion.div>
               );
@@ -369,8 +390,9 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
               <p className="text-xs text-white/80 font-light">
                 {currentGuide.explanation}
               </p>
-              <p className="text-xs text-amber-300/90 font-light italic">
-                👁️ <strong>Truco visual del Maestro:</strong> {currentGuide.visualTrick}
+              <p className="text-xs text-amber-300/90 font-light italic flex items-center gap-1.5">
+                <Eye size={13} className="text-amber-400 shrink-0" />
+                <span><strong>Truco visual del Maestro:</strong> {currentGuide.visualTrick}</span>
               </p>
             </div>
 
@@ -389,7 +411,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                 onClick={speakInversionTip}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-all"
               >
-                <span>Maestro 🇺🇾</span>
+                <GraduationCap size={14} className="text-amber-400" />
+                <span>Maestro Aurelio</span>
               </button>
             </div>
           </div>
@@ -501,8 +524,9 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
 
           {quizAnswered !== null && (
             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-xs text-white/80">
-                💡 <strong>Explicación:</strong> {INVERSIONS_GUIDE[quizQuestion.inversion].visualTrick}
+              <div className="text-xs text-white/80 flex items-center gap-1.5">
+                <Lightbulb size={14} className="text-amber-400 shrink-0" />
+                <span><strong>Explicación:</strong> {INVERSIONS_GUIDE[quizQuestion.inversion].visualTrick}</span>
               </div>
               <button
                 type="button"
@@ -547,8 +571,9 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
           {/* Mission Requirement Card */}
           <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-between">
             <div className="space-y-1">
-              <div className="text-xs font-mono text-amber-300 font-bold">
-                ⚠️ Requisito estricto del Maestro:
+              <div className="text-xs font-mono text-amber-300 font-bold flex items-center gap-1.5">
+                <AlertCircle size={14} className="text-amber-400 shrink-0" />
+                <span>Requisito estricto del Maestro:</span>
               </div>
               <p className="text-xs text-white/80 font-light">
                 La nota más grave (el bajo) DEBE ser <strong>{missionTarget.requiredBass}</strong>.

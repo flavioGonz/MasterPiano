@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, VolumeX, Upload, Sparkles, 
   Trophy, CheckCircle2, ChevronRight, Sliders, Music, Zap, Flame, 
-  HelpCircle, Eye, RefreshCw, Layers, Radio, Settings2, Download, Maximize2, Minimize2
+  HelpCircle, Eye, RefreshCw, Layers, Radio, Settings2, Download, Maximize2, Minimize2,
+  Waves, GraduationCap
 } from 'lucide-react';
 import * as Tone from 'tone';
 import { 
@@ -656,7 +657,8 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain 
               )}
               title="Modo Espera: la catarata se detiene hasta que toques la tecla correcta"
             >
-              <span>⏸️ Espera</span>
+              <Pause size={13} />
+              <span>Espera</span>
             </button>
 
             <button
@@ -670,7 +672,8 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain 
               )}
               title="Modo Flujo: ritmo continuo al tempo real con puntuación"
             >
-              <span>🌊 Flujo</span>
+              <Waves size={13} />
+              <span>Flujo</span>
             </button>
           </div>
 
@@ -739,7 +742,10 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain 
           </div>
           <div className="flex items-center gap-1.5 text-white/70 border-l border-white/10 pl-3">
             <span className="text-white/40">RACHA:</span>
-            <strong className="text-rose-400 font-bold text-sm">{streak} 🔥</strong>
+            <strong className="text-rose-400 font-bold text-sm flex items-center gap-1">
+              <span>{streak}</span>
+              <Flame size={13} className="text-rose-400" />
+            </strong>
           </div>
           <div className="flex items-center gap-1.5 text-white/70 border-l border-white/10 pl-3">
             <span className="text-white/40">COMPOSITOR:</span>
@@ -970,7 +976,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain 
         {/* Pedagogical Advice */}
         <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1 md:col-span-2">
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-300">
-            <span>🇺🇾</span>
+            <GraduationCap size={15} className="text-cyan-300" />
             <span>Consejo del Maestro Aurelio para la Catarata:</span>
           </div>
           <p className="text-xs text-white/70 font-light leading-relaxed">

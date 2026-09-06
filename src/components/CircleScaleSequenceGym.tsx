@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, CheckCircle2, 
   HelpCircle, Trophy, Lightbulb, ChevronRight, Zap, Award, Flame, 
-  Compass, Sliders, ArrowRight, Music, Check, Settings2, RefreshCw
+  Compass, Sliders, ArrowRight, Music, Check, Settings2, RefreshCw, Hand,
+  GraduationCap, AlertCircle
 } from 'lucide-react';
 import * as Tone from 'tone';
 import { 
@@ -645,16 +646,18 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 <button
                   type="button"
                   onClick={() => applyPreset('beginner')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
                 >
-                  🟢 Básicas (C, G, F)
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                  <span>Básicas (C, G, F)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('intermediate')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
                 >
-                  🟡 Intermedio (6 claves)
+                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                  <span>Intermedio (6 claves)</span>
                 </button>
                 <button
                   type="button"
@@ -673,9 +676,10 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 <button
                   type="button"
                   onClick={() => applyPreset('all12')}
-                  className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors font-bold"
+                  className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors font-bold flex items-center gap-1.5"
                 >
-                  🟣 Ciclo Completo (12)
+                  <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                  <span>Ciclo Completo (12)</span>
                 </button>
               </div>
             </div>
@@ -765,7 +769,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
             {/* Hand Selection */}
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
               <div className="flex items-center gap-2 text-xs font-mono text-white/50">
-                <span>✋</span>
+                <Hand size={14} />
                 <span>Mano & Técnica de Digitación:</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -779,7 +783,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                       : "bg-white/5 border-white/5 text-white/60 hover:text-white"
                   )}
                 >
-                  <div className="text-lg">✋</div>
+                  <div className="flex justify-center text-amber-400"><Hand size={20} /></div>
                   <div className="text-xs font-bold mt-1">Mano Derecha</div>
                   <div className="text-[10px] text-white/40">Dedos 1-2-3-1-2-3-4-5</div>
                 </button>
@@ -794,7 +798,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                       : "bg-white/5 border-white/5 text-white/60 hover:text-white"
                   )}
                 >
-                  <div className="text-lg">🤚</div>
+                  <div className="flex justify-center text-indigo-400"><Hand size={20} className="scale-x-[-1]" /></div>
                   <div className="text-xs font-bold mt-1">Mano Izquierda</div>
                   <div className="text-[10px] text-white/40">Dedos 5-4-3-2-1-3-2-1</div>
                 </button>
@@ -946,8 +950,9 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mt-1">
                 Escala de {currentStep.keyDef.name}
               </h2>
-              <p className="text-xs text-amber-300/80 font-mono mt-0.5">
-                💡 Relativa Menor: {currentStep.keyDef.relativeMinor} • {currentStep.keyDef.accidentals}
+              <p className="text-xs text-amber-300/80 font-mono mt-0.5 flex items-center gap-1">
+                <Lightbulb size={13} className="text-amber-400 shrink-0" />
+                <span>Relativa Menor: {currentStep.keyDef.relativeMinor} • {currentStep.keyDef.accidentals}</span>
               </p>
             </div>
 
@@ -999,7 +1004,10 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 </div>
                 <div className="border-l border-white/10 pl-3">
                   <span className="text-white/40 text-[10px] uppercase">Racha: </span>
-                  <strong className="text-rose-400">{streak} 🔥</strong>
+                  <strong className="text-rose-400 inline-flex items-center gap-1">
+                    <span>{streak}</span>
+                    <Flame size={13} className="text-rose-400" />
+                  </strong>
                 </div>
               </div>
 
@@ -1056,7 +1064,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
 
           {/* Maestro Aurelio Pedagogical Tip for Current Scale */}
           <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-400/10 via-amber-400/5 to-transparent border border-amber-400/20 text-left flex items-start gap-3">
-            <span className="text-2xl shrink-0">🇺🇾</span>
+            <GraduationCap size={22} className="text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5 text-xs">
               <div className="font-mono font-bold text-amber-300 uppercase tracking-wide">
                 Consejo del Maestro Aurelio para {currentStep.keyDef.name}:
@@ -1118,7 +1126,9 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               : "bg-amber-400/10 border-amber-400/30 text-amber-300"
           )}>
             <div className="flex items-center gap-3">
-              <span className="text-xl">{isNoteError ? '💥' : '👉'}</span>
+              <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                {isNoteError ? <AlertCircle size={16} className="text-rose-400" /> : <ArrowRight size={16} className="text-amber-400" />}
+              </div>
               <div className="text-xs font-mono">
                 {isNoteError ? (
                   <span>¡Casi che! Tocaste <strong>{lastPlayedNote}</strong>. La nota que sigue es <strong>{targetExerciseNotes[currentNoteIndex]}</strong>.</span>
@@ -1179,8 +1189,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
       {/* ------------------------------------------------------------- */}
       {sessionStage === 'completed' && (
         <div className="glass p-8 md:p-12 rounded-3xl border border-emerald-500/30 text-center space-y-6 max-w-xl mx-auto">
-          <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 text-4xl shadow-xl shadow-emerald-500/20">
-            🏆
+          <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/20">
+            <Trophy size={40} className="text-emerald-400" />
           </div>
 
           <div className="space-y-2">
@@ -1217,7 +1227,9 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
 
           {/* Maestro Aurelio quote */}
           <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-left flex items-start gap-3">
-            <span className="text-2xl shrink-0">🇺🇾</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center shrink-0">
+              <GraduationCap size={18} className="text-amber-300" />
+            </div>
             <div className="space-y-1 text-xs">
               <div className="font-mono font-bold text-amber-300 uppercase">
                 Devolución del Maestro Aurelio:

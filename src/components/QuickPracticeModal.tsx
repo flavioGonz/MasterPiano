@@ -4,7 +4,8 @@ import {
   Zap, Timer, Trophy, Flame, CheckCircle2, XCircle, 
   RotateCcw, Sparkles, Volume2, ArrowRight, Award, 
   HelpCircle, Play, Music, Layers, ShieldCheck, X,
-  Compass, BookOpen, Sliders, ChevronRight
+  Compass, BookOpen, Sliders, ChevronRight,
+  Music2, RotateCw, Piano as PianoIcon, Headphones, GraduationCap, AlertCircle, Lightbulb
 } from 'lucide-react';
 import * as Tone from 'tone';
 import { cn } from '../lib/utils';
@@ -28,12 +29,12 @@ export interface QuickPracticeModalProps {
 }
 
 // Category tabs definition
-const CATEGORY_TABS: { id: QuickPracticeCategory; label: string; icon: string; countBadge: string }[] = [
-  { id: 'all', label: 'Todos los Temas', icon: '⚡', countBadge: '120+' },
-  { id: 'scales', label: 'Escalas & Digitaciones', icon: '🎼', countBadge: '35+' },
-  { id: 'inversions', label: 'Inversiones & Voice Leading', icon: '🔄', countBadge: '35+' },
-  { id: 'harmony', label: 'Armonías & Acordes', icon: '🎹', countBadge: '35+' },
-  { id: 'ear', label: 'Oído Armónico', icon: '👂', countBadge: '15+' },
+const CATEGORY_TABS: { id: QuickPracticeCategory; label: string; Icon: React.ComponentType<{ size?: number }>; countBadge: string }[] = [
+  { id: 'all', label: 'Todos los Temas', Icon: Zap, countBadge: '120+' },
+  { id: 'scales', label: 'Escalas & Digitaciones', Icon: Music2, countBadge: '35+' },
+  { id: 'inversions', label: 'Inversiones & Voice Leading', Icon: RotateCw, countBadge: '35+' },
+  { id: 'harmony', label: 'Armonías & Acordes', Icon: PianoIcon, countBadge: '35+' },
+  { id: 'ear', label: 'Oído Armónico', Icon: Headphones, countBadge: '15+' },
 ];
 
 export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
@@ -180,7 +181,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
         lessonTitle: 'Código de Dedos',
         question: 'En la numeración universal del piano, ¿a qué dedo corresponde el número 1?',
         type: 'mcq',
-        options: ['Pulgar 👍', 'Índice ☝️', 'Medio 🖕', 'Meñique 🖐️'],
+        options: ['Pulgar (1)', 'Índice (2)', 'Medio (3)', 'Meñique (5)'],
         correctIndex: 0,
         explanation: 'El dedo 1 siempre es el pulgar, en ambas manos.',
         aurelioTip: '1=Pulgar, 2=Índice, 3=Medio, 4=Anular, 5=Meñique.'
@@ -517,6 +518,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
         <div className="px-4 md:px-6 pt-3 pb-1 border-b border-white/5 bg-[#090b12] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map(tab => {
             const isSelected = selectedCategory === tab.id;
+            const TabIcon = tab.Icon;
             return (
               <button
                 key={tab.id}
@@ -534,7 +536,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10"
                 )}
               >
-                <span>{tab.icon}</span>
+                <TabIcon size={14} />
                 <span>{tab.label}</span>
                 <span className={cn(
                   "text-[9px] px-1.5 py-0.2 rounded-full",
@@ -553,8 +555,8 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
           {/* INTRO SCREEN */}
           {gameState === 'intro' && (
             <div className="text-center space-y-6 py-2 max-w-xl mx-auto">
-              <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-amber-400 text-3xl font-serif">
-                ⚡
+              <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-amber-400 shadow-md">
+                <Zap size={32} />
               </div>
 
               <div className="space-y-2">
@@ -663,8 +665,9 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     <Flame size={11} />
                     <span>Racha</span>
                   </div>
-                  <div className="text-2xl font-mono font-bold text-rose-400">
-                    {streak} 🔥
+                  <div className="text-2xl font-mono font-bold text-rose-400 flex items-center justify-center gap-1.5">
+                    <span>{streak}</span>
+                    <Flame size={20} className="text-rose-400" />
                   </div>
                 </div>
               </div>
@@ -711,8 +714,9 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     {currentExercise.question}
                   </h3>
                   {currentExercise.hint && (
-                    <p className="text-xs text-amber-300/80 font-mono">
-                      💡 {currentExercise.hint}
+                    <p className="text-xs text-amber-300/80 font-mono flex items-center justify-center gap-1.5">
+                      <Lightbulb size={13} className="text-amber-400 shrink-0" />
+                      <span>{currentExercise.hint}</span>
                     </p>
                   )}
                 </div>
@@ -720,7 +724,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                 {/* Maestro Aurelio Pedagogical Tip */}
                 {currentExercise.aurelioTip && (
                   <div className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/20 text-left flex items-center gap-2.5 text-xs">
-                    <span className="text-lg shrink-0">🇺🇾</span>
+                    <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={15} className="text-amber-300" /></div>
                     <p className="text-amber-200/90 font-mono text-[11px]">
                       <strong>Tip del Maestro:</strong> {currentExercise.aurelioTip}
                     </p>
@@ -855,9 +859,9 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                       className="absolute inset-0 bg-emerald-950/85 backdrop-blur-xs flex items-center justify-center z-30 pointer-events-none"
                     >
                       <div className="text-center space-y-1">
-                        <div className="text-4xl">✨</div>
+                        <div className="flex justify-center"><Sparkles size={36} className="text-emerald-400" /></div>
                         <div className="text-xl font-serif font-bold text-emerald-300">¡Correcto, che!</div>
-                        <div className="text-emerald-400 font-mono text-xs">+100 PTS • Racha {streak + 1} 🔥</div>
+                        <div className="text-emerald-400 font-mono text-xs flex items-center justify-center gap-1"><span>+100 PTS • Racha {streak + 1}</span><Flame size={12} className="text-rose-400" /></div>
                       </div>
                     </motion.div>
                   )}
@@ -869,7 +873,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                       className="absolute inset-0 bg-rose-950/85 backdrop-blur-xs flex items-center justify-center z-30 pointer-events-none p-4"
                     >
                       <div className="text-center space-y-1">
-                        <div className="text-4xl">💥</div>
+                        <div className="flex justify-center"><AlertCircle size={36} className="text-rose-400" /></div>
                         <div className="text-xl font-serif font-bold text-rose-300">
                           {feedbackNotice || '¡Casi! Revisá las notas'}
                         </div>
@@ -886,8 +890,8 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
           {/* FINISHED / RESULTS SCREEN */}
           {gameState === 'finished' && (
             <div className="text-center space-y-6 py-4 max-w-lg mx-auto">
-              <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 text-3xl font-serif">
-                🏆
+              <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 shadow-md">
+                <Trophy size={32} />
               </div>
 
               <div className="space-y-1">
@@ -916,7 +920,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
 
                 <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
                   <div className="text-[10px] text-white/40 uppercase">Racha Máx.</div>
-                  <div className="text-lg font-bold text-rose-400">{maxStreak} 🔥</div>
+                  <div className="text-lg font-bold text-rose-400 flex items-center justify-center gap-1"><span>{maxStreak}</span><Flame size={14} className="text-rose-400" /></div>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
@@ -927,7 +931,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
 
               {/* Maestro Aurelio quote */}
               <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-left flex items-start gap-3">
-                <div className="text-2xl">🇺🇾</div>
+                <div className="w-9 h-9 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={18} className="text-amber-300" /></div>
                 <div className="space-y-1 text-xs">
                   <div className="font-mono font-bold text-amber-300 uppercase">
                     Devolución del Maestro Aurelio:

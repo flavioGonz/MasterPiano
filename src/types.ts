@@ -128,7 +128,7 @@ export const LESSONS: Lesson[] = [
     demonstrationNotes: ['C3', 'C4', 'C5'],
     targetKeys: ['C3', 'C4', 'C5'],
     content: `
-### Tu Primera Conexión con el Instrumento 🎹
+### Tu Primera Conexión con el Instrumento 
 
 El piano no es un instrumento caótico: es pura **geometría acústica**.
 
@@ -147,7 +147,7 @@ A partir de Do, las notas ascienden en orden alfabético:
 **DO (C) → RE (D) → MI (E) → FA (F) → SOL (G) → LA (A) → SI (B) → DO (C)**
 
 ---
-**💡 Consejo del Maestro:**
+**Consejo del Maestro:**
 No mires el teclado como 88 teclas individuales. Míralo como una escalera circular de 7 notas blancas y 5 negras que se repite en registros graves, medios y agudos.
     `,
     evaluation: {
@@ -193,17 +193,17 @@ No mires el teclado como 88 teclas individuales. Míralo como una escalera circu
     fingerGuide: { 'C4': 1, 'D4': 2, 'E4': 3, 'F4': 4, 'G4': 5 },
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4'],
     content: `
-### Biomecánica: El Secreto del Sonido Cantable ✨
+### Biomecánica: El Secreto del Sonido Cantable 
 
 Un sonido bello nace de la relajación corporal, no de la fuerza bruta.
 
 #### 1. El Código Internacional de Dedos
 Tanto para mano derecha como izquierda:
-- **1:** Pulgar 👍
-- **2:** Índice ☝️
-- **3:** Mayor / Medio 🖕
-- **4:** Anular 💍
-- **5:** Meñique 🖐️
+- **1:** Pulgar 
+- **2:** Índice 
+- **3:** Mayor / Medio 
+- **4:** Anular 
+- **5:** Meñique 
 
 #### 2. La Forma de "Manzana" en la Mano
 - Curva tus dedos suavemente. La última falange debe caer casi perpendicular a la tecla.
@@ -260,7 +260,7 @@ Coloca tu mano derecha:
     demonstrationNotes: ['C4', 'E4', 'G4', 'C5'],
     targetKeys: ['C4', 'E4', 'G4', 'C5'],
     content: `
-### El Ritmo: La Fuerza Vital 🥁
+### El Ritmo: La Fuerza Vital 
 
 La música existe en el tiempo. Si dominas el tiempo, dominas la atención del oyente.
 
@@ -269,10 +269,10 @@ Es el compás más utilizado en la música moderna y clásica. Cada compás cont
 **| 1 - 2 - 3 - 4 | 1 - 2 - 3 - 4 |**
 
 #### 2. Jerarquía de Figuras Rítmicas
-- **Redonda (𝅝):** Vale **4 pulsos**. La tocas en el 1 y la sostienes hasta el 4.
-- **Blanca (𝅗𝅥):** Vale **2 pulsos**. En un compás caben dos blancas (pulsos 1 y 3).
-- **Negra (𝅘𝅥):** Vale **1 pulso**. Tocas una nota en cada golpe del metrónomo.
-- **Corcheas (𝅘𝅥𝅮):** Dos notas por pulso ("y-un, y-dos, y-tres, y-cua").
+- **Redonda:** Vale **4 pulsos**. La tocas en el 1 y la sostienes hasta el 4.
+- **Blanca:** Vale **2 pulsos**. En un compás caben dos blancas (pulsos 1 y 3).
+- **Negra:** Vale **1 pulso**. Tocas una nota en cada golpe del metrónomo.
+- **Corcheas:** Dos notas por pulso ("y-un, y-dos, y-tres, y-cua").
 
 #### 3. El Metrónomo es tu Mejor Amigo
 Empieza siempre lento: a **60 BPM** (un golpe por segundo). No aumentes la velocidad hasta que no tengas precisión milimétrica.
@@ -316,7 +316,7 @@ Empieza siempre lento: a **60 BPM** (un golpe por segundo). No aumentes la veloc
     demonstrationNotes: ['C4', 'D4', 'E4', 'F4'],
     targetKeys: ['C4', 'D4', 'E4', 'F4'],
     content: `
-### La Geometría de los Intervalos 📐
+### La Geometría de los Intervalos 
 
 Los intervalos son los ladrillos con los que se construye cualquier melodía o acorde.
 
@@ -379,7 +379,7 @@ Desde cualquier nota raíz, aplica esta fórmula:
     fingerGuide: { 'C4': 1, 'D4': 2, 'E4': 3, 'F4': 1, 'G4': 2, 'A4': 3, 'B4': 4, 'C5': 5 },
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
     content: `
-### La Escala Madre: Do Mayor 🎼
+### La Escala Madre: Do Mayor 
 
 La escala de Do Mayor no contiene ninguna tecla negra, lo que la convierte en el laboratorio perfecto para entrenar la articulación.
 
@@ -437,7 +437,7 @@ No levantes el codo de golpe. El pulgar debe comenzar a deslizarse hacia adentro
     demonstrationNotes: ['C4', 'G4', 'C3'],
     targetKeys: ['C3', 'C4', 'G4'],
     content: `
-### El Lenguaje Escrito de la Música 📜
+### El Lenguaje Escrito de la Música 
 
 No le temas a la partitura: es simplemente un gráfico de coordenadas. El eje vertical indica la altura (agudo o grave) y el eje horizontal el tiempo.
 
@@ -497,7 +497,7 @@ El Do central se dibuja con una **línea adicional** flotante entre ambos pentag
     fingerGuide: { 'C4': 1, 'E4': 3, 'G4': 5 },
     targetKeys: ['C4', 'D#4', 'E4', 'G4'],
     content: `
-### El Nacimiento de la Armonía 🎶
+### El Nacimiento de la Armonía 
 
 La armonía ocurre cuando dos o más notas suenan al mismo tiempo creando consonancia o disonancia.
 
@@ -558,7 +558,7 @@ Se apilan terceras sobre una nota raíz:
     demonstrationNotes: ['C4', 'E4', 'G4', 'D4', 'F4', 'A4', 'E4', 'G4', 'B4'],
     targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'],
     content: `
-### La Familia Armónica Diatónica 🏰
+### La Familia Armónica Diatónica 
 
 En cualquier tonalidad mayor, los acordes formados sobre cada grado tienen una cualidad inmutable:
 
@@ -609,7 +609,7 @@ En cualquier tonalidad mayor, los acordes formados sobre cada grado tienen una c
     demonstrationNotes: ['C4', 'E4', 'G4', 'G3', 'B3', 'D4', 'A3', 'C4', 'E4', 'F3', 'A3', 'C4'],
     targetKeys: ['C4', 'E4', 'G4', 'A4', 'F4', 'B4', 'D4'],
     content: `
-### El Santo Grial de las Canciones 🏆
+### El Santo Grial de las Canciones 
 
 La progresión **I - V - vi - IV** es el ciclo armónico más exitoso en la historia de la música comercial:
 - *Let It Be* (The Beatles)
@@ -672,7 +672,7 @@ La progresión **I - V - vi - IV** es el ciclo armónico más exitoso en la hist
     demonstrationNotes: ['C4', 'E4', 'G4', 'E4', 'G4', 'C5', 'G4', 'C5', 'E5'],
     targetKeys: ['C4', 'E4', 'G4', 'C5', 'E5'],
     content: `
-### ¿Qué es una Inversión? 🔄
+### ¿Qué es una Inversión? 
 
 Invertir un acorde consiste en cambiar el orden vertical de sus notas, colocando como bajo una nota distinta a la raíz.
 
@@ -729,7 +729,7 @@ Al pasar de **Do Mayor** a **Fa Mayor**:
     demonstrationNotes: ['C3', 'C4', 'E4', 'G4', 'G3', 'G4', 'B4', 'D5'],
     targetKeys: ['C3', 'G3', 'C4', 'E4', 'G4'],
     content: `
-### Desbloqueando los Dos Hemisferios Cerebrales 🧠
+### Desbloqueando los Dos Hemisferios Cerebrales 
 
 Al tocar con dos manos no estás haciendo dos cosas a la vez: estás creando una **única coreografía unificada**.
 
@@ -789,7 +789,7 @@ Al tocar con dos manos no estás haciendo dos cosas a la vez: estás creando una
     demonstrationNotes: ['C4', 'E4', 'G4', 'B4', 'C4', 'E4', 'G4', 'A#4'],
     targetKeys: ['C4', 'E4', 'G4', 'A#4', 'B4'],
     content: `
-### La Cuarta Dimensión Armónica: Séptimas ✨
+### La Cuarta Dimensión Armónica: Séptimas 
 
 Un acorde de 7ma se forma añadiendo una tercera más sobre la quinta de una tríada (cuatro notas en total).
 
@@ -856,7 +856,7 @@ Un acorde de 7ma se forma añadiendo una tercera más sobre la quinta de una tr�
     demonstrationNotes: ['C4', 'G4', 'D5', 'A5'],
     targetKeys: ['C4', 'G4', 'D4', 'A4'],
     content: `
-### La Brújula del Compositor 🧭
+### La Brújula del Compositor 
 
 El Círculo de Quintas organiza visualmente las 12 notas de la escala cromática por afinidad armónica.
 
@@ -913,7 +913,7 @@ Los acordes que están juntos en el círculo comparten casi todas sus notas. Si 
     demonstrationNotes: ['C4', 'F4', 'G4', 'C4', 'D4', 'G4', 'C4', 'E4', 'G4', 'D5'],
     targetKeys: ['C4', 'D4', 'F4', 'G4', 'D5'],
     content: `
-### Pintando con Colores Armónicos Avanzados 🎨
+### Pintando con Colores Armónicos Avanzados 
 
 Los acordes básicos son blanco y negro; las extensiones son toda la gama cromática.
 
@@ -977,7 +977,7 @@ Los acordes básicos son blanco y negro; las extensiones son toda la gama cromá
     demonstrationNotes: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
     targetKeys: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
     content: `
-### La Libertad del Pianista: Improvisar 🕊️
+### La Libertad del Pianista: Improvisar 
 
 Tocar piano no es solo reproducir lo que otros escribieron; es **expresar lo que tú sientes**.
 
@@ -994,7 +994,7 @@ Contiene solo 5 notas:
 4. Repite pequeños motivos rítmicos.
 
 ---
-**🎓 Evaluación Final de Certificación:**
+** Evaluación Final de Certificación:**
 Rinde la prueba final teórica y práctica para graduarte oficialmente del Conservatorio Virtual de PianoMaster.
     `,
     evaluation: {

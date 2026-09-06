@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Sparkles, MessageSquare, Bot, User, RefreshCw, Volume2, Pause } from 'lucide-react';
+import { X, Send, Sparkles, MessageSquare, Bot, User, RefreshCw, Volume2, Pause, GraduationCap, Globe2 } from 'lucide-react';
 import { Lesson } from '../types';
 import { maestroVoice } from '../lib/speech';
 
@@ -138,13 +138,13 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
           <div className="p-5 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-transparent to-transparent flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-serif text-lg font-bold shadow-md">
-                🇺🇾
+                <GraduationCap size={22} className="text-black" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-serif font-bold text-lg text-white">Maestro Aurelio</h3>
-                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                    Uruguay 🇺🇾 • Voz Rioplatense
+                  <span className="flex items-center gap-1 text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    <Globe2 size={11} /> Uruguay • Voz Rioplatense
                   </span>
                 </div>
                 <p className="text-xs text-white/50">
@@ -171,7 +171,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
               >
                 {m.sender === 'maestro' && (
                   <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/40 flex-shrink-0 flex items-center justify-center text-amber-400 text-xs font-bold">
-                    🇺🇾
+                    <GraduationCap size={14} className="text-amber-400" />
                   </div>
                 )}
                 <div
@@ -191,7 +191,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
                       {playingMessageId === m.id ? (
                         <>
                           <Pause size={12} />
-                          <span>Pausar voz 🇺🇾</span>
+                          <span>Pausar voz</span>
                         </>
                       ) : loadingMessageId === m.id ? (
                         <>
@@ -201,7 +201,7 @@ export const InstructorChatModal: React.FC<InstructorChatModalProps> = ({
                       ) : (
                         <>
                           <Volume2 size={12} />
-                          <span>Escuchar al Maestro 🇺🇾</span>
+                          <span>Escuchar al Maestro</span>
                         </>
                       )}
                     </button>

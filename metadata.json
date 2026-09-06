@@ -1,7 +1,9 @@
 {
   "name": "PianoMaster",
   "description": "Instructor virtual inteligente de piano de 0 a 100 con lecciones teóricas y prácticas dictadas paso a paso y evaluaciones constantes para avanzar.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "microphone"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

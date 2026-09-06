@@ -3,7 +3,8 @@ import Markdown from 'react-markdown';
 import { motion } from 'motion/react';
 import { 
   ChevronLeft, ChevronRight, BookOpen, Volume2, Play, 
-  Sparkles, Award, CheckCircle2, Lock, MessageSquare, Pause, Radio, Music2
+  Sparkles, Award, CheckCircle2, Lock, MessageSquare, Pause, Radio, Music2,
+  Hand, Globe2, GraduationCap, PartyPopper, Check
 } from 'lucide-react';
 import { Lesson, LESSONS, UserProgress } from '../types';
 import { Piano } from './Piano';
@@ -11,6 +12,8 @@ import { LessonEvaluationModal } from './LessonEvaluationModal';
 import { InstructorChatModal } from './InstructorChatModal';
 import { cn } from '../lib/utils';
 import { maestroVoice } from '../lib/speech';
+import { triggerCurriculumConfetti } from '../lib/celebration';
+import { CurriculumProgressBar } from './CurriculumProgressBar';
 import * as Tone from 'tone';
 
 interface LessonViewerProps {
@@ -117,22 +120,95 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
       exit={{ opacity: 0, y: -15 }}
       className="space-y-8"
     >
-      {/* Top Breadcrumb Navigation & Module Info */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest"
-        >
-          <ChevronLeft size={16} /> Volver al Mapa Curricular
-        </button>
+      {/* Top Breadcrumb Navigation & Visual Curriculum Progress Track */}
+      <div className="space-y-3 border-b border-white/10 pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <button 
+            onClick={onBack}
+            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest"
+          >
+            <ChevronLeft size={16} /> Volver al Mapa Curricular
+          </button>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-amber-400 font-semibold bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
-            {lesson.moduleTitle}
-          </span>
-          <span className="text-xs font-mono text-white/40">
-            Lección {lesson.number} de {LESSONS.length} ({lesson.progressPercent}%)
-          </span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {isCurrentPassed && (
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-400" />
+                  <span>Aprobada ({currentScore || 100} pts)</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => triggerCurriculumConfetti('grand')}
+                  className="px-2.5 py-1 rounded-full bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/30 text-[11px] font-mono font-bold flex items-center gap-1 transition-all hover:scale-105 active:scale-95"
+                  title="Celebrar logro con lluvia de confeti"
+                >
+                  <PartyPopper size={12} className="text-amber-400" />
+                  <span>Confeti</span>
+                </button>
+              </div>
+            )}
+            <span className="text-xs font-mono text-amber-400 font-semibold bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+              {lesson.moduleTitle}
+            </span>
+            <span className="text-xs font-mono text-white/40">
+              Lección {lesson.number} de {LESSONS.length}
+            </span>
+          </div>
+        </div>
+
+        {/* Visual Progress Bar Track */}
+        <div className="bg-black/30 p-2.5 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">Tu Trayectoria:</span>
+            <div className="flex items-center gap-1 text-xs font-mono font-bold text-amber-400">
+              <span>{userProgress.completedLessons.length} / {LESSONS.length} Aprobadas</span>
+              <span className="text-white/40 text-[10px]">
+                ({Math.round((userProgress.completedLessons.length / LESSONS.length) * 100)}%)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-1 sm:max-w-md">
+            <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10 relative">
+              <motion.div
+                initial={false}
+                animate={{ width: `${Math.max((userProgress.completedLessons.length / LESSONS.length) * 100, 4)}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="h-full rounded-full bg-gradient-to-r from-amber-500 via-amber-300 to-emerald-400 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+              />
+            </div>
+          </div>
+
+          {/* Quick jump pills */}
+          <div className="hidden lg:flex items-center gap-1">
+            {LESSONS.map((l) => {
+              const isThis = l.id === lesson.id;
+              const isDone = userProgress.completedLessons.includes(l.id);
+              const isLock = !userProgress.unlockedLessons.includes(l.id);
+              return (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => !isLock && onSelectLesson(l.id)}
+                  disabled={isLock}
+                  title={`Lección ${l.number}: ${l.title}`}
+                  className={cn(
+                    "w-5 h-5 rounded-md text-[9px] font-mono font-bold flex items-center justify-center transition-all",
+                    isThis
+                      ? "bg-amber-400 text-black ring-2 ring-amber-400/50 scale-110"
+                      : isDone
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/40"
+                        : isLock
+                          ? "bg-white/5 text-white/20 opacity-40 cursor-not-allowed"
+                          : "bg-white/10 text-white/60 hover:text-white"
+                  )}
+                >
+                  {isDone && !isThis ? <Check size={11} className="stroke-[3]" /> : l.number}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -141,8 +217,8 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-serif text-2xl font-bold shadow-lg">
-                🇺🇾
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-lg">
+                <GraduationCap size={28} className="text-black" />
               </div>
               <span className={cn(
                 "absolute -bottom-1 -right-1 w-4 h-4 border-2 border-[#12151f] rounded-full",
@@ -152,8 +228,9 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-serif font-bold text-lg text-white">Maestro Aurelio</h3>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  Uruguay 🇺🇾 • Voz Rioplatense
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
+                  <Globe2 size={11} className="text-amber-300" />
+                  <span>Uruguay • Voz Rioplatense</span>
                 </span>
                 {isSpeaking && (
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse">
@@ -185,7 +262,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               {isSpeaking ? (
                 <>
                   <Pause size={15} />
-                  <span>Pausar Voz 🇺🇾</span>
+                  <span>Pausar Voz</span>
                 </>
               ) : isVoiceLoading ? (
                 <>
@@ -195,7 +272,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               ) : (
                 <>
                   <Volume2 size={15} />
-                  <span>Escuchar al Maestro 🇺🇾</span>
+                  <span>Escuchar al Maestro</span>
                 </>
               )}
             </button>
@@ -223,10 +300,10 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         </div>
       </div>
 
-      {/* Main Two-Column Classroom Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Left Column: Theory & Pedagogy (7 cols) */}
-        <div className="lg:col-span-7 space-y-8">
+      {/* Main Two-Column Classroom Layout: Theory (Left) & Mandatory Evaluation (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Theory & Pedagogy (8 cols) */}
+        <div className="lg:col-span-8 space-y-8">
           {lesson.image && (
             <div className="relative aspect-video max-h-72 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
               <img 
@@ -271,14 +348,14 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Interactive Practice & Mandatory Evaluation Gate (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Column: Mandatory Evaluation Gate (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
           {/* Evaluation Status Card (Pass-Gate System) */}
           <div className={cn(
-            "p-6 rounded-3xl border transition-all space-y-4",
+            "p-6 rounded-3xl border transition-all space-y-4 shadow-xl",
             isCurrentPassed
               ? "bg-emerald-500/10 border-emerald-500/30"
-              : "bg-gradient-to-b from-amber-500/15 to-transparent border-amber-500/40 shadow-xl"
+              : "bg-gradient-to-b from-amber-500/15 to-transparent border-amber-500/40"
           )}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -319,33 +396,41 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               <span>{isCurrentPassed ? 'Rendir Evaluación Nuevamente' : 'Rendir Evaluación Oficial'}</span>
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Practical Laboratory Piano */}
-          <div className="glass p-6 rounded-3xl border border-white/10 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-widest text-white/60 font-mono flex items-center gap-1.5">
-                <Music2 size={14} className="text-amber-400" />
-                <span>Laboratorio de Práctica</span>
-              </div>
-              {lesson.fingerGuide && (
-                <span className="text-[10px] font-mono text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                  Digitación 1-5 Activa
-                </span>
-              )}
+      {/* Practical Laboratory Piano - Full Row Spanning Width */}
+      <div className="w-full glass p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+              <Music2 size={16} />
             </div>
-
-            <Piano
-              activeNotes={activeNotesForPiano}
-              fingerGuide={lesson.fingerGuide}
-              compact
-            />
-
-            <div className="text-center text-xs text-white/40 italic">
-              {lesson.targetKeys && lesson.targetKeys.length > 0
-                ? "Las teclas doradas destacan las notas de esta lección con su digitación sugerida."
-                : "Toca libremente en el teclado para explorar la armonía."}
+            <div>
+              <div className="text-xs uppercase tracking-widest text-white/80 font-mono font-bold flex items-center gap-1.5">
+                <span>Laboratorio de Práctica en Teclado</span>
+              </div>
+              <p className="text-[11px] text-white/50 font-light">
+                {lesson.targetKeys && lesson.targetKeys.length > 0
+                  ? "Las teclas doradas destacan las notas de esta lección con su digitación sugerida."
+                  : "Toca libremente a lo largo de toda la fila para explorar la armonía y la técnica."}
+              </p>
             </div>
           </div>
+          {lesson.fingerGuide && (
+            <span className="text-[10px] font-mono text-amber-300 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20 self-start sm:self-auto flex items-center gap-1">
+              <Hand size={12} className="text-amber-400" />
+              <span>Digitación 1-5 Activa</span>
+            </span>
+          )}
+        </div>
+
+        <Piano
+          activeNotes={activeNotesForPiano}
+          fingerGuide={lesson.fingerGuide}
+          compact={false}
+        />
+      </div>
 
           {/* Lesson Navigation Bottom Controls */}
           <div className="flex items-center justify-between gap-3 pt-2">
@@ -383,8 +468,6 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               </button>
             )}
           </div>
-        </div>
-      </div>
 
       {/* Modals */}
       <LessonEvaluationModal
@@ -392,6 +475,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         isOpen={isEvaluationOpen}
         onClose={() => setIsEvaluationOpen(false)}
         onPassLesson={onPassLesson}
+        userProgress={userProgress}
       />
 
       <InstructorChatModal

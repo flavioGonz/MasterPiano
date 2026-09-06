@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   GraduationCap, Music, Compass, Target, MessageSquare, 
   Sparkles, Award, RotateCcw, Volume2, Bot, CheckCircle2,
-  Zap, Timer, Sliders, Flame, Disc, Maximize2, FileAudio
+  Zap, Timer, Sliders, Flame, Disc, Maximize2, FileAudio,
+  BookOpen, Music2, Piano as PianoIcon
 } from 'lucide-react';
 import { Piano } from './components/Piano';
 import { ChordChart, SelectedChordInfo } from './components/ChordChart';
@@ -17,6 +18,10 @@ import { CircleOfFifths } from './components/CircleOfFifths';
 import { Metronome } from './components/Metronome';
 import { InstructorChatModal } from './components/InstructorChatModal';
 import { QuickPracticeModal } from './components/QuickPracticeModal';
+import { LessonCelebrationModal } from './components/LessonCelebrationModal';
+import { CurriculumProgressBar } from './components/CurriculumProgressBar';
+import { ClassicalMethodsGym } from './components/ClassicalMethodsGym';
+import { triggerCurriculumConfetti } from './lib/celebration';
 import { LESSONS, Lesson, UserProgress, DEFAULT_USER_PROGRESS } from './types';
 import { cn } from './lib/utils';
 import { 
@@ -33,7 +38,7 @@ import {
 const STORAGE_KEY = 'pianomaster_user_progress_v2';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'waterfall' | 'wavStudio' | 'chords' | 'circle' | 'gym'>('curriculum');
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'classicalMethods' | 'waterfall' | 'wavStudio' | 'chords' | 'circle' | 'gym'>('curriculum');
   const [layoutWidth, setLayoutWidth] = useState<'ultra' | 'wide' | 'standard'>(() => {
     return (localStorage.getItem('pianomaster_layout_width') as any) || 'ultra';
   });
@@ -59,6 +64,7 @@ export default function App() {
   const [chordViewMode, setChordViewMode] = useState<'both' | 'staff' | 'piano'>('both');
   const [isInstructorChatOpen, setIsInstructorChatOpen] = useState(false);
   const [isQuickPracticeOpen, setIsQuickPracticeOpen] = useState(false);
+  const [celebratingLesson, setCelebratingLesson] = useState<{ lesson: Lesson; score: number } | null>(null);
   const [soundPreset, setSoundPreset] = useState<SoundPreset>(() => getSavedSoundPreset());
   const [splitConfig, setSplitConfig] = useState<SplitKeyboardConfig>(() => getSavedSplitConfig());
 
@@ -128,6 +134,12 @@ export default function App() {
 
   // Handle passing a lesson after successful evaluation
   const handlePassLesson = (lessonId: string, score: number) => {
+    const passedLesson = LESSONS.find(l => l.id === lessonId) || null;
+    if (passedLesson) {
+      setCelebratingLesson({ lesson: passedLesson, score });
+      triggerCurriculumConfetti('grand');
+    }
+
     setUserProgress(prev => {
       const isAlreadyCompleted = prev.completedLessons.includes(lessonId);
       const nextLessonIndex = LESSONS.findIndex(l => l.id === lessonId) + 1;
@@ -207,7 +219,7 @@ export default function App() {
           {/* Logo & Instructor Status */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-400 text-black flex items-center justify-center font-bold text-xl shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-              🎹
+              <PianoIcon size={22} className="text-black" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -230,10 +242,11 @@ export default function App() {
 
           {/* Right: Progress & AI Chat Button */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col items-end text-xs font-mono">
-              <span className="text-white/40">Progreso 0 a 100</span>
-              <span className="text-amber-400 font-bold">{progressPercent}% ({completedCount}/{LESSONS.length})</span>
-            </div>
+            <CurriculumProgressBar 
+              userProgress={userProgress} 
+              variant="compact" 
+              className="hidden sm:flex" 
+            />
 
             {/* Quick Practice 60s Blitz Button */}
             <button
@@ -269,6 +282,7 @@ export default function App() {
           <div className="flex gap-2 md:gap-3 overflow-x-auto no-scrollbar">
             {[
               { id: 'curriculum', label: 'Currículo 0 a 100', icon: GraduationCap },
+              { id: 'classicalMethods', label: 'Métodos Clásicos', icon: BookOpen, badge: '3 LIBROS' },
               { id: 'waterfall', label: 'Catarata de Tonos', icon: Flame, badge: 'MIDI' },
               { id: 'wavStudio', label: 'Bases .WAV Jam', icon: Disc, badge: 'AUDIO' },
               { id: 'chords', label: 'Biblioteca de Acordes', icon: Music },
@@ -279,6 +293,7 @@ export default function App() {
               const isActive = activeTab === tab.id;
               const isWaterfall = tab.id === 'waterfall';
               const isWav = tab.id === 'wavStudio';
+              const isClassical = tab.id === 'classicalMethods';
               return (
                 <button
                   key={tab.id}
@@ -297,18 +312,21 @@ export default function App() {
                         ? "bg-gradient-to-r from-cyan-400 to-sky-500 text-black font-bold shadow-lg shadow-cyan-500/30"
                         : isWav
                           ? "bg-gradient-to-r from-amber-400 to-orange-400 text-black font-bold shadow-lg shadow-amber-400/30"
-                          : "bg-amber-400 text-black font-bold shadow"
+                          : isClassical
+                            ? "bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400 text-black font-bold shadow-lg shadow-amber-400/30"
+                            : "bg-amber-400 text-black font-bold shadow"
                       : "text-white/60 hover:text-white hover:bg-white/5",
                     isWaterfall && !isActive && "text-cyan-300 hover:text-cyan-200",
-                    isWav && !isActive && "text-amber-300 hover:text-amber-200"
+                    isWav && !isActive && "text-amber-300 hover:text-amber-200",
+                    isClassical && !isActive && "text-amber-200 hover:text-amber-100"
                   )}
                 >
-                  <Icon size={16} className={isWaterfall && !isActive ? "text-cyan-400" : isWav && !isActive ? "text-amber-400" : ""} />
+                  <Icon size={16} className={isWaterfall && !isActive ? "text-cyan-400" : isWav && !isActive ? "text-amber-400" : isClassical && !isActive ? "text-amber-300" : ""} />
                   <span>{tab.label}</span>
                   {'badge' in tab && (
                     <span className={cn(
                       "text-[9px] px-1.5 py-0.2 rounded font-extrabold",
-                      isActive ? "bg-black/30 text-black" : isWav ? "bg-amber-400/20 text-amber-300 border border-amber-400/40" : "bg-cyan-400/20 text-cyan-300 border border-cyan-400/40"
+                      isActive ? "bg-black/30 text-black" : isWav ? "bg-amber-400/20 text-amber-300 border border-amber-400/40" : isClassical ? "bg-amber-400/25 text-amber-300 border border-amber-400/40" : "bg-cyan-400/20 text-cyan-300 border border-cyan-400/40"
                     )}>
                       {tab.badge}
                     </span>
@@ -437,6 +455,19 @@ export default function App() {
             </motion.div>
           )}
 
+          {/* TAB: MÉTODOS CLÁSICOS (HANON, CZERNY, SUZUKI) */}
+          {activeTab === 'classicalMethods' && (
+            <motion.div
+              key="classicalMethods"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <ClassicalMethodsGym onScoreGain={handleScoreGain} />
+            </motion.div>
+          )}
+
           {/* TAB: CATARATA DE TONOS (PIANO ROLL WATERFALL & MIDIs) */}
           {activeTab === 'waterfall' && (
             <motion.div
@@ -501,24 +532,28 @@ export default function App() {
                 <div className="flex items-center gap-1.5 p-1 glass rounded-2xl border border-white/10 text-xs font-mono">
                   <span className="text-white/40 px-2 hidden sm:inline">Visualización:</span>
                   {[
-                    { id: 'both', label: '📖 Partitura + Teclado' },
-                    { id: 'staff', label: '🎼 Solo Pentagrama' },
-                    { id: 'piano', label: '🎹 Solo Teclado' },
-                  ].map(mode => (
-                    <button
-                      key={mode.id}
-                      type="button"
-                      onClick={() => setChordViewMode(mode.id as any)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-xl transition-all",
-                        chordViewMode === mode.id
-                          ? "bg-amber-400 text-black font-bold shadow"
-                          : "text-white/60 hover:text-white"
-                      )}
-                    >
-                      {mode.label}
-                    </button>
-                  ))}
+                    { id: 'both', label: 'Partitura + Teclado', Icon: BookOpen },
+                    { id: 'staff', label: 'Solo Pentagrama', Icon: Music2 },
+                    { id: 'piano', label: 'Solo Teclado', Icon: PianoIcon },
+                  ].map(mode => {
+                    const ModeIcon = mode.Icon;
+                    return (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => setChordViewMode(mode.id as any)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all",
+                          chordViewMode === mode.id
+                            ? "bg-amber-400 text-black font-bold shadow"
+                            : "text-white/60 hover:text-white"
+                        )}
+                      >
+                        <ModeIcon size={14} />
+                        <span>{mode.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {activePianoChord.length > 0 && (
@@ -639,11 +674,28 @@ export default function App() {
         onSessionComplete={handleQuickPracticeComplete}
       />
 
+      {/* Lesson Completion Celebration Modal with Confetti & Fanfare */}
+      <LessonCelebrationModal
+        isOpen={celebratingLesson !== null}
+        lesson={celebratingLesson?.lesson || null}
+        score={celebratingLesson?.score || 100}
+        userProgress={userProgress}
+        onClose={() => setCelebratingLesson(null)}
+        onGoToNextLesson={(nextLessonId) => {
+          setCelebratingLesson(null);
+          const next = LESSONS.find(l => l.id === nextLessonId);
+          if (next) {
+            setSelectedLesson(next);
+            setActiveTab('curriculum');
+          }
+        }}
+      />
+
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-4 text-center text-xs text-white/40 font-mono">
         <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-200", getContainerWidthClass())}>
           <div className="flex items-center gap-2">
-            <span className="text-amber-400">🎹</span>
+            <PianoIcon size={16} className="text-amber-400" />
             <span className="text-white font-semibold">PianoMaster</span>
             <span>— Conservatorio y Tutor Virtual de Piano</span>
           </div>

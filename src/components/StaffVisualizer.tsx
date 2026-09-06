@@ -406,7 +406,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
               </div>
               <div className="flex items-center gap-1 text-rose-400">
                 <Flame size={14} />
-                <span>Racha: {drillStreak} 🔥</span>
+                <span>Racha: {drillStreak}</span>
               </div>
             </div>
           </motion.div>
@@ -431,7 +431,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                   : "text-white/60 hover:text-white hover:bg-white/5"
               )}
             >
-              {mode === 'grand' ? 'Gran Pentagrama 𝄞/𝄢' : mode === 'treble' ? 'Clave de Sol 𝄞' : 'Clave de Fa 𝄢'}
+              {mode === 'grand' ? 'Gran Pentagrama' : mode === 'treble' ? 'Clave de Sol' : 'Clave de Fa'}
             </button>
           ))}
         </div>
@@ -487,7 +487,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-white/40">Compás: 4/4 (Redonda 𝅝)</span>
+            <span className="text-[11px] text-white/40">Compás: 4/4 (Redonda)</span>
           </div>
         </div>
 
@@ -768,7 +768,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                     </text>
                   )}
 
-                  {/* Whole Note (Redonda 𝅝) Notehead: Oval with rotated counter */}
+                  {/* Whole Note (Redonda) Notehead: Oval with rotated counter */}
                   <g transform={`rotate(-18, ${n.x}, ${n.y})`}>
                     {/* Outer notehead ring */}
                     <ellipse
@@ -892,9 +892,9 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
           <div className="text-white/80 font-light text-[11px] leading-snug">
             {parsedNotes.length > 0 ? (
               <span>
-                {parsedNotes.some(n => n.targetClef === 'bass') && '𝄢 Mano Izq (Bajos)'}
+                {parsedNotes.some(n => n.targetClef === 'bass') && 'Mano Izquierda (Bajos)'}
                 {parsedNotes.some(n => n.targetClef === 'bass') && parsedNotes.some(n => n.targetClef === 'treble') && ' + '}
-                {parsedNotes.some(n => n.targetClef === 'treble') && '𝄞 Mano Der (Armonía)'}
+                {parsedNotes.some(n => n.targetClef === 'treble') && 'Mano Derecha (Armonía)'}
               </span>
             ) : (
               'Sin notas'

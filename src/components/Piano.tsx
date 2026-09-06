@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as Tone from 'tone';
 import { cn } from '../lib/utils';
-import { Volume2, Keyboard, Music2, Sparkles, Sliders, Layers, ChevronRight } from 'lucide-react';
+import { 
+  Volume2, Keyboard, Music2, Sparkles, Sliders, Layers, ChevronRight,
+  Hand, Lightbulb, Zap, Piano as PianoIcon
+} from 'lucide-react';
 import { FINGER_NAMES } from '../lib/musicGymTheory';
 import { 
   SoundPreset, 
@@ -68,10 +71,23 @@ export const Piano: React.FC<PianoProps> = ({
   showSplitToggle = true,
 }) => {
   const [pressedNotes, setPressedNotes] = useState<Set<string>>(new Set());
-  const [showKeyboardLabels, setShowKeyboardLabels] = useState(true);
+  const [showKeyboardLabels, setShowKeyboardLabels] = useState(false);
   const [showNoteNames, setShowNoteNames] = useState(true);
   const [internalShowFingerGuide, setInternalShowFingerGuide] = useState(true);
   const isFingerGuideActive = controlledShowFingerGuide !== undefined ? controlledShowFingerGuide : internalShowFingerGuide;
+
+  const renderPresetIcon = (id: SoundPreset) => {
+    switch (id) {
+      case 'acoustic':
+        return <PianoIcon size={13} className="shrink-0" />;
+      case 'electric':
+        return <Zap size={13} className="shrink-0" />;
+      case 'synth':
+        return <Sliders size={13} className="shrink-0" />;
+      default:
+        return <Music2 size={13} className="shrink-0" />;
+    }
+  };
   const [soundReady, setSoundReady] = useState(false);
   const [activePreset, setActivePreset] = useState<SoundPreset>(() => 
     controlledPreset || getSavedSoundPreset()
@@ -347,7 +363,7 @@ export const Piano: React.FC<PianoProps> = ({
                     )}
                     title={preset.description}
                   >
-                    <span>{preset.icon}</span>
+                    {renderPresetIcon(preset.id)}
                     <span className="hidden sm:inline">{preset.label}</span>
                     <span className="sm:hidden">{preset.shortLabel}</span>
                   </button>
@@ -356,7 +372,7 @@ export const Piano: React.FC<PianoProps> = ({
             </div>
           )}
 
-          {/* Controls: Hotkeys, Note Names & Fingering Numbers */}
+          {/* Controls: Note Names & Fingering Numbers */}
           <div className="flex items-center gap-1.5">
             {/* Recommended Fingering Numbers (1-5) Toggle */}
             {showFingerGuideToggle && (
@@ -378,7 +394,7 @@ export const Piano: React.FC<PianoProps> = ({
                     : "Digitación recomendada (1-5): activa la guía de números sobre las teclas durante escalas y ejercicios de técnica"
                 }
               >
-                <span>🖐️</span>
+                <Hand size={13} className="text-amber-400" />
                 <span className="hidden sm:inline">Digitación 1-5</span>
                 <span className="sm:hidden">1-5</span>
                 <span className={cn(
@@ -396,22 +412,6 @@ export const Piano: React.FC<PianoProps> = ({
 
             <button
               type="button"
-              onClick={() => setShowKeyboardLabels(prev => !prev)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
-                showKeyboardLabels
-                  ? "bg-amber-400/10 border-amber-400/40 text-amber-300"
-                  : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
-              )}
-              title="Mostrar u ocultar teclas de atajo de tu computadora"
-            >
-              <Keyboard size={13} />
-              <span className="hidden sm:inline">Atajos PC ({showKeyboardLabels ? 'ON' : 'OFF'})</span>
-              <span className="sm:hidden">PC</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => setShowNoteNames(prev => !prev)}
               className={cn(
                 "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
@@ -421,6 +421,7 @@ export const Piano: React.FC<PianoProps> = ({
               )}
               title="Mostrar u ocultar nombres de notas (Do, Re, Mi...)"
             >
+              <Music2 size={13} />
               <span>Notas ({showNoteNames ? 'ON' : 'OFF'})</span>
             </button>
           </div>
@@ -431,8 +432,8 @@ export const Piano: React.FC<PianoProps> = ({
       {isFingerGuideActive && hasFingerGuide && (
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-amber-900/20 to-black/40 border border-amber-500/30 text-[11px] font-mono text-amber-200/90 shadow-sm animate-fadeIn">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold flex items-center gap-1 text-amber-400">
-              <span>🖐️</span>
+            <span className="font-bold flex items-center gap-1.5 text-amber-400">
+              <Hand size={14} className="text-amber-400" />
               <span>Digitación Recomendada:</span>
             </span>
             <div className="flex flex-wrap items-center gap-2 text-[10px]">
@@ -458,8 +459,9 @@ export const Piano: React.FC<PianoProps> = ({
               </span>
             </div>
           </div>
-          <span className="text-[10px] text-amber-300/80 italic hidden lg:inline">
-            💡 Técnica: dedos curvados y peso fluido de brazo en el pasaje de pulgar
+          <span className="text-[10px] text-amber-300/80 italic hidden lg:inline flex items-center gap-1">
+            <Lightbulb size={12} className="text-amber-400 inline" />
+            <span>Técnica: dedos curvados y peso fluido de brazo en el pasaje de pulgar</span>
           </span>
         </div>
       )}
@@ -471,7 +473,9 @@ export const Piano: React.FC<PianoProps> = ({
             
             {/* Left Hand Zone: Acompañamiento / Bajos */}
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/40 flex-1">
-              <span className="text-xl">👈</span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0">
+                <Hand size={16} />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-1.5">
                   <div className="flex items-center gap-1.5">
@@ -498,7 +502,7 @@ export const Piano: React.FC<PianoProps> = ({
                       )}
                       title={`Asignar ${preset.label} a la mano izquierda`}
                     >
-                      <span>{preset.icon}</span>
+                      {renderPresetIcon(preset.id)}
                       <span>{preset.shortLabel}</span>
                     </button>
                   ))}
@@ -527,7 +531,9 @@ export const Piano: React.FC<PianoProps> = ({
 
             {/* Right Hand Zone: Melodía / Solos */}
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/40 flex-1">
-              <span className="text-xl">👉</span>
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                <Hand size={16} />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-1.5">
                   <div className="flex items-center gap-1.5">
@@ -554,7 +560,7 @@ export const Piano: React.FC<PianoProps> = ({
                       )}
                       title={`Asignar ${preset.label} a la mano derecha`}
                     >
-                      <span>{preset.icon}</span>
+                      {renderPresetIcon(preset.id)}
                       <span>{preset.shortLabel}</span>
                     </button>
                   ))}
@@ -564,7 +570,7 @@ export const Piano: React.FC<PianoProps> = ({
 
           </div>
 
-          {/* Preset Combinations & Ergonomic Tip */}
+          {/* Preset Combinations & Range Guide */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-white/10 text-[11px] font-mono">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-white/50">Combinaciones sugeridas:</span>
@@ -586,8 +592,9 @@ export const Piano: React.FC<PianoProps> = ({
               ))}
             </div>
 
-            <div className="text-[10px] text-indigo-300/80 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
-              💡 <span className="font-semibold text-white">Atajo PC:</span> Fila <kbd className="text-indigo-300 font-bold bg-indigo-950/80 px-1 py-0.5 rounded">Z - M</kbd> Mano Izquierda • Fila <kbd className="text-amber-300 font-bold bg-amber-950/80 px-1 py-0.5 rounded">Q - P</kbd> Mano Derecha
+            <div className="text-[10px] text-indigo-300/90 bg-black/40 px-2.5 py-1 rounded-lg border border-white/5 flex items-center gap-1.5">
+              <Lightbulb size={12} className="text-indigo-400" />
+              <span>Zona Izquierda: Bajos y Acompañamiento • Zona Derecha: Melodía y Acordes</span>
             </div>
           </div>
         </div>
@@ -660,7 +667,7 @@ export const Piano: React.FC<PianoProps> = ({
                     // Split mode resting accent
                     splitConfig.enabled && isLeftHand && "border-b-2 border-indigo-400/60"
                   )}
-                  title={`${noteKey}${fingerTooltip} (${pcKey ? `Tecla PC: ${pcKey}` : ''})${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
+                  title={`${noteKey}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
                 >
                   {/* Finger number badge if provided */}
                   {displayedFinger ? (
@@ -680,18 +687,6 @@ export const Piano: React.FC<PianoProps> = ({
                       </span>
                     </div>
                   ) : <span />}
-
-                  {/* Hotkey label */}
-                  {showKeyboardLabels && pcKey && (
-                    <span className={cn(
-                      "text-[9px] font-mono px-1 rounded",
-                      splitConfig.enabled && isLeftHand
-                        ? "text-indigo-300 bg-indigo-950/80 border border-indigo-500/30"
-                        : "text-amber-300/80 bg-black/60"
-                    )}>
-                      {pcKey}
-                    </span>
-                  )}
                 </button>
               );
             }
@@ -729,7 +724,7 @@ export const Piano: React.FC<PianoProps> = ({
                   isCorrect && "!bg-emerald-100 border-emerald-500 ring-2 ring-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.5)]",
                   isError && "!bg-rose-100 border-rose-500 ring-2 ring-rose-500/50"
                 )}
-                title={`${noteKey}${fingerTooltip} (${pcKey ? `Tecla PC: ${pcKey}` : ''})${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
+                title={`${noteKey}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
               >
                 {/* Finger guide pill or Split boundary marker badge */}
                 {displayedFinger ? (
@@ -767,7 +762,7 @@ export const Piano: React.FC<PianoProps> = ({
                   <span />
                 )}
 
-                {/* Bottom indicators: Hand Zone Pill, Note Name & PC Hotkey */}
+                {/* Bottom indicators: Hand Zone Pill & Note Name */}
                 <div className="flex flex-col items-center gap-0.5 pointer-events-none">
                   {splitConfig.enabled && (
                     <span className={cn(
@@ -777,16 +772,6 @@ export const Piano: React.FC<PianoProps> = ({
                         : "text-amber-800 bg-amber-100 border border-amber-200"
                     )}>
                       {isLeftHand ? 'Izq' : 'Der'}
-                    </span>
-                  )}
-                  {showKeyboardLabels && pcKey && (
-                    <span className={cn(
-                      "text-[10px] font-mono px-1 rounded border",
-                      splitConfig.enabled && isLeftHand
-                        ? "text-indigo-700 bg-indigo-50 border-indigo-200"
-                        : "text-gray-500 bg-gray-200/80 border-gray-300"
-                    )}>
-                      {pcKey}
                     </span>
                   )}
                   {showNoteNames && (

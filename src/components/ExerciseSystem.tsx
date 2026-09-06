@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   CheckCircle2, Trophy, RefreshCw, Play, Volume2, Sparkles, 
-  MessageSquare, Lightbulb, Music, Target, Repeat, Flame
+  MessageSquare, Lightbulb, Music, Target, Repeat, Flame,
+  Music2, Waves, RotateCw, Shuffle, Headphones, Zap, BookOpen, Piano as PianoIcon
 } from 'lucide-react';
 import { Exercise, getRandomChordExercise, getChordKeys, ROOTS, CHORD_TYPES } from '../types';
 import { Piano } from './Piano';
@@ -12,11 +13,14 @@ import { ToneWaterfallGym } from './ToneWaterfallGym';
 import { InversionsGym } from './InversionsGym';
 import { EarTrainingGym } from './EarTrainingGym';
 import { StaffVisualizer } from './StaffVisualizer';
+import { ClassicalMethodsGym } from './ClassicalMethodsGym';
+import { AcousticPianoListener } from './AcousticPianoListener';
+import { pianoPitchDetector } from '../lib/pitchDetector';
 import { InstructorChatModal } from './InstructorChatModal';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
 
-type GymCategory = 'scales' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
+type GymCategory = 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
 
 interface ExerciseSystemProps {
   initialCategory?: GymCategory;
@@ -67,7 +71,7 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
     setHintVisible(false);
   }, [difficulty]);
 
-  const handleChordNotePlay = (note: string) => {
+  const handleChordNotePlay = useCallback((note: string) => {
     if (status !== 'playing' || !exercise) return;
 
     const newNotes = [...userNotes, note];
@@ -85,7 +89,17 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
         startNewChordExercise();
       }, 1500);
     }
-  };
+  }, [status, exercise, userNotes, startNewChordExercise]);
+
+  // Subscribe to acoustic pitch detector for Chord Challenge
+  useEffect(() => {
+    if (gymCategory === 'chords' && status === 'playing') {
+      const unsub = pianoPitchDetector.subscribeNoteOnset((info) => {
+        handleChordNotePlay(info.note);
+      });
+      return unsub;
+    }
+  }, [gymCategory, status, handleChordNotePlay]);
 
   const playChordDemoSound = async () => {
     if (!exercise) return;
@@ -101,37 +115,42 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
       <div className="glass p-2 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { id: 'scales', label: '🎼 Gimnasio de Escalas', badge: 'Lúdico & Memoria' },
-            { id: 'waterfall', label: '🌊 Catarata de Tonos', badge: 'MIDI & Cascada' },
-            { id: 'circleSequence', label: '🔄 Secuencias Ciclo de Quintas', badge: 'Metrónomo & Claves' },
-            { id: 'inversions', label: '🔀 Tríadas e Inversiones', badge: 'Carrusel & Oído' },
-            { id: 'earTraining', label: '👂 Oído: Intervalos y Tríadas', badge: 'A Ciegas' },
-            { id: 'chords', label: '⚡ Desafío de Acordes', badge: 'Reflejos Rápidos' },
-            { id: 'sightReading', label: '📖 Lectura de Partituras', badge: 'Pentagrama en Vivo' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              id={`gym-tab-${tab.id}`}
-              onClick={() => setGymCategory(tab.id as GymCategory)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-mono transition-all",
-                gymCategory === tab.id
-                  ? "bg-amber-400 text-black font-bold shadow-md"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-              )}
-            >
-              <span>{tab.label}</span>
-              <span className={cn(
-                "hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded-md",
-                gymCategory === tab.id
-                  ? "bg-black/20 text-black font-bold"
-                  : "bg-white/10 text-white/50"
-              )}>
-                {tab.badge}
-              </span>
-            </button>
-          ))}
+            { id: 'classicalMethods', label: '3 Métodos Clásicos', badge: 'Hanon • Czerny • Suzuki', Icon: BookOpen },
+            { id: 'scales', label: 'Gimnasio de Escalas', badge: 'Lúdico & Memoria', Icon: Music2 },
+            { id: 'waterfall', label: 'Catarata de Tonos', badge: 'MIDI & Cascada', Icon: Waves },
+            { id: 'circleSequence', label: 'Secuencias Ciclo de Quintas', badge: 'Metrónomo & Claves', Icon: RotateCw },
+            { id: 'inversions', label: 'Tríadas e Inversiones', badge: 'Carrusel & Oído', Icon: Shuffle },
+            { id: 'earTraining', label: 'Oído: Intervalos y Tríadas', badge: 'A Ciegas', Icon: Headphones },
+            { id: 'chords', label: 'Desafío de Acordes', badge: 'Reflejos Rápidos', Icon: Zap },
+            { id: 'sightReading', label: 'Lectura de Partituras', badge: 'Pentagrama en Vivo', Icon: BookOpen },
+          ].map(tab => {
+            const TabIcon = tab.Icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                id={`gym-tab-${tab.id}`}
+                onClick={() => setGymCategory(tab.id as GymCategory)}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-mono transition-all",
+                  gymCategory === tab.id
+                    ? "bg-amber-400 text-black font-bold shadow-md"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <TabIcon size={15} />
+                <span>{tab.label}</span>
+                <span className={cn(
+                  "hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded-md",
+                  gymCategory === tab.id
+                    ? "bg-black/20 text-black font-bold"
+                    : "bg-white/10 text-white/50"
+                )}>
+                  {tab.badge}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Total Points & Maestro Ask Button */}
@@ -154,6 +173,17 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
 
       {/* RENDER CATEGORY */}
       <AnimatePresence mode="wait">
+        {gymCategory === 'classicalMethods' && (
+          <motion.div
+            key="classicalMethods"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <ClassicalMethodsGym onScoreGain={handleScoreGain} />
+          </motion.div>
+        )}
+
         {gymCategory === 'scales' && (
           <motion.div
             key="scales"
@@ -244,10 +274,20 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                 ))}
               </div>
 
-              <div className="text-xs font-mono text-white/50">
-                Racha actual: <strong className="text-emerald-400">{streak} 🔥</strong>
+              <div className="text-xs font-mono text-white/50 flex items-center gap-1">
+                <span>Racha actual:</span>
+                <strong className="text-emerald-400 flex items-center gap-1">
+                  <span>{streak}</span>
+                  <Flame size={13} className="text-rose-400 inline" />
+                </strong>
               </div>
             </div>
+
+            {/* Real Acoustic Piano Microphone Analyzer */}
+            <AcousticPianoListener
+              currentTargetNotes={exercise?.keys}
+              exerciseName={exercise?.title || 'Desafío de Acordes'}
+            />
 
             {/* Main Exercise Arena */}
             <div className="glass p-8 md:p-12 rounded-3xl text-center space-y-8 relative overflow-hidden border border-white/10">
@@ -260,8 +300,8 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                     exit={{ opacity: 0 }}
                     className="space-y-6 max-w-lg mx-auto py-8"
                   >
-                    <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-amber-400 text-2xl font-serif">
-                      🎹
+                    <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-amber-400 shadow-md">
+                      <PianoIcon size={32} />
                     </div>
                     <h3 className="text-3xl font-serif font-bold text-white">Desafío Rápido de Acordes</h3>
                     <p className="text-sm text-white/60 font-light leading-relaxed">
@@ -366,9 +406,14 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                     className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40 pointer-events-none"
                   >
                     <div className="glass p-8 rounded-3xl border border-emerald-500/40 text-center space-y-2 shadow-2xl">
-                      <div className="text-5xl">✨</div>
+                      <div className="flex justify-center text-emerald-400">
+                        <Sparkles size={48} />
+                      </div>
                       <div className="text-2xl font-serif font-bold text-emerald-400">¡Acorde Perfecto!</div>
-                      <div className="text-emerald-300 font-mono text-sm">+100 PTS • Racha: {streak} 🔥</div>
+                      <div className="text-emerald-300 font-mono text-sm flex items-center justify-center gap-1">
+                        <span>+100 PTS • Racha: {streak}</span>
+                        <Flame size={14} className="text-rose-400 inline" />
+                      </div>
                     </div>
                   </motion.div>
                 )}
