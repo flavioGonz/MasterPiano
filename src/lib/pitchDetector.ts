@@ -72,6 +72,18 @@ export class PianoPitchDetector {
     };
   }
 
+  public getAnalyser(): AnalyserNode | null {
+    return this.analyser;
+  }
+
+  public getAudioContext(): AudioContext | null {
+    return this.audioContext;
+  }
+
+  public getMediaStream(): MediaStream | null {
+    return this.mediaStream;
+  }
+
   public subscribeFrame(listener: (state: PitchFrameState) => void): () => void {
     this.frameListeners.add(listener);
     return () => this.frameListeners.delete(listener);

@@ -4,7 +4,7 @@ import {
   BookOpen, Play, Pause, RotateCcw, Volume2, Download, 
   Upload, FileText, Music, Sparkles, Filter, Search, 
   ChevronRight, Check, Copy, ArrowRight, Gauge, Layers, 
-  Hand, FileJson, CheckCircle2, Clock, Zap, AlertCircle
+  Hand, FileJson, CheckCircle2, Clock, Zap, AlertCircle, Flame
 } from 'lucide-react';
 import { 
   CLASSICAL_BOOKS, ClassicalBook, ClassicalExercise, 
@@ -16,6 +16,8 @@ import {
   noteNameToMidi
 } from '../lib/scoreParser';
 import { HandFingeringVisualizer } from './HandFingeringVisualizer';
+import { WaterfallDemoModal } from './WaterfallDemoModal';
+import { buildWaterfallFromMethodNotes } from '../lib/midiWaterfall';
 import { soundEngine, getSavedSoundPreset } from '../lib/soundPresets';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
@@ -77,6 +79,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
   // Playback & Tempo States
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isWaterfallModalOpen, setIsWaterfallModalOpen] = useState<boolean>(false);
   const [activePlaybackStep, setActivePlaybackStep] = useState<number>(0);
   const [tempoBpm, setTempoBpm] = useState<number>(currentExercise.recommendedBpm);
   const [activeHandMode, setActiveHandMode] = useState<'both' | 'right' | 'left'>('right');
@@ -602,6 +605,21 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
               <span>{isPlaying ? 'Pausar Reproducción' : `Escuchar a ${tempoBpm} BPM`}</span>
             </button>
 
+            {/* Tone Waterfall Demo Button */}
+            <button
+              type="button"
+              id="btn-score-waterfall-demo"
+              onClick={() => {
+                stopPlayback();
+                setIsWaterfallModalOpen(true);
+              }}
+              className="py-3.5 px-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/25 hover:scale-105 active:scale-95"
+              title="Abrir demostración de Catarata de Tonos con notas cayendo y digitación animada"
+            >
+              <Flame size={16} className="fill-black" />
+              <span>Demo Catarata</span>
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -1057,6 +1075,23 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
           </div>
         )}
       </div>
+
+      {/* Tone Waterfall Demo Modal */}
+      {isWaterfallModalOpen && (
+        <WaterfallDemoModal
+          isOpen={isWaterfallModalOpen}
+          onClose={() => setIsWaterfallModalOpen(false)}
+          title={currentExercise.title}
+          subtitle={`${currentExercise.focusTechnique} • ${CLASSICAL_BOOKS.find(b => b.id === currentExercise.bookId)?.author || 'Método Clásico'}`}
+          composer={CLASSICAL_BOOKS.find(b => b.id === currentExercise.bookId)?.author || 'Método Clásico'}
+          bpm={tempoBpm || currentExercise.recommendedBpm}
+          notes={buildWaterfallFromMethodNotes(
+            currentExercise.rightHandNotes,
+            currentExercise.leftHandNotes,
+            tempoBpm || currentExercise.recommendedBpm
+          )}
+        />
+      )}
     </div>
   );
 };

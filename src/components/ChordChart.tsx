@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import * as Tone from 'tone';
-import { Volume2 } from 'lucide-react';
+import { Volume2, Award, Sparkles } from 'lucide-react';
 import { ROOTS, CHORD_TYPES, getChordKeys } from '../types';
 import { cn } from '../lib/utils';
 import { soundEngine, getSavedSoundPreset } from '../lib/soundPresets';
@@ -15,9 +15,10 @@ export interface SelectedChordInfo {
 
 interface ChordChartProps {
   onChordSelect: (keys: string[], info?: SelectedChordInfo) => void;
+  onOpenScaleMap?: () => void;
 }
 
-export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
+export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenScaleMap }) => {
   const [selectedRoot, setSelectedRoot] = React.useState('C');
   const [selectedInversion, setSelectedInversion] = React.useState(0);
   const [lastSelectedType, setLastSelectedType] = React.useState<string>('Major');
@@ -72,34 +73,48 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
           ))}
         </div>
 
-        {/* Inversion Selector */}
-        <div className="flex gap-2 p-1.5 glass rounded-2xl border border-white/10">
-          {[0, 1, 2].map(inv => (
+        {/* Inversion Selector and Scale Map Shortcut */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex gap-2 p-1.5 glass rounded-2xl border border-white/10">
+            {[0, 1, 2].map(inv => (
+              <button
+                key={inv}
+                type="button"
+                onClick={() => {
+                  setSelectedInversion(inv);
+                  const keys = getChordKeys(selectedRoot, lastSelectedType, inv);
+                  const invLabel = inv === 0 ? '' : inv === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
+                  onChordSelect(keys, {
+                    root: selectedRoot,
+                    type: lastSelectedType,
+                    inversion: inv,
+                    name: `${selectedRoot} ${lastSelectedType}${invLabel}`
+                  });
+                  playChordAudio(keys);
+                }}
+                className={cn(
+                  "px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-mono transition-all",
+                  selectedInversion === inv 
+                    ? "bg-amber-400 text-black font-bold shadow" 
+                    : "text-white/40 hover:text-white/70"
+                )}
+              >
+                {inv === 0 ? 'Posición Fundamental' : inv === 1 ? '1ª Inversión' : '2ª Inversión'}
+              </button>
+            ))}
+          </div>
+
+          {onOpenScaleMap && (
             <button
-              key={inv}
               type="button"
-              onClick={() => {
-                setSelectedInversion(inv);
-                const keys = getChordKeys(selectedRoot, lastSelectedType, inv);
-                const invLabel = inv === 0 ? '' : inv === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
-                onChordSelect(keys, {
-                  root: selectedRoot,
-                  type: lastSelectedType,
-                  inversion: inv,
-                  name: `${selectedRoot} ${lastSelectedType}${invLabel}`
-                });
-                playChordAudio(keys);
-              }}
-              className={cn(
-                "px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-mono transition-all",
-                selectedInversion === inv 
-                  ? "bg-amber-400 text-black font-bold shadow" 
-                  : "text-white/40 hover:text-white/70"
-              )}
+              onClick={onOpenScaleMap}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-mono font-bold transition-all shadow hover:scale-105"
+              title="Abrir el panel Mapa de Escalas (Mayores, Menores Armónicas y Melódicas)"
             >
-              {inv === 0 ? 'Posición Fundamental' : inv === 1 ? '1ª Inversión' : '2ª Inversión'}
+              <Award size={14} className="text-amber-400" />
+              <span>Ver Mapa de Escalas</span>
             </button>
-          ))}
+          )}
         </div>
       </div>
 

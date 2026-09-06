@@ -3,9 +3,15 @@ import * as Tone from 'tone';
 import { cn } from '../lib/utils';
 import { 
   Volume2, Keyboard, Music2, Sparkles, Sliders, Layers, ChevronRight,
-  Hand, Lightbulb, Zap, Piano as PianoIcon
+  Hand, Lightbulb, Zap, Piano as PianoIcon, Palette
 } from 'lucide-react';
 import { FINGER_NAMES } from '../lib/musicGymTheory';
+import { 
+  getIntervalForNote, 
+  inferChordRoot, 
+  INTERVAL_LEGEND_ITEMS, 
+  IntervalInfo 
+} from '../lib/intervalColors';
 import { 
   SoundPreset, 
   SOUND_PRESETS, 
@@ -39,6 +45,10 @@ interface PianoProps {
   activeNotes?: string[];
   correctNotes?: string[];
   errorNotes?: string[];
+  chordRoot?: string;
+  showIntervalColors?: boolean;
+  onToggleIntervalColors?: (show: boolean) => void;
+  showIntervalColorToggle?: boolean;
   fingerGuide?: Record<string, number>;
   showFingerGuide?: boolean;
   onToggleFingerGuide?: (show: boolean) => void;
@@ -57,6 +67,10 @@ export const Piano: React.FC<PianoProps> = ({
   activeNotes = [],
   correctNotes = [],
   errorNotes = [],
+  chordRoot,
+  showIntervalColors: controlledShowIntervalColors,
+  onToggleIntervalColors,
+  showIntervalColorToggle = true,
   fingerGuide,
   showFingerGuide: controlledShowFingerGuide,
   onToggleFingerGuide,
@@ -74,7 +88,18 @@ export const Piano: React.FC<PianoProps> = ({
   const [showKeyboardLabels, setShowKeyboardLabels] = useState(false);
   const [showNoteNames, setShowNoteNames] = useState(true);
   const [internalShowFingerGuide, setInternalShowFingerGuide] = useState(true);
+  const [internalShowIntervalColors, setInternalShowIntervalColors] = useState(true);
+
   const isFingerGuideActive = controlledShowFingerGuide !== undefined ? controlledShowFingerGuide : internalShowFingerGuide;
+  const isIntervalColorsActive = controlledShowIntervalColors !== undefined ? controlledShowIntervalColors : internalShowIntervalColors;
+
+  const handleToggleIntervalColors = () => {
+    const nextVal = !isIntervalColorsActive;
+    setInternalShowIntervalColors(nextVal);
+    if (onToggleIntervalColors) {
+      onToggleIntervalColors(nextVal);
+    }
+  };
 
   const renderPresetIcon = (id: SoundPreset) => {
     switch (id) {
@@ -410,6 +435,38 @@ export const Piano: React.FC<PianoProps> = ({
               </button>
             )}
 
+            {/* Interval Visual Colors Toggle */}
+            {showIntervalColorToggle && (
+              <button
+                type="button"
+                id="btn-toggle-interval-colors"
+                onClick={handleToggleIntervalColors}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
+                  isIntervalColorsActive && hasActiveChordNotes
+                    ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300 font-bold shadow-sm shadow-emerald-400/20 scale-[1.02]"
+                    : isIntervalColorsActive
+                    ? "bg-white/10 border-white/20 text-white/80"
+                    : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
+                )}
+                title="Codificación visual de colores por intervalo (Verde=Fundamental, Azul=Tercera, Púrpura=Quinta, Naranja=Séptima)"
+              >
+                <Palette size={13} className="text-emerald-400" />
+                <span className="hidden sm:inline">Color Intervalos</span>
+                <span className="sm:hidden">Intervalos</span>
+                <span className={cn(
+                  "px-1.5 py-0.2 rounded text-[9px] font-extrabold font-mono",
+                  isIntervalColorsActive && hasActiveChordNotes
+                    ? "bg-emerald-400 text-black"
+                    : isIntervalColorsActive
+                    ? "bg-white/20 text-white"
+                    : "bg-black/30 text-white/40"
+                )}>
+                  {isIntervalColorsActive ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setShowNoteNames(prev => !prev)}
@@ -462,6 +519,30 @@ export const Piano: React.FC<PianoProps> = ({
           <span className="text-[10px] text-amber-300/80 italic hidden lg:inline flex items-center gap-1">
             <Lightbulb size={12} className="text-amber-400 inline" />
             <span>Técnica: dedos curvados y peso fluido de brazo en el pasaje de pulgar</span>
+          </span>
+        </div>
+      )}
+
+      {/* Interval Colors Legend Strip (Active when interval colors mode is ON and chord notes are present) */}
+      {isIntervalColorsActive && hasActiveChordNotes && (
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-emerald-950/50 via-blue-950/40 to-purple-950/50 border border-emerald-500/30 text-[11px] font-mono text-emerald-200/90 shadow-sm animate-fadeIn">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold flex items-center gap-1.5 text-emerald-400">
+              <Palette size={14} className="text-emerald-400" />
+              <span>Colores de Intervalos ({effectiveChordRoot}):</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-2 text-[10px]">
+              {INTERVAL_LEGEND_ITEMS.map((item, idx) => (
+                <span key={idx} className="flex items-center gap-1.5 bg-black/60 border border-white/10 px-2 py-0.5 rounded-lg shadow-sm">
+                  <span className={cn("w-2.5 h-2.5 rounded-full shadow", item.bg)}></span>
+                  <span className="font-bold text-white/95">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+          <span className="text-[10px] text-emerald-300/80 italic hidden lg:inline flex items-center gap-1">
+            <Sparkles size={12} className="text-emerald-400 inline" />
+            <span>Identificación visual instantánea: Fundamental (Verde) • 3ª (Azul) • 5ª (Púrpura)</span>
           </span>
         </div>
       )}
@@ -629,6 +710,11 @@ export const Piano: React.FC<PianoProps> = ({
             const displayedFinger = isFingerGuideActive ? fingerGuide?.[noteKey] : undefined;
             const pcKey = getPcKeyForNote(noteKey);
 
+            // Interval Visual Color Coding
+            const isIntervalActive = isIntervalColorsActive && isActive && !isPressed;
+            const intervalInfo = isIntervalActive ? getIntervalForNote(effectiveChordRoot, noteKey) : null;
+            const intervalTooltip = intervalInfo ? ` • Intervalo: ${intervalInfo.fullName} (${intervalInfo.colorName})` : '';
+
             // Split Mode state for this specific note
             const isLeftHand = splitConfig.enabled && isNoteInLeftHand(noteKey, splitConfig.splitNote);
             const isSplitBoundary = splitConfig.enabled && noteKey === splitConfig.splitNote;
@@ -661,15 +747,19 @@ export const Piano: React.FC<PianoProps> = ({
                             : "!bg-amber-300 !translate-y-1 shadow-[0_0_20px_rgba(245,158,11,0.9)] border-amber-200")
                         : "!bg-amber-300 !translate-y-1 shadow-[0_0_20px_rgba(245,158,11,0.8)]"
                     ),
-                    isActive && !isPressed && "!bg-gradient-to-b !from-amber-500 !to-amber-600 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)]",
+                    isActive && !isPressed && (
+                      intervalInfo
+                        ? intervalInfo.blackKeyBgClass
+                        : "!bg-gradient-to-b !from-amber-500 !to-amber-600 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)]"
+                    ),
                     isCorrect && "!bg-emerald-500 border-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.8)]",
                     isError && "!bg-rose-600 border-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.8)]",
                     // Split mode resting accent
                     splitConfig.enabled && isLeftHand && "border-b-2 border-indigo-400/60"
                   )}
-                  title={`${noteKey}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
+                  title={`${noteKey}${intervalTooltip}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
                 >
-                  {/* Finger number badge if provided */}
+                  {/* Finger number badge or Interval badge */}
                   {displayedFinger ? (
                     <div className={cn(
                       "flex flex-col items-center gap-0.5 transition-transform",
@@ -684,6 +774,17 @@ export const Piano: React.FC<PianoProps> = ({
                           : "bg-amber-400 text-black shadow"
                       )}>
                         {displayedFinger}
+                      </span>
+                      {intervalInfo && (
+                        <span className={cn("text-[8px] font-mono font-extrabold px-1 rounded shadow-sm leading-tight", intervalInfo.badgeClass)}>
+                          {intervalInfo.shortLabel}
+                        </span>
+                      )}
+                    </div>
+                  ) : intervalInfo ? (
+                    <div className="flex flex-col items-center gap-0.5 scale-105">
+                      <span className={cn("text-[9px] font-mono font-extrabold px-1.5 py-0.5 rounded shadow-sm leading-tight", intervalInfo.badgeClass)}>
+                        {intervalInfo.shortLabel}
                       </span>
                     </div>
                   ) : <span />}
@@ -720,13 +821,17 @@ export const Piano: React.FC<PianoProps> = ({
                           : "!bg-amber-200 !translate-y-1 shadow-inner ring-2 ring-amber-400")
                       : "!bg-amber-200 !translate-y-1 shadow-inner"
                   ),
-                  isActive && !isPressed && "!bg-amber-100/90 border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]",
+                  isActive && !isPressed && (
+                    intervalInfo
+                      ? intervalInfo.whiteKeyBgClass
+                      : "!bg-amber-100/90 border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                  ),
                   isCorrect && "!bg-emerald-100 border-emerald-500 ring-2 ring-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.5)]",
                   isError && "!bg-rose-100 border-rose-500 ring-2 ring-rose-500/50"
                 )}
-                title={`${noteKey}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
+                title={`${noteKey}${intervalTooltip}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
               >
-                {/* Finger guide pill or Split boundary marker badge */}
+                {/* Finger guide pill or Interval badge or Split boundary marker badge */}
                 {displayedFinger ? (
                   <div className={cn(
                     "flex flex-col items-center gap-0.5 transition-transform",
@@ -744,11 +849,24 @@ export const Piano: React.FC<PianoProps> = ({
                     )}>
                       {displayedFinger}
                     </span>
-                    {isActive && (
+                    {intervalInfo ? (
+                      <span className={cn("text-[8px] font-mono font-extrabold px-1 rounded uppercase tracking-tighter shadow-sm", intervalInfo.badgeClass)}>
+                        {intervalInfo.shortLabel}
+                      </span>
+                    ) : isActive && (
                       <span className="text-[8px] font-mono font-extrabold text-amber-800 bg-amber-200/90 px-1 rounded uppercase tracking-tighter shadow-sm">
                         D{displayedFinger}
                       </span>
                     )}
+                  </div>
+                ) : intervalInfo ? (
+                  <div className="flex flex-col items-center gap-0.5 scale-105">
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-extrabold font-mono shadow-sm", intervalInfo.badgeClass)}>
+                      {intervalInfo.pillLabel}
+                    </span>
+                    <span className="text-[8px] font-mono text-gray-500 font-bold uppercase tracking-tight">
+                      {intervalInfo.colorName.split(' ')[0]}
+                    </span>
                   </div>
                 ) : isSplitBoundary ? (
                   <span className="text-[8px] font-mono font-bold text-indigo-700 bg-indigo-100 px-1 py-0.5 rounded shadow-sm border border-indigo-300">

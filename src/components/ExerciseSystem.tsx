@@ -15,10 +15,14 @@ import { EarTrainingGym } from './EarTrainingGym';
 import { StaffVisualizer } from './StaffVisualizer';
 import { ClassicalMethodsGym } from './ClassicalMethodsGym';
 import { AcousticPianoListener } from './AcousticPianoListener';
+import { FloatingChordPanel } from './FloatingChordPanel';
 import { pianoPitchDetector } from '../lib/pitchDetector';
 import { InstructorChatModal } from './InstructorChatModal';
+import { WaterfallDemoModal } from './WaterfallDemoModal';
+import { buildWaterfallFromChord } from '../lib/midiWaterfall';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
+import { Radio } from 'lucide-react';
 
 type GymCategory = 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
 
@@ -39,6 +43,8 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
   const [hintVisible, setHintVisible] = useState(false);
   const [difficulty, setDifficulty] = useState<'Principiante' | 'Intermedio' | 'Avanzado'>('Principiante');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showFloatingChordPanel, setShowFloatingChordPanel] = useState<boolean>(true);
+  const [isWaterfallModalOpen, setIsWaterfallModalOpen] = useState(false);
 
   const handleScoreGain = (points: number) => {
     setTotalGymScore(prev => prev + points);
@@ -159,6 +165,22 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
             <Trophy size={14} />
             <span>Puntos Gimnasio: <strong>{totalGymScore + score}</strong></span>
           </div>
+
+          {/* Floating Chord Detector Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setShowFloatingChordPanel(prev => !prev)}
+            className={cn(
+              "flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-xl border transition-all",
+              showFloatingChordPanel
+                ? "bg-amber-400 text-black font-bold border-amber-400 shadow-md shadow-amber-400/20"
+                : "text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border-white/10"
+            )}
+            title="Mostrar u ocultar panel flotante de acordes acústicos en vivo"
+          >
+            <Radio size={13} className={showFloatingChordPanel ? "animate-pulse text-black" : "text-amber-400"} />
+            <span>Panel Acordes Mic</span>
+          </button>
 
           <button
             type="button"
@@ -354,8 +376,8 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                       })}
                     </div>
 
-                    {/* Action buttons: Demo Audio & Hint */}
-                    <div className="flex justify-center items-center gap-3">
+                    {/* Action buttons: Demo Audio, Demo Catarata & Hint */}
+                    <div className="flex flex-wrap justify-center items-center gap-3">
                       <button
                         type="button"
                         onClick={playChordDemoSound}
@@ -363,6 +385,18 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                       >
                         <Volume2 size={13} className="text-amber-400" />
                         <span>Escuchar Demostración</span>
+                      </button>
+
+                      {/* Tone Waterfall Demo Button */}
+                      <button
+                        type="button"
+                        id="btn-chord-waterfall-demo"
+                        onClick={() => setIsWaterfallModalOpen(true)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-black text-xs font-mono font-bold transition-all shadow-md shadow-cyan-500/20 hover:scale-105 active:scale-95"
+                        title="Demostración de notas del acorde cayendo en la catarata"
+                      >
+                        <Flame size={13} className="fill-black" />
+                        <span>Demo Catarata</span>
                       </button>
 
                       <button
@@ -389,6 +423,7 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                       <Piano 
                         activeNotes={status === 'success' ? exercise?.keys : userNotes} 
                         correctNotes={userNotes.filter(n => exercise?.keys.includes(n))}
+                        chordRoot={exercise?.rootNote}
                         onNotePlay={handleChordNotePlay} 
                       />
                     </div>
@@ -458,6 +493,28 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
         onClose={() => setIsChatOpen(false)}
         userLevel={difficulty}
       />
+
+      {/* Real-time Floating Acoustic Chord Detector Panel */}
+      {showFloatingChordPanel && (
+        <FloatingChordPanel defaultExpanded={true} />
+      )}
+
+      {/* Tone Waterfall Demo Modal for Current Exercise */}
+      {isWaterfallModalOpen && exercise && (
+        <WaterfallDemoModal
+          isOpen={isWaterfallModalOpen}
+          onClose={() => setIsWaterfallModalOpen(false)}
+          title={`Desafío: ${exercise.targetChord}`}
+          subtitle={`Notas: ${exercise.keys.join(' - ')}`}
+          composer="Gimnasio Práctico de Acordes"
+          bpm={90}
+          notes={buildWaterfallFromChord(
+            exercise.targetChord,
+            exercise.keys,
+            90
+          )}
+        />
+      )}
     </div>
   );
 };

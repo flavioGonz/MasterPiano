@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Piano } from './components/Piano';
 import { ChordChart, SelectedChordInfo } from './components/ChordChart';
+import { ScaleProgressMap } from './components/ScaleProgressMap';
 import { StaffVisualizer } from './components/StaffVisualizer';
 import { ExerciseSystem } from './components/ExerciseSystem';
 import { ToneWaterfallGym } from './components/ToneWaterfallGym';
@@ -62,6 +63,7 @@ export default function App() {
     name: 'Do Mayor (C Major)'
   });
   const [chordViewMode, setChordViewMode] = useState<'both' | 'staff' | 'piano'>('both');
+  const [chordLibrarySubTab, setChordLibrarySubTab] = useState<'chords' | 'scaleMap'>('chords');
   const [isInstructorChatOpen, setIsInstructorChatOpen] = useState(false);
   const [isQuickPracticeOpen, setIsQuickPracticeOpen] = useState(false);
   const [celebratingLesson, setCelebratingLesson] = useState<{ lesson: Lesson; score: number } | null>(null);
@@ -506,29 +508,51 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* TAB 2: BIBLIOTECA DE ACORDES & INVERSIONES */}
+          {/* TAB 2: BIBLIOTECA DE ACORDES & MAPA DE ESCALAS */}
           {activeTab === 'chords' && (
             <motion.div
               key="chords"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-10"
+              className="space-y-8"
             >
-              <div className="text-center max-w-2xl mx-auto space-y-2">
-                <span className="text-amber-400 text-xs font-mono uppercase tracking-widest">
-                  Visualizador Armónico & Partituras
-                </span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
-                  Biblioteca Completa de Acordes e Inversiones
-                </h2>
-                <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
-                  Selecciona la nota raíz, la inversión y el tipo de acorde. Observa la notación en pentagrama en tiempo real para mejorar tu lectura a primera vista y consulta las teclas en el teclado.
-                </p>
-              </div>
+              {/* SUB-NAVIGATION: ACORDES vs MAPA DE ESCALAS */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2 p-1.5 glass rounded-2xl border border-white/10 text-xs font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setChordLibrarySubTab('chords')}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold",
+                      chordLibrarySubTab === 'chords'
+                        ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
+                        : "text-white/60 hover:text-white"
+                    )}
+                  >
+                    <BookOpen size={14} />
+                    <span>Acordes e Inversiones</span>
+                  </button>
 
-              {/* View Mode Switcher */}
-              <div className="flex flex-wrap items-center justify-between gap-3 px-2">
+                  <button
+                    type="button"
+                    onClick={() => setChordLibrarySubTab('scaleMap')}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold",
+                      chordLibrarySubTab === 'scaleMap'
+                        ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
+                        : "text-white/60 hover:text-white"
+                    )}
+                  >
+                    <Award size={14} />
+                    <span>Mapa de Escalas</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 text-black font-extrabold uppercase hidden md:inline">
+                      Progreso Tonal
+                    </span>
+                  </button>
+                </div>
+
+                {/* View Mode Switcher for Staff & Piano */}
                 <div className="flex items-center gap-1.5 p-1 glass rounded-2xl border border-white/10 text-xs font-mono">
                   <span className="text-white/40 px-2 hidden sm:inline">Visualización:</span>
                   {[
@@ -555,55 +579,107 @@ export default function App() {
                     );
                   })}
                 </div>
-
-                {activePianoChord.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActivePianoChord([]);
-                      setActiveChordInfo({
-                        root: '',
-                        type: '',
-                        inversion: 0,
-                        name: 'Sin acorde seleccionado'
-                      });
-                    }}
-                    className="text-xs font-mono text-amber-400 hover:underline"
-                  >
-                    Limpiar Selección
-                  </button>
-                )}
               </div>
 
               {/* Real-time Staff Visualizer */}
-              {(chordViewMode === 'both' || chordViewMode === 'staff') && (
-                <StaffVisualizer
-                  notes={activePianoChord}
-                  chordName={activeChordInfo.name}
-                  root={activeChordInfo.root}
-                  chordType={activeChordInfo.type}
-                  inversion={activeChordInfo.inversion}
-                />
-              )}
+              {activePianoChord.length > 0 && (
+                <div className="space-y-6">
+                  {(chordViewMode === 'both' || chordViewMode === 'staff') && (
+                    <StaffVisualizer
+                      notes={activePianoChord}
+                      chordName={activeChordInfo.name}
+                      root={activeChordInfo.root}
+                      chordType={activeChordInfo.type}
+                      inversion={activeChordInfo.inversion}
+                    />
+                  )}
 
-              {/* Piano Keyboard Display for Selected Chord */}
-              {(chordViewMode === 'both' || chordViewMode === 'piano') && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-xs font-mono text-white/50 px-2">
-                    <span>Visualización en el Teclado:</span>
-                  </div>
-                  <Piano activeNotes={activePianoChord} />
+                  {/* Piano Keyboard Display for Selected Chord or Scale */}
+                  {(chordViewMode === 'both' || chordViewMode === 'piano') && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-xs font-mono text-white/50 px-2">
+                        <span>Visualización en el Teclado:</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActivePianoChord([]);
+                            setActiveChordInfo({
+                              root: '',
+                              type: '',
+                              inversion: 0,
+                              name: 'Sin acorde o escala seleccionada'
+                            });
+                          }}
+                          className="text-xs font-mono text-amber-400 hover:underline"
+                        >
+                          Limpiar Teclado
+                        </button>
+                      </div>
+                      <Piano 
+                        activeNotes={activePianoChord} 
+                        chordRoot={activeChordInfo.root || undefined}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
-              <ChordChart 
-                onChordSelect={(keys, info) => {
-                  setActivePianoChord(keys);
-                  if (info) {
-                    setActiveChordInfo(info);
-                  }
-                }} 
-              />
+              {/* SUB-VIEW 1: CHORDS & INVERSIONS */}
+              {chordLibrarySubTab === 'chords' && (
+                <div className="space-y-8">
+                  <div className="text-center max-w-2xl mx-auto space-y-2">
+                    <span className="text-amber-400 text-xs font-mono uppercase tracking-widest">
+                      Visualizador Armónico & Partituras
+                    </span>
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+                      Biblioteca Completa de Acordes e Inversiones
+                    </h2>
+                    <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
+                      Selecciona la nota raíz, la inversión y el tipo de acorde. Observa la notación en pentagrama en tiempo real para mejorar tu lectura a primera vista y consulta las teclas en el teclado.
+                    </p>
+                  </div>
+
+                  <ChordChart 
+                    onChordSelect={(keys, info) => {
+                      setActivePianoChord(keys);
+                      if (info) {
+                        setActiveChordInfo(info);
+                      }
+                    }}
+                    onOpenScaleMap={() => setChordLibrarySubTab('scaleMap')}
+                  />
+                </div>
+              )}
+
+              {/* SUB-VIEW 2: MAPA DE ESCALAS & DOMINIO TONAL */}
+              {chordLibrarySubTab === 'scaleMap' && (
+                <div className="space-y-8">
+                  <div className="text-center max-w-2xl mx-auto space-y-2">
+                    <span className="text-amber-400 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-1.5">
+                      <Award size={13} />
+                      <span>Progreso Tonal del Pianista</span>
+                    </span>
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+                      Mapa de Escalas & Dominio Tonal
+                    </h2>
+                    <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
+                      Monitorea tu dominio en las 3 familias fundamentales del piano clásico y moderno: <strong className="text-white">Escalas Mayores</strong>, <strong className="text-white">Menores Armónicas</strong> y <strong className="text-white">Menores Melódicas</strong> a través de las 12 tonalidades.
+                    </p>
+                  </div>
+
+                  <ScaleProgressMap
+                    onSelectScaleForPiano={(notes, info) => {
+                      setActivePianoChord(notes);
+                      setActiveChordInfo({
+                        root: info.root,
+                        type: info.type,
+                        inversion: 0,
+                        name: info.name,
+                      });
+                    }}
+                  />
+                </div>
+              )}
             </motion.div>
           )}
 

@@ -8,6 +8,7 @@ export interface WaterfallNote {
   duration: number;      // Duration in seconds
   velocity: number;      // 0 to 1
   hand: 'right' | 'left'; // 'right' (cyan) or 'left' (red)
+  finger?: number;       // 1, 2, 3, 4, 5 technical fingering
   played?: boolean;
   missed?: boolean;
 }
@@ -420,3 +421,229 @@ export const PRELOADED_WATERFALL_SONGS: WaterfallSong[] = [
     ]
   }
 ];
+
+/**
+ * Builds WaterfallNote[] from classical method notes (e.g. Hanon, Czerny, Suzuki)
+ */
+export function buildWaterfallFromMethodNotes(
+  rightNotes: Array<{ note: string; finger?: number; fingering?: number; duration?: string }>,
+  leftNotes: Array<{ note: string; finger?: number; fingering?: number; duration?: string }> = [],
+  bpm: number = 80
+): WaterfallNote[] {
+  const result: WaterfallNote[] = [];
+  const beatSec = 60 / bpm;
+  // Default eighth notes: 0.5 beat
+  const stepSec = beatSec * 0.5;
+
+  const maxLen = Math.max(rightNotes.length, leftNotes.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const time = 0.8 + i * stepSec; // Initial padding of 0.8s so notes cascade down gracefully
+    const duration = stepSec * 0.85;
+
+    if (rightNotes[i]) {
+      const rn = rightNotes[i];
+      result.push({
+        id: `rh-${i}-${rn.note}`,
+        name: rn.note,
+        midi: noteNameToMidi(rn.note),
+        time,
+        duration,
+        velocity: 0.9,
+        hand: 'right',
+        finger: rn.finger ?? rn.fingering ?? 1
+      });
+    }
+
+    if (leftNotes[i]) {
+      const ln = leftNotes[i];
+      result.push({
+        id: `lh-${i}-${ln.note}`,
+        name: ln.note,
+        midi: noteNameToMidi(ln.note),
+        time,
+        duration,
+        velocity: 0.85,
+        hand: 'left',
+        finger: ln.finger ?? ln.fingering ?? 1
+      });
+    }
+  }
+
+  return result.sort((a, b) => a.time - b.time || a.midi - b.midi);
+}
+
+/**
+ * Builds WaterfallNote[] from a simple list of notes and optional fingering guide
+ */
+export function buildWaterfallFromNotesList(
+  notes: string[],
+  fingerGuide?: Record<string, number>,
+  bpm: number = 75
+): WaterfallNote[] {
+  const result: WaterfallNote[] = [];
+  const beatSec = 60 / bpm;
+  const stepSec = beatSec * 0.75;
+
+  notes.forEach((note, idx) => {
+    const time = 0.8 + idx * stepSec;
+    const midi = noteNameToMidi(note);
+    const hand: 'right' | 'left' = midi < 60 ? 'left' : 'right';
+    const finger = fingerGuide ? fingerGuide[note] : undefined;
+
+    result.push({
+      id: `list-${idx}-${note}`,
+      name: note,
+      midi,
+      time,
+      duration: stepSec * 0.8,
+      velocity: 0.9,
+      hand,
+      finger
+    });
+  });
+
+  return result;
+}
+
+/**
+ * Builds WaterfallNote[] for an entire scale (ascending and descending).
+ * Accepts either:
+ *  - (scaleNotes, rightFingerings?, leftFingerings?, bpm?)
+ *  - (root, scaleName, scaleNotes, fingerings?, bpm?)
+ */
+export function buildWaterfallFromScale(
+  arg1: string | string[],
+  arg2?: string | number[],
+  arg3?: string[] | number[],
+  arg4?: number[] | number,
+  arg5?: number
+): WaterfallNote[] {
+  let scaleNotes: string[] = [];
+  let rightFingerings: number[] = [1, 2, 3, 1, 2, 3, 4, 5];
+  let leftFingerings: number[] = [5, 4, 3, 2, 1, 3, 2, 1];
+  let bpm: number = 90;
+
+  if (Array.isArray(arg1)) {
+    // Call style 1: (scaleNotes, rightFingerings, leftFingerings, bpm)
+    scaleNotes = arg1;
+    if (Array.isArray(arg2)) rightFingerings = arg2;
+    if (Array.isArray(arg3)) leftFingerings = arg3 as number[];
+    if (typeof arg4 === 'number') bpm = arg4;
+  } else {
+    // Call style 2: (root, scaleName, scaleNotes, fingerings, bpm)
+    if (Array.isArray(arg3)) {
+      scaleNotes = arg3;
+    }
+    if (Array.isArray(arg4)) {
+      rightFingerings = arg4;
+      leftFingerings = [...arg4].reverse();
+    }
+    if (typeof arg5 === 'number') {
+      bpm = arg5;
+    }
+  }
+
+  const result: WaterfallNote[] = [];
+  const beatSec = 60 / (bpm || 80);
+  const stepSec = beatSec * 0.5;
+
+  // Build ascending then descending
+  const ascending = [...scaleNotes];
+  const descending = [...scaleNotes].reverse().slice(1);
+  const fullSeq = [...ascending, ...descending];
+
+  fullSeq.forEach((note, idx) => {
+    const time = 0.8 + idx * stepSec;
+    const midi = noteNameToMidi(note);
+    const rhFinger = rightFingerings[idx % rightFingerings.length] || 1;
+    const lhFinger = leftFingerings[idx % leftFingerings.length] || 1;
+
+    // Right hand
+    result.push({
+      id: `scale-rh-${idx}-${note}`,
+      name: note,
+      midi,
+      time,
+      duration: stepSec * 0.85,
+      velocity: 0.9,
+      hand: 'right',
+      finger: rhFinger
+    });
+
+    // Left hand in lower octave (12 semitones lower)
+    const lhMidi = Math.max(24, midi - 12);
+    const lhName = midiToNoteName(lhMidi);
+    result.push({
+      id: `scale-lh-${idx}-${lhName}`,
+      name: lhName,
+      midi: lhMidi,
+      time,
+      duration: stepSec * 0.85,
+      velocity: 0.85,
+      hand: 'left',
+      finger: lhFinger
+    });
+  });
+
+  return result.sort((a, b) => a.time - b.time || a.midi - b.midi);
+}
+
+/**
+ * Builds WaterfallNote[] for a chord demonstration (both arpeggio cascade and simultaneous strike).
+ * Accepts either (chordKeys, bpm) or (chordName, chordKeys, bpm).
+ */
+export function buildWaterfallFromChord(
+  arg1: string | string[],
+  arg2?: string[] | number,
+  arg3?: number
+): WaterfallNote[] {
+  let chordKeys: string[] = [];
+  let bpm: number = 70;
+
+  if (Array.isArray(arg1)) {
+    chordKeys = arg1;
+    if (typeof arg2 === 'number') bpm = arg2;
+  } else if (Array.isArray(arg2)) {
+    chordKeys = arg2;
+    if (typeof arg3 === 'number') bpm = arg3;
+  }
+
+  const result: WaterfallNote[] = [];
+  const beatSec = 60 / bpm;
+
+  // 1. Arpeggiated cascade
+  chordKeys.forEach((key, idx) => {
+    const time = 0.8 + idx * (beatSec * 0.4);
+    const midi = noteNameToMidi(key);
+    result.push({
+      id: `chord-arp-${idx}-${key}`,
+      name: key,
+      midi,
+      time,
+      duration: beatSec * 0.6,
+      velocity: 0.85,
+      hand: midi < 60 ? 'left' : 'right',
+      finger: idx + 1
+    });
+  });
+
+  // 2. Full chord strike together
+  const chordStrikeTime = 0.8 + chordKeys.length * (beatSec * 0.4) + 0.6;
+  chordKeys.forEach((key, idx) => {
+    const midi = noteNameToMidi(key);
+    result.push({
+      id: `chord-full-${idx}-${key}`,
+      name: key,
+      midi,
+      time: chordStrikeTime,
+      duration: beatSec * 1.5,
+      velocity: 0.95,
+      hand: midi < 60 ? 'left' : 'right',
+      finger: idx + 1
+    });
+  });
+
+  return result.sort((a, b) => a.time - b.time || a.midi - b.midi);
+}
+

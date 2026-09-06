@@ -4,12 +4,14 @@ import { motion } from 'motion/react';
 import { 
   ChevronLeft, ChevronRight, BookOpen, Volume2, Play, 
   Sparkles, Award, CheckCircle2, Lock, MessageSquare, Pause, Radio, Music2,
-  Hand, Globe2, GraduationCap, PartyPopper, Check
+  Hand, Globe2, GraduationCap, PartyPopper, Check, Flame
 } from 'lucide-react';
 import { Lesson, LESSONS, UserProgress } from '../types';
 import { Piano } from './Piano';
 import { LessonEvaluationModal } from './LessonEvaluationModal';
 import { InstructorChatModal } from './InstructorChatModal';
+import { WaterfallDemoModal } from './WaterfallDemoModal';
+import { buildWaterfallFromNotesList } from '../lib/midiWaterfall';
 import { cn } from '../lib/utils';
 import { maestroVoice } from '../lib/speech';
 import { triggerCurriculumConfetti } from '../lib/celebration';
@@ -33,6 +35,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
 }) => {
   const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isWaterfallModalOpen, setIsWaterfallModalOpen] = useState(false);
 
   // Natural Uruguayan Voice State
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -287,6 +290,20 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               <span>{isDemonstrating ? 'Demostrando...' : 'Demostrar en Piano'}</span>
             </button>
 
+            {/* Tone Waterfall Demo Button */}
+            {lesson.keys && lesson.keys.length > 0 && (
+              <button
+                type="button"
+                id="btn-lesson-waterfall-demo"
+                onClick={() => setIsWaterfallModalOpen(true)}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-black shadow-md shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95"
+                title="Demostración visual de Catarata de Tonos cayendo hacia el teclado con digitación técnica"
+              >
+                <Flame size={14} className="fill-black" />
+                <span>Demo Catarata</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setIsChatOpen(true)}
@@ -484,6 +501,23 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         currentLesson={lesson}
         userLevel={userProgress.userLevel}
       />
+
+      {/* Tone Waterfall Demo Modal */}
+      {isWaterfallModalOpen && lesson.keys && lesson.keys.length > 0 && (
+        <WaterfallDemoModal
+          isOpen={isWaterfallModalOpen}
+          onClose={() => setIsWaterfallModalOpen(false)}
+          title={`Lección ${lesson.number}: ${lesson.title}`}
+          subtitle={`${lesson.category} • Nivel ${lesson.level}`}
+          composer="Método Pianístico Conservatorio"
+          bpm={80}
+          notes={buildWaterfallFromNotesList(
+            lesson.keys,
+            lesson.fingerGuide,
+            80
+          )}
+        />
+      )}
     </motion.div>
   );
 };

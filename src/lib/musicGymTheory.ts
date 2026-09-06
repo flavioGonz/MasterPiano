@@ -136,6 +136,21 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     fingeringLeftHand: [5, 4, 3, 2, 1, 3, 2, 1],
     thumbPassStepIndex: 2,
     thumbPassStepIndexLeftHand: 4
+  },
+  {
+    id: 'minor_melodic',
+    name: 'Menor Melódica (Bachiana)',
+    category: 'Menor',
+    formula: 'T - S - T - T - T - T - S',
+    degreeNames: ['Tónica (I)', '2ª M (II)', '3ª m (III)', '4ª Justa (IV)', '5ª Justa (V)', '6ª M (VI)', 'Sensible (VII)', 'Octava (VIII)'],
+    intervals: [0, 2, 3, 5, 7, 9, 11, 12],
+    description: 'Eleva el 6º y 7º grado al ascender para suavizar el salto melódico de la menor armónica. Base esencial del repertorio clásico y del jazz moderno.',
+    mood: 'Fluida, Jazzística y Sofisticada',
+    mnemonic: 'Ascendente: 6º y 7º mayores para guiar la tensión hacia la tónica con máxima fluidez.',
+    fingeringRightHand: [1, 2, 3, 1, 2, 3, 4, 5],
+    fingeringLeftHand: [5, 4, 3, 2, 1, 3, 2, 1],
+    thumbPassStepIndex: 2,
+    thumbPassStepIndexLeftHand: 4
   }
 ];
 

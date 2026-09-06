@@ -11,6 +11,8 @@ import {
 } from '../lib/musicGymTheory';
 import { Piano } from './Piano';
 import { AcousticPianoListener } from './AcousticPianoListener';
+import { WaterfallDemoModal } from './WaterfallDemoModal';
+import { buildWaterfallFromScale } from '../lib/midiWaterfall';
 import { pianoPitchDetector } from '../lib/pitchDetector';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
@@ -30,6 +32,7 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
   const [gameMode, setGameMode] = useState<GameMode>('pathway');
   const [selectedHand, setSelectedHand] = useState<'right' | 'left'>('right');
   const [showFingeringNumbers, setShowFingeringNumbers] = useState<boolean>(true);
+  const [isWaterfallModalOpen, setIsWaterfallModalOpen] = useState<boolean>(false);
 
   // Scale object & computed notes
   const activeScale = SCALES_DATABASE.find(s => s.id === selectedScaleId) || SCALES_DATABASE[0];
@@ -344,6 +347,21 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
           >
             {isPlayingDemo ? <Pause size={13} /> : <Play size={13} />}
             <span>{isPlayingDemo ? 'Pausar Demo' : 'Oír Escala'}</span>
+          </button>
+
+          {/* Tone Waterfall Demo Button */}
+          <button
+            type="button"
+            id="btn-scalesgym-waterfall-demo"
+            onClick={() => {
+              if (isPlayingDemo) stopScaleDemo();
+              setIsWaterfallModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-black shadow-md shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95"
+            title="Ver demostración de Catarata de Tonos con notas y digitación cayendo en cascada"
+          >
+            <Flame size={13} className="fill-black" />
+            <span>Demo Catarata</span>
           </button>
 
           <button
@@ -736,6 +754,25 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
             />
           </div>
         </div>
+      )}
+
+      {/* Tone Waterfall Demo Modal */}
+      {isWaterfallModalOpen && (
+        <WaterfallDemoModal
+          isOpen={isWaterfallModalOpen}
+          onClose={() => setIsWaterfallModalOpen(false)}
+          title={`Escala de ${selectedRoot} ${activeScale.name}`}
+          subtitle={`${selectedHand === 'right' ? 'Mano Derecha' : 'Mano Izquierda'} • Digitación Técnica Clásica`}
+          composer="Conservatorio Clásico"
+          bpm={80}
+          notes={buildWaterfallFromScale(
+            selectedRoot,
+            activeScale.name,
+            scaleNotes,
+            currentFingering,
+            80
+          )}
+        />
       )}
     </div>
   );
