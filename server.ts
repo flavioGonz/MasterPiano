@@ -29,6 +29,67 @@ function getAI(): GoogleGenAI | null {
   return aiClient;
 }
 
+// Helper to detect temporary or high-demand capacity issues
+function isTransientError(err: any): boolean {
+  if (!err) return false;
+  const status = err.status || err.code || err?.error?.code || err?.error?.status;
+  const message = String(err.message || err?.error?.message || '').toLowerCase();
+  return (
+    status === 503 || 
+    status === 'UNAVAILABLE' || 
+    status === 429 || 
+    message.includes('high demand') || 
+    message.includes('temporarily unavailable') || 
+    message.includes('rate limit') ||
+    message.includes('overloaded')
+  );
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Robust text generation with automatic retries and model fallbacks
+async function generateTextWithFallback(
+  ai: GoogleGenAI,
+  params: {
+    contents: any;
+    systemInstruction?: string;
+    temperature?: number;
+  },
+  defaultText: string
+): Promise<string> {
+  const models = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: params.contents,
+          config: {
+            systemInstruction: params.systemInstruction,
+            temperature: params.temperature ?? 0.7,
+          },
+        });
+        if (response.text) {
+          return response.text;
+        }
+      } catch (err: any) {
+        if (isTransientError(err)) {
+          if (attempt === 0) {
+            await sleep(700);
+            continue;
+          }
+          break;
+        }
+        console.warn(`Model ${model} request warning:`, err?.message || err);
+        break;
+      }
+    }
+  }
+
+  return defaultText;
+}
+
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", aiEnabled: Boolean(process.env.GEMINI_API_KEY) });
@@ -44,32 +105,55 @@ app.post("/api/instructor/speak", async (req, res) => {
 
     const ai = getAI();
     if (!ai) {
-      return res.status(503).json({ error: "No Gemini API key available" });
+      return res.json({ audioBase64: null, fallbackToBrowser: true, message: "No Gemini API key available" });
     }
 
     // Direct Gemini TTS to speak with natural Uruguayan / Rioplatense warmth and human cadence
     const prompt = `Leé el siguiente texto con tono cálido, humano, amigable, pausado y pedagógico, como el Maestro Aurelio, un querido profesor de piano de Uruguay (acento rioplatense uruguayo, muy natural, sin sonar a robot):\n\n${text}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-tts-preview",
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: "Fenrir" },
-          },
-        },
-      },
-    });
+    let base64Audio: string | null = null;
+    let mimeType = "audio/wav";
 
-    const candidate = response.candidates?.[0];
-    const part = candidate?.content?.parts?.[0];
-    const base64Audio = part?.inlineData?.data;
-    const mimeType = part?.inlineData?.mimeType || "audio/wav";
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-3.1-flash-tts-preview",
+          contents: [{ parts: [{ text: prompt }] }],
+          config: {
+            responseModalities: [Modality.AUDIO],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: "Fenrir" },
+              },
+            },
+          },
+        });
+
+        const candidate = response.candidates?.[0];
+        const part = candidate?.content?.parts?.[0];
+        base64Audio = part?.inlineData?.data || null;
+        mimeType = part?.inlineData?.mimeType || "audio/wav";
+
+        if (base64Audio) break;
+      } catch (err: any) {
+        if (isTransientError(err)) {
+          if (attempt === 0) {
+            await sleep(700);
+            continue;
+          }
+          return res.json({
+            audioBase64: null,
+            fallbackToBrowser: true,
+            notice: "TTS service experiencing high demand. Using browser voice fallback.",
+          });
+        }
+        console.warn("TTS generation warning:", err?.message || err);
+        break;
+      }
+    }
 
     if (!base64Audio) {
-      return res.status(500).json({ error: "No audio stream returned" });
+      return res.json({ audioBase64: null, fallbackToBrowser: true });
     }
 
     res.json({
@@ -77,8 +161,7 @@ app.post("/api/instructor/speak", async (req, res) => {
       mimeType,
     });
   } catch (error: any) {
-    console.error("Error in /api/instructor/speak:", error);
-    res.status(500).json({ error: error?.message || "TTS generation failed" });
+    res.json({ audioBase64: null, fallbackToBrowser: true });
   }
 });
 
@@ -88,11 +171,11 @@ app.post("/api/instructor/chat", async (req, res) => {
     const { message, lessonContext, userLevel, recentScore } = req.body;
     const ai = getAI();
 
+    const fallbackReply = `¡Buenas! Como tu maestro acá al lado del piano, acordate que la clave en esta etapa (${userLevel || "Principiante"}) es no tensionar los hombros ni las muñecas. En la lección actual "${lessonContext?.title || 'Fundamentos'}", tocá despacito con el metrónomo. ¿Qué duda tenés con las notas o la digitación, che? ¡Vamos arriba!`;
+
     if (!ai) {
       // Graceful Uruguayan pedagogical fallback when no API key is set
-      return res.json({
-        reply: `¡Buenas! Como tu maestro acá al lado del piano, acordate que la clave en esta etapa (${userLevel || "Principiante"}) es no tensionar los hombros ni las muñecas. En la lección actual "${lessonContext?.title || 'Fundamentos'}", tocá despacito con el metrónomo. ¿Qué duda tenés con las notas o la digitación, che? ¡Vamos arriba!`
-      });
+      return res.json({ reply: fallbackReply });
     }
 
     const systemInstruction = `Eres el "Maestro Aurelio", un queridísimo y sabio profesor de piano de Montevideo, Uruguay.
@@ -109,21 +192,20 @@ Directrices pedagógicas:
 3. Si el alumno pregunta sobre notas, digitación (1=pulgar a 5=meñique), escalas o acordes, sé exacto y musicalmente impecable.
 4. Alentalo con calidez ("¡Vamos arriba!", "Tranqui, que esto al principio cuesta pero sale", "Metéle paciencia y dedicación").`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: message || "¿Cómo puedo mejorar mi práctica hoy, Maestro?",
-      config: {
+    const reply = await generateTextWithFallback(
+      ai,
+      {
+        contents: message || "¿Cómo puedo mejorar mi práctica hoy, Maestro?",
         systemInstruction,
         temperature: 0.7,
       },
-    });
+      fallbackReply
+    );
 
-    res.json({ reply: response.text || "Seguí practicando con ganas, che, cada tecla que tocás con atención suma un montón." });
+    res.json({ reply });
   } catch (error: any) {
-    console.error("Error in /api/instructor/chat:", error);
-    res.status(500).json({
-      reply: "Che, se me cortó un segundo la señal acá en el conservatorio. Pero acordate siempre: manos flojas, dedos curvados y mucha paciencia. ¿Me repetís la pregunta?",
-      error: error?.message,
+    res.json({
+      reply: "Che, se me entrecortó un segundo la señal acá en el conservatorio, pero no te preocupes: manos flojas, dedos curvados como agarrando una pelotita y tocá con calma. ¿Me repetís la pregunta, che?",
     });
   }
 });
@@ -134,16 +216,12 @@ app.post("/api/instructor/evaluate-feedback", async (req, res) => {
     const { lessonTitle, score, passed, errors, userNotes, expectedNotes } = req.body;
     const ai = getAI();
 
+    const fallbackFeedback = passed
+      ? `¡Impecable, che! Tremenda ejecución en "${lessonTitle}". Se nota que le estás metiendo cabeza y cariño al teclado. ¡Vamos arriba y pasemos a la siguiente lección!`
+      : `Tranqui, no te bajonees que a todos nos pasa al principio. En "${lessonTitle}", la clave está en mirar bien las notas (${expectedNotes?.join(', ') || ''}) antes de tocar. Relajá la mano y dale otra vuelta despacito, que sale seguro.`;
+
     if (!ai) {
-      if (passed) {
-        return res.json({
-          feedback: `¡Impecable, che! Tremenda ejecución en "${lessonTitle}". Se nota que le estás metiendo cabeza y cariño al teclado. ¡Vamos arriba y pasemos a la siguiente lección!`
-        });
-      } else {
-        return res.json({
-          feedback: `Tranqui, no te bajonees que a todos nos pasa al principio. En "${lessonTitle}", la clave está en mirar bien las notas (${expectedNotes?.join(', ') || ''}) antes de tocar. Relajá la mano y dale otra vuelta despacito, que sale seguro.`
-        });
-      }
+      return res.json({ feedback: fallbackFeedback });
     }
 
     const prompt = `El alumno acaba de completar la evaluación de la lección "${lessonTitle}".
@@ -157,19 +235,19 @@ Dale una devolución en 2 o 3 oraciones en voseo uruguayo muy natural:
 - Si aprobó: Felicítalo con entusiasmo sincero y desafíalo para la siguiente etapa.
 - Si reprobó: Dale ánimo sincero, explicale con cariño exactamente en qué erró y decile que repita despacio sin frustrarse.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: prompt,
-      config: {
+    const feedback = await generateTextWithFallback(
+      ai,
+      {
+        contents: prompt,
         temperature: 0.6,
-      }
-    });
+      },
+      fallbackFeedback
+    );
 
-    res.json({ feedback: response.text || "¡Gran esfuerzo! La repetición consciente y relajada es el secreto del verdadero pianista." });
+    res.json({ feedback });
   } catch (error: any) {
-    console.error("Error in /api/instructor/evaluate-feedback:", error);
     res.json({
-      feedback: "¡Lindo intento! Escuchá con atención cómo resuena cada nota y dale otra pasada despacio."
+      feedback: "¡Lindo intento! Escuchá con atención cómo resuena cada nota y dale otra pasada despacio.",
     });
   }
 });

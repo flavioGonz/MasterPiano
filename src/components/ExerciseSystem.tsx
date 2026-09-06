@@ -7,12 +7,16 @@ import {
 import { Exercise, getRandomChordExercise, getChordKeys, ROOTS, CHORD_TYPES } from '../types';
 import { Piano } from './Piano';
 import { ScalesGym } from './ScalesGym';
+import { CircleScaleSequenceGym } from './CircleScaleSequenceGym';
+import { ToneWaterfallGym } from './ToneWaterfallGym';
 import { InversionsGym } from './InversionsGym';
+import { EarTrainingGym } from './EarTrainingGym';
+import { StaffVisualizer } from './StaffVisualizer';
 import { InstructorChatModal } from './InstructorChatModal';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
 
-type GymCategory = 'scales' | 'inversions' | 'chords';
+type GymCategory = 'scales' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
 
 interface ExerciseSystemProps {
   initialCategory?: GymCategory;
@@ -98,12 +102,17 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
         <div className="flex flex-wrap items-center gap-2">
           {[
             { id: 'scales', label: '🎼 Gimnasio de Escalas', badge: 'Lúdico & Memoria' },
-            { id: 'inversions', label: '🔄 Tríadas e Inversiones', badge: 'Carrusel & Oído' },
+            { id: 'waterfall', label: '🌊 Catarata de Tonos', badge: 'MIDI & Cascada' },
+            { id: 'circleSequence', label: '🔄 Secuencias Ciclo de Quintas', badge: 'Metrónomo & Claves' },
+            { id: 'inversions', label: '🔀 Tríadas e Inversiones', badge: 'Carrusel & Oído' },
+            { id: 'earTraining', label: '👂 Oído: Intervalos y Tríadas', badge: 'A Ciegas' },
             { id: 'chords', label: '⚡ Desafío de Acordes', badge: 'Reflejos Rápidos' },
+            { id: 'sightReading', label: '📖 Lectura de Partituras', badge: 'Pentagrama en Vivo' },
           ].map(tab => (
             <button
               key={tab.id}
               type="button"
+              id={`gym-tab-${tab.id}`}
               onClick={() => setGymCategory(tab.id as GymCategory)}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-mono transition-all",
@@ -152,7 +161,32 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
           >
-            <ScalesGym onScoreGain={handleScoreGain} />
+            <ScalesGym 
+              onScoreGain={handleScoreGain} 
+              onSwitchToCircleSequence={() => setGymCategory('circleSequence')} 
+            />
+          </motion.div>
+        )}
+
+        {gymCategory === 'waterfall' && (
+          <motion.div
+            key="waterfall"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <ToneWaterfallGym onScoreGain={handleScoreGain} />
+          </motion.div>
+        )}
+
+        {gymCategory === 'circleSequence' && (
+          <motion.div
+            key="circleSequence"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <CircleScaleSequenceGym onScoreGain={handleScoreGain} />
           </motion.div>
         )}
 
@@ -164,6 +198,17 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
             exit={{ opacity: 0, y: -8 }}
           >
             <InversionsGym onScoreGain={handleScoreGain} />
+          </motion.div>
+        )}
+
+        {gymCategory === 'earTraining' && (
+          <motion.div
+            key="earTraining"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <EarTrainingGym onScoreGain={handleScoreGain} />
           </motion.div>
         )}
 
@@ -329,6 +374,36 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
                 )}
               </AnimatePresence>
             </div>
+          </motion.div>
+        )}
+
+        {gymCategory === 'sightReading' && (
+          <motion.div
+            key="sightReading"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-6"
+          >
+            <div className="text-center max-w-xl mx-auto space-y-2">
+              <span className="text-amber-400 text-xs font-mono uppercase tracking-widest">
+                Entrenamiento Visual
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                Gimnasio de Lectura a Primera Vista
+              </h3>
+              <p className="text-xs sm:text-sm text-white/50 font-light">
+                Descifra cómo se escriben los acordes en el Gran Pentagrama, entrena la asociación visual con los sonidos y prueba el 'Entrenador de Lectura' integrado.
+              </p>
+            </div>
+
+            <StaffVisualizer
+              notes={['C4', 'E4', 'G4']}
+              chordName="Do Mayor (C Major)"
+              root="C"
+              chordType="Major"
+              inversion={0}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -9,8 +9,18 @@ export interface ScaleInfo {
   mood: string;
   mnemonic: string;
   fingeringRightHand: number[]; // Standard fingering: 1=thumb, 2=index, 3=middle, 4=ring, 5=pinky
+  fingeringLeftHand?: number[]; // Standard fingering left hand: 1=thumb to 5=pinky
   thumbPassStepIndex?: number; // Index after which thumb passes under (e.g., after 3rd note)
+  thumbPassStepIndexLeftHand?: number; // Index after which middle finger crosses over thumb
 }
+
+export const FINGER_NAMES: Record<number, { name: string; en: string; description: string }> = {
+  1: { name: 'Pulgar', en: 'Thumb', description: 'Pivote y soporte. Pasa con soltura por debajo de los dedos.' },
+  2: { name: 'Índice', en: 'Index', description: 'Direccional y ágil, guía el movimiento.' },
+  3: { name: 'Medio', en: 'Middle', description: 'Centro de gravedad y arco natural de la mano.' },
+  4: { name: 'Anular', en: 'Ring', description: 'Comparte tendón extensor; tocar con peso de brazo sin tensión.' },
+  5: { name: 'Meñique', en: 'Pinky', description: 'Borde externo, ancla la cúspide o el bajo de la escala.' }
+};
 
 export const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -48,7 +58,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Luminosa y Triunfal',
     mnemonic: 'Fórmula de oro: 2 Tonos, 1 Semitono, 3 Tonos, 1 Semitono.',
     fingeringRightHand: [1, 2, 3, 1, 2, 3, 4, 5],
-    thumbPassStepIndex: 2 // After finger 3, thumb goes under to finger 1
+    fingeringLeftHand: [5, 4, 3, 2, 1, 3, 2, 1],
+    thumbPassStepIndex: 2, // After finger 3, thumb goes under to finger 1
+    thumbPassStepIndexLeftHand: 4 // After thumb 1, finger 3 crosses over
   },
   {
     id: 'minor_natural',
@@ -61,7 +73,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Nostálgica y Profunda',
     mnemonic: 'La menor natural (A) usa exactamente las mismas teclas blancas que Do Mayor.',
     fingeringRightHand: [1, 2, 3, 1, 2, 3, 4, 5],
-    thumbPassStepIndex: 2
+    fingeringLeftHand: [5, 4, 3, 2, 1, 3, 2, 1],
+    thumbPassStepIndex: 2,
+    thumbPassStepIndexLeftHand: 4
   },
   {
     id: 'major_pentatonic',
@@ -74,7 +88,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Espontánea, Folclórica y Pura',
     mnemonic: 'Solo 5 notas mágicas. Tocá cualquier combinación sobre un acorde mayor y sonará impecable.',
     fingeringRightHand: [1, 2, 3, 1, 2, 3],
-    thumbPassStepIndex: 2
+    fingeringLeftHand: [5, 4, 3, 2, 1, 1],
+    thumbPassStepIndex: 2,
+    thumbPassStepIndexLeftHand: 4
   },
   {
     id: 'minor_pentatonic',
@@ -87,7 +103,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Rockera, Firme y Expresiva',
     mnemonic: 'En La menor pentatónica: La, Do, Re, Mi, Sol, La. Los solos más legendarios de la historia nacieron acá.',
     fingeringRightHand: [1, 2, 3, 1, 2, 3],
-    thumbPassStepIndex: 2
+    fingeringLeftHand: [5, 4, 3, 2, 1, 1],
+    thumbPassStepIndex: 2,
+    thumbPassStepIndexLeftHand: 4
   },
   {
     id: 'blues',
@@ -100,7 +118,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Bluesera, Desgarradora y Cálida',
     mnemonic: 'La Blue Note (ej. D# en La) es la sal y pimienta: tocala con gracia y deslice.',
     fingeringRightHand: [1, 2, 3, 4, 1, 2, 3],
-    thumbPassStepIndex: 3
+    fingeringLeftHand: [5, 4, 3, 2, 1, 2, 1],
+    thumbPassStepIndex: 3,
+    thumbPassStepIndexLeftHand: 4
   },
   {
     id: 'minor_harmonic',
@@ -113,7 +133,9 @@ export const SCALES_DATABASE: ScaleInfo[] = [
     mood: 'Dramática, Clásica y Exótica',
     mnemonic: 'El salto de 1.5 tonos entre el 6º y 7º grado le da el color árabe y barroco estilo Bach.',
     fingeringRightHand: [1, 2, 3, 1, 2, 3, 4, 5],
-    thumbPassStepIndex: 2
+    fingeringLeftHand: [5, 4, 3, 2, 1, 3, 2, 1],
+    thumbPassStepIndex: 2,
+    thumbPassStepIndexLeftHand: 4
   }
 ];
 
@@ -122,12 +144,13 @@ export const SCALES_DATABASE: ScaleInfo[] = [
  * de una escala dada su raíz y definición.
  */
 export function calculateScaleNotes(root: string, scale: ScaleInfo, baseOctave = 4): string[] {
-  const rootIndex = CHROMATIC_NOTES.indexOf(root);
+  const normalizedRoot = CHROMATIC_NOTES.includes(root) ? root : (ENHARMONIC_MAP[root] || root);
+  const rootIndex = CHROMATIC_NOTES.indexOf(normalizedRoot);
   if (rootIndex === -1) return [];
 
   // Adapt base octave if root is high to avoid clipping off piano range
   let startOctave = baseOctave;
-  if (['G', 'G#', 'A', 'A#', 'B'].includes(root) && baseOctave >= 4) {
+  if (['G', 'G#', 'A', 'A#', 'B', 'Ab', 'Bb'].includes(root) && baseOctave >= 4) {
     startOctave = 3;
   }
 
@@ -352,5 +375,225 @@ export function validateTriadInversionSubmission(
     bassMatches: bassPitchMatches,
     userBass,
     feedbackMessage
+  };
+}
+
+// -------------------------------------------------------------
+// ENTRENAMIENTO AUDITIVO: INTERVALOS Y TRÍADAS
+// -------------------------------------------------------------
+
+export interface IntervalTheoryInfo {
+  id: string;
+  name: string;
+  shortName: string;
+  semitones: number;
+  difficulty: 'Principiante' | 'Intermedio' | 'Avanzado';
+  famousSong: string;
+  moodDescription: string;
+  ratioColor: string;
+}
+
+export const INTERVALS_DATABASE: IntervalTheoryInfo[] = [
+  {
+    id: 'm2',
+    name: 'Segunda Menor',
+    shortName: '2ª Menor',
+    semitones: 1,
+    difficulty: 'Intermedio',
+    famousSong: 'Tiburón (Jaws) / Para Elisa',
+    moodDescription: 'Disonancia punzante y suspenso máximo. Las dos teclas están pegaditas.',
+    ratioColor: 'text-rose-400'
+  },
+  {
+    id: 'M2',
+    name: 'Segunda Mayor',
+    shortName: '2ª Mayor',
+    semitones: 2,
+    difficulty: 'Principiante',
+    famousSong: 'Cumpleaños Feliz / Frère Jacques',
+    moodDescription: 'Paso melódico natural a distancia de 1 tono completo (2 teclas).',
+    ratioColor: 'text-amber-400'
+  },
+  {
+    id: 'm3',
+    name: 'Tercera Menor',
+    shortName: '3ª Menor',
+    semitones: 3,
+    difficulty: 'Principiante',
+    famousSong: 'Greensleeves / Canción de Cuna (Brahms)',
+    moodDescription: 'Sonido melancólico y dulce. El corazón de los acordes menores y del blues.',
+    ratioColor: 'text-sky-400'
+  },
+  {
+    id: 'M3',
+    name: 'Tercera Mayor',
+    shortName: '3ª Mayor',
+    semitones: 4,
+    difficulty: 'Principiante',
+    famousSong: 'Oh When The Saints / Primavera (Vivaldi)',
+    moodDescription: 'Luminosa, alegre y afirmativa. El pilar de las canciones festivas y acordes mayores.',
+    ratioColor: 'text-emerald-400'
+  },
+  {
+    id: 'P4',
+    name: 'Cuarta Justa',
+    shortName: '4ª Justa',
+    semitones: 5,
+    difficulty: 'Intermedio',
+    famousSong: 'Himno Nacional / Marcha Nupcial',
+    moodDescription: 'Carácter solemne, heráldico y ceremonial. Muy estable y abierta.',
+    ratioColor: 'text-teal-400'
+  },
+  {
+    id: 'TT',
+    name: 'Tritono (4ª Aum / 5ª Dism)',
+    shortName: 'Tritono (b5)',
+    semitones: 6,
+    difficulty: 'Avanzado',
+    famousSong: 'Los Simpsons / Maria (West Side Story)',
+    moodDescription: 'El "Diabolus in Musica" medieval. Divide la octava en dos mitades exactas con tensión extrema.',
+    ratioColor: 'text-purple-400'
+  },
+  {
+    id: 'P5',
+    name: 'Quinta Justa',
+    shortName: '5ª Justa',
+    semitones: 7,
+    difficulty: 'Principiante',
+    famousSong: 'Star Wars (Tema principal) / Twinkle Twinkle',
+    moodDescription: 'Pura consonancia acústica. Sonido heroico, majestuoso, firme y abierto.',
+    ratioColor: 'text-blue-400'
+  },
+  {
+    id: 'm6',
+    name: 'Sexta Menor',
+    shortName: '6ª Menor',
+    semitones: 8,
+    difficulty: 'Avanzado',
+    famousSong: 'Love Story / The Entertainer (puente)',
+    moodDescription: 'Romántica y profundamente nostálgica. Llena de anhelo expresivo.',
+    ratioColor: 'text-pink-400'
+  },
+  {
+    id: 'M6',
+    name: 'Sexta Mayor',
+    shortName: '6ª Mayor',
+    semitones: 9,
+    difficulty: 'Intermedio',
+    famousSong: 'My Bonnie Lies Over The Ocean / Jingle Bells',
+    moodDescription: 'Cálida, folclórica y cantable. Muy agradable y reconfortante al oído.',
+    ratioColor: 'text-orange-400'
+  },
+  {
+    id: 'm7',
+    name: 'Séptima Menor',
+    shortName: '7ª Menor',
+    semitones: 10,
+    difficulty: 'Intermedio',
+    famousSong: 'Star Trek (Tema clásico) / The Winner Takes It All',
+    moodDescription: 'Tensión flotante, base de los acordes dominantes y del Soul / R&B.',
+    ratioColor: 'text-indigo-400'
+  },
+  {
+    id: 'M7',
+    name: 'Séptima Mayor',
+    shortName: '7ª Mayor',
+    semitones: 11,
+    difficulty: 'Avanzado',
+    famousSong: 'Take On Me (subida) / Pure Imagination',
+    moodDescription: 'Disonancia etérea de ensueño; a un solo semitono de tocar la octava.',
+    ratioColor: 'text-fuchsia-400'
+  },
+  {
+    id: 'P8',
+    name: 'Octava Justa',
+    shortName: 'Octava (8ª)',
+    semitones: 12,
+    difficulty: 'Principiante',
+    famousSong: 'Somewhere Over The Rainbow / Singin\' in the Rain',
+    moodDescription: 'La misma nota en un registro más agudo. Sensación de vuelo y plenitud armónica.',
+    ratioColor: 'text-cyan-400'
+  }
+];
+
+export interface EarTrainingTriadChallenge {
+  root: string;
+  quality: 'Major' | 'Minor' | 'Diminished' | 'Augmented';
+  notes: string[];
+  qualityInfo: TriadQuality;
+}
+
+/**
+ * Genera un intervalo aleatorio según el nivel de dificultad
+ */
+export function generateRandomIntervalChallenge(difficulty: 'Principiante' | 'Intermedio' | 'Avanzado'): {
+  interval: IntervalTheoryInfo;
+  rootNote: string;
+  targetNote: string;
+  semitones: number;
+} {
+  let pool = INTERVALS_DATABASE.filter(i => i.difficulty === 'Principiante');
+  if (difficulty === 'Intermedio') {
+    pool = INTERVALS_DATABASE.filter(i => i.difficulty === 'Principiante' || i.difficulty === 'Intermedio');
+  } else if (difficulty === 'Avanzado') {
+    pool = INTERVALS_DATABASE;
+  }
+
+  const chosenInterval = pool[Math.floor(Math.random() * pool.length)];
+
+  // Pick root between C3 and F4 so target fits comfortably in standard piano
+  const candidateRoots = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4'];
+  const rootNote = candidateRoots[Math.floor(Math.random() * candidateRoots.length)];
+
+  const rootPitch = rootNote.slice(0, -1);
+  const rootOctave = parseInt(rootNote.slice(-1), 10);
+  const rootChromaticIndex = CHROMATIC_NOTES.indexOf(rootPitch);
+
+  const totalSemitones = rootChromaticIndex + chosenInterval.semitones;
+  const targetPitch = CHROMATIC_NOTES[totalSemitones % 12];
+  const targetOctave = rootOctave + Math.floor(totalSemitones / 12);
+  const targetNote = `${targetPitch}${targetOctave}`;
+
+  return {
+    interval: chosenInterval,
+    rootNote,
+    targetNote,
+    semitones: chosenInterval.semitones
+  };
+}
+
+/**
+ * Genera un desafío de tríada aleatoria para entrenamiento auditivo
+ */
+export function generateRandomTriadChallenge(difficulty: 'Principiante' | 'Intermedio' | 'Avanzado'): EarTrainingTriadChallenge {
+  let allowedQualities: Array<'Major' | 'Minor' | 'Diminished' | 'Augmented'> = ['Major', 'Minor'];
+  if (difficulty === 'Intermedio') {
+    allowedQualities = ['Major', 'Minor', 'Diminished'];
+  } else if (difficulty === 'Avanzado') {
+    allowedQualities = ['Major', 'Minor', 'Diminished', 'Augmented'];
+  }
+
+  const qualityId = allowedQualities[Math.floor(Math.random() * allowedQualities.length)];
+  const qualityInfo = TRIAD_QUALITIES.find(q => q.id === qualityId) || TRIAD_QUALITIES[0];
+
+  const candidateRoots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const root = candidateRoots[Math.floor(Math.random() * candidateRoots.length)];
+
+  // Triad notes in root position around octave 4 (or 3 for high roots)
+  const baseOctave = ['G', 'A', 'B'].includes(root) ? 3 : 4;
+  const rootIndex = CHROMATIC_NOTES.indexOf(root);
+
+  const notes = qualityInfo.semitoneIntervals.map(semi => {
+    const total = rootIndex + semi;
+    const p = CHROMATIC_NOTES[total % 12];
+    const oct = baseOctave + Math.floor(total / 12);
+    return `${p}${oct}`;
+  });
+
+  return {
+    root,
+    quality: qualityId,
+    notes,
+    qualityInfo
   };
 }

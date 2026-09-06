@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, Sparkles, CheckCircle2, 
@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { 
   SCALES_DATABASE, COMMON_SCALE_ROOTS, ScaleInfo, 
-  calculateScaleNotes, ENHARMONIC_MAP 
+  calculateScaleNotes, ENHARMONIC_MAP, FINGER_NAMES 
 } from '../lib/musicGymTheory';
 import { Piano } from './Piano';
 import { maestroVoice } from '../lib/speech';
@@ -17,17 +17,44 @@ type GameMode = 'pathway' | 'missingNote' | 'formula' | 'speedRun';
 
 interface ScalesGymProps {
   onScoreGain?: (points: number) => void;
+  onSwitchToCircleSequence?: () => void;
 }
 
-export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
+export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCircleSequence }) => {
   // Config
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedScaleId, setSelectedScaleId] = useState<string>('major');
   const [gameMode, setGameMode] = useState<GameMode>('pathway');
+  const [selectedHand, setSelectedHand] = useState<'right' | 'left'>('right');
+  const [showFingeringNumbers, setShowFingeringNumbers] = useState<boolean>(true);
 
   // Scale object & computed notes
   const activeScale = SCALES_DATABASE.find(s => s.id === selectedScaleId) || SCALES_DATABASE[0];
   const scaleNotes = calculateScaleNotes(selectedRoot, activeScale);
+
+  // Fingering pattern according to hand selection
+  const currentFingering = useMemo(() => {
+    return selectedHand === 'right'
+      ? activeScale.fingeringRightHand
+      : (activeScale.fingeringLeftHand || [5, 4, 3, 2, 1, 3, 2, 1]);
+  }, [selectedHand, activeScale]);
+
+  const currentThumbPassIndex = useMemo(() => {
+    return selectedHand === 'right'
+      ? activeScale.thumbPassStepIndex
+      : (activeScale.thumbPassStepIndexLeftHand ?? 4);
+  }, [selectedHand, activeScale]);
+
+  // Map each note of the scale to its recommended finger (1-5)
+  const scaleFingerGuide: Record<string, number> = useMemo(() => {
+    const guide: Record<string, number> = {};
+    scaleNotes.forEach((note, idx) => {
+      if (currentFingering[idx] !== undefined) {
+        guide[note] = currentFingering[idx];
+      }
+    });
+    return guide;
+  }, [scaleNotes, currentFingering]);
 
   // Pathway Mode state
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
@@ -199,6 +226,18 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
               <span>{tab.label}</span>
             </button>
           ))}
+
+          {onSwitchToCircleSequence && (
+            <button
+              type="button"
+              onClick={onSwitchToCircleSequence}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/40 shadow-sm"
+              title="Ir al Generador de Secuencias de Escalas por Ciclo de Quintas"
+            >
+              <span>🔄</span>
+              <span className="font-semibold">Secuencias Ciclo de Quintas</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -304,23 +343,92 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
       {/* ------------------------------------------------------------- */}
       {gameMode === 'pathway' && (
         <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <span className="text-[10px] uppercase font-mono tracking-widest text-amber-400">
-                Paso a Paso Interactivo
+                Paso a Paso Interactivo & Técnica
               </span>
               <h3 className="text-xl font-serif font-bold text-white">
-                Tocá cada nota en orden ascendente
+                Tocá cada nota en orden con la digitación sugerida
               </h3>
             </div>
-            <button
-              type="button"
-              onClick={restartPathway}
-              className="flex items-center gap-1 text-xs font-mono text-white/50 hover:text-white bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
-            >
-              <RotateCcw size={12} />
-              <span>Reiniciar</span>
-            </button>
+
+            {/* Hand Selection & Reset */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Selector Mano Derecha / Mano Izquierda */}
+              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/10 text-xs font-mono">
+                <button
+                  type="button"
+                  id="btn-hand-right"
+                  onClick={() => {
+                    setSelectedHand('right');
+                    restartPathway();
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-semibold",
+                    selectedHand === 'right'
+                      ? "bg-amber-400 text-black shadow-md shadow-amber-400/20"
+                      : "text-white/60 hover:text-white"
+                  )}
+                  title="Practicar digitación para Mano Derecha (clave de Sol)"
+                >
+                  <span>✋</span>
+                  <span>Mano Der</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="btn-hand-left"
+                  onClick={() => {
+                    setSelectedHand('left');
+                    restartPathway();
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-semibold",
+                    selectedHand === 'left'
+                      ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/30"
+                      : "text-white/60 hover:text-white"
+                  )}
+                  title="Practicar digitación para Mano Izquierda (clave de Fa)"
+                >
+                  <span>🤚</span>
+                  <span>Mano Izq</span>
+                </button>
+              </div>
+
+              {/* Botón rápido para mostrar/ocultar digitación */}
+              <button
+                type="button"
+                id="btn-gym-toggle-fingering"
+                onClick={() => setShowFingeringNumbers(prev => !prev)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono border transition-all",
+                  showFingeringNumbers
+                    ? "bg-amber-400/20 border-amber-400/50 text-amber-300 font-semibold"
+                    : "bg-white/5 border-white/10 text-white/50 hover:text-white/80"
+                )}
+                title="Mostrar u ocultar los números de dedo (1-5) recomendados sobre las teclas"
+              >
+                <span>🖐️</span>
+                <span className="hidden md:inline">Números 1-5</span>
+                <span className={cn(
+                  "px-1.5 py-0.2 rounded text-[9px] font-extrabold font-mono",
+                  showFingeringNumbers ? "bg-amber-400 text-black" : "bg-white/10 text-white/40"
+                )}>
+                  {showFingeringNumbers ? 'ON' : 'OFF'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={restartPathway}
+                className="flex items-center gap-1 text-xs font-mono text-white/50 hover:text-white bg-white/5 px-3 py-2 rounded-xl border border-white/10 transition-colors"
+                title="Volver a empezar desde la primera nota"
+              >
+                <RotateCcw size={12} />
+                <span className="hidden sm:inline">Reiniciar</span>
+              </button>
+            </div>
           </div>
 
           {/* Interactive Stepper Visualizer */}
@@ -328,8 +436,9 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
             {scaleNotes.map((note, index) => {
               const isCurrent = index === currentStepIndex && !isScaleCompleted;
               const isPast = completedSteps.includes(index) || (isScaleCompleted && index <= currentStepIndex);
-              const finger = activeScale.fingeringRightHand[index] || 1;
-              const isThumbPass = activeScale.thumbPassStepIndex === index;
+              const finger = currentFingering[index] || 1;
+              const isThumbPass = currentThumbPassIndex === index;
+              const fingerData = FINGER_NAMES[finger];
 
               return (
                 <motion.div
@@ -360,17 +469,21 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
 
                   {/* Finger Guidance badge */}
                   <div className={cn(
-                    "mt-2 text-[9px] px-2 py-0.5 rounded-full border",
+                    "mt-2 text-[9px] px-2 py-0.5 rounded-full border flex items-center gap-1",
                     isCurrent
-                      ? "bg-amber-400 text-black font-bold border-amber-300"
+                      ? "bg-amber-400 text-black font-extrabold border-amber-300 shadow-sm"
+                      : isPast
+                      ? "bg-emerald-500/30 text-emerald-200 border-emerald-400/40 font-semibold"
                       : "bg-white/10 text-white/70 border-white/10"
-                  )}>
-                    Dedo {finger}
+                  )}
+                  title={`Dedo ${finger}: ${fingerData?.name || ''}`}
+                  >
+                    <span>Dedo {finger}</span>
                   </div>
 
                   {/* Thumb Pass indicator */}
                   {isThumbPass && (
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-mono text-amber-300 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-500/40">
+                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-mono text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-500/50 shadow-sm z-10">
                       ↷ Pasa Pulgar
                     </div>
                   )}
@@ -379,9 +492,9 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
             })}
           </div>
 
-          {/* Current Target Directive Banner */}
+          {/* Current Target Directive Banner with Finger Technique Advice */}
           <div className={cn(
-            "p-4 rounded-2xl border flex items-center justify-between transition-all",
+            "p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all",
             isScaleCompleted
               ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-300"
               : isNoteError
@@ -393,17 +506,29 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
                 {isScaleCompleted ? '🏆' : isNoteError ? '⚠️' : '👉'}
               </span>
               <div>
-                <div className="font-bold text-sm">
-                  {isScaleCompleted
-                    ? '¡Escala Completada con Éxito!'
-                    : isNoteError
-                    ? `Nota equivocada: tocaste ${lastPlayedNote}. Buscá ${scaleNotes[currentStepIndex]}.`
-                    : `Siguiente nota: Toca ${scaleNotes[currentStepIndex]} (Dedo ${activeScale.fingeringRightHand[currentStepIndex] || 1})`}
+                <div className="font-bold text-sm flex flex-wrap items-center gap-2">
+                  <span>
+                    {isScaleCompleted
+                      ? '¡Escala Completada con Éxito!'
+                      : isNoteError
+                      ? `Nota equivocada: tocaste ${lastPlayedNote}. Buscá ${scaleNotes[currentStepIndex]}.`
+                      : `Siguiente nota: Toca ${scaleNotes[currentStepIndex]}`}
+                  </span>
+                  {!isScaleCompleted && !isNoteError && (
+                    <span className="bg-amber-400 text-black px-2 py-0.5 rounded-lg text-xs font-bold font-mono">
+                      Dedo {currentFingering[currentStepIndex]} ({FINGER_NAMES[currentFingering[currentStepIndex]]?.name})
+                    </span>
+                  )}
+                  {!isScaleCompleted && selectedHand === 'left' && (
+                    <span className="bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-lg text-xs font-mono">
+                      Mano Izquierda
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-white/60 font-light">
+                <p className="text-xs text-white/70 font-light mt-0.5">
                   {isScaleCompleted
-                    ? 'Excelente coordinación y memoria muscular. Podés volver a probar o cambiar de escala.'
-                    : 'Tocá en el teclado interactivo abajo o usá las teclas de tu computadora.'}
+                    ? `Excelente coordinación con la digitación de ${selectedHand === 'right' ? 'Mano Derecha' : 'Mano Izquierda'}. ¡Probá la otra mano o aumentá la velocidad!`
+                    : 'Fijate en el número 1-5 sobre la tecla en el teclado interactivo abajo para mantener la técnica correcta.'}
                 </p>
               </div>
             </div>
@@ -412,14 +537,14 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
               <button
                 type="button"
                 onClick={restartPathway}
-                className="px-4 py-2 rounded-xl bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider shadow hover:bg-emerald-300 transition-all"
+                className="px-4 py-2 rounded-xl bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider shadow hover:bg-emerald-300 transition-all self-start sm:self-auto"
               >
                 Tocar de Nuevo
               </button>
             )}
           </div>
 
-          {/* Piano Keyboard Component */}
+          {/* Piano Keyboard Component with live fingerGuide passed */}
           <div className="pt-2">
             <Piano
               activeNotes={
@@ -429,6 +554,10 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
               }
               correctNotes={completedSteps.map(i => scaleNotes[i])}
               errorNotes={isNoteError && lastPlayedNote ? [lastPlayedNote] : []}
+              fingerGuide={showFingeringNumbers ? scaleFingerGuide : undefined}
+              showFingerGuide={showFingeringNumbers}
+              onToggleFingerGuide={setShowFingeringNumbers}
+              showFingerGuideToggle={true}
               onNotePlay={handleNotePlay}
             />
           </div>
@@ -562,10 +691,14 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain }) => {
             })}
           </div>
 
-          {/* Piano highlighting all notes of the formula */}
+          {/* Piano highlighting all notes of the formula with finger guide */}
           <div className="pt-2">
             <Piano
               activeNotes={scaleNotes}
+              fingerGuide={showFingeringNumbers ? scaleFingerGuide : undefined}
+              showFingerGuide={showFingeringNumbers}
+              onToggleFingerGuide={setShowFingeringNumbers}
+              showFingerGuideToggle={true}
               onNotePlay={handleNotePlay}
             />
           </div>

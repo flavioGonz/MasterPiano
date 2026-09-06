@@ -4,9 +4,17 @@ import * as Tone from 'tone';
 import { Volume2 } from 'lucide-react';
 import { ROOTS, CHORD_TYPES, getChordKeys } from '../types';
 import { cn } from '../lib/utils';
+import { soundEngine, getSavedSoundPreset } from '../lib/soundPresets';
+
+export interface SelectedChordInfo {
+  root: string;
+  type: string;
+  inversion: number;
+  name: string;
+}
 
 interface ChordChartProps {
-  onChordSelect: (keys: string[]) => void;
+  onChordSelect: (keys: string[], info?: SelectedChordInfo) => void;
 }
 
 export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
@@ -15,16 +23,19 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
   const [lastSelectedType, setLastSelectedType] = React.useState<string>('Major');
 
   const playChordAudio = async (keys: string[]) => {
-    await Tone.start();
-    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-    synth.triggerAttackRelease(keys, '1.2n');
-    setTimeout(() => synth.dispose(), 1500);
+    soundEngine.playChord(keys, getSavedSoundPreset(), '1.4n');
   };
 
   const handleChordClick = (type: string) => {
     setLastSelectedType(type);
     const keys = getChordKeys(selectedRoot, type, selectedInversion);
-    onChordSelect(keys);
+    const invLabel = selectedInversion === 0 ? '' : selectedInversion === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
+    onChordSelect(keys, {
+      root: selectedRoot,
+      type,
+      inversion: selectedInversion,
+      name: `${selectedRoot} ${type}${invLabel}`
+    });
     playChordAudio(keys);
   };
 
@@ -40,7 +51,13 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
               onClick={() => {
                 setSelectedRoot(root);
                 const keys = getChordKeys(root, lastSelectedType, selectedInversion);
-                onChordSelect(keys);
+                const invLabel = selectedInversion === 0 ? '' : selectedInversion === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
+                onChordSelect(keys, {
+                  root,
+                  type: lastSelectedType,
+                  inversion: selectedInversion,
+                  name: `${root} ${lastSelectedType}${invLabel}`
+                });
                 playChordAudio(keys);
               }}
               className={cn(
@@ -64,7 +81,13 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect }) => {
               onClick={() => {
                 setSelectedInversion(inv);
                 const keys = getChordKeys(selectedRoot, lastSelectedType, inv);
-                onChordSelect(keys);
+                const invLabel = inv === 0 ? '' : inv === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
+                onChordSelect(keys, {
+                  root: selectedRoot,
+                  type: lastSelectedType,
+                  inversion: inv,
+                  name: `${selectedRoot} ${lastSelectedType}${invLabel}`
+                });
                 playChordAudio(keys);
               }}
               className={cn(
