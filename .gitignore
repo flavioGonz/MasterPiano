@@ -14,3 +14,6 @@ coverage/
 _to_delete/
 _sync/
 Claude outputs/
+
+# Pruebas de navegador: viven en la máquina donde se corren, no en el repo
+e2e/

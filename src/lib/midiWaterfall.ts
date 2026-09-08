@@ -57,6 +57,35 @@ export interface WaterfallSong {
   isCustom?: boolean;
   tracks?: WaterfallTrack[];   // pistas por instrumento (opcional)
   sourceJobId?: string;        // job de audio del que salió (para re-transcribir)
+  /** Negras por compás. 4 salvo que la pieza diga otra cosa; se usa para la grilla. */
+  beatsPerBar?: number;
+  /** La escribiste vos acá adentro, no vino de un MIDI ni de un audio. */
+  composed?: boolean;
+}
+
+/**
+ * Una pieza en blanco para empezar a componer.
+ *
+ * Arranca con cuatro compases: suficiente para escribir una idea sin que la
+ * línea de tiempo se vea vacía, y se agrandan con el botón de "+4 compases".
+ */
+export function emptySong(title = 'Pieza nueva', bpm = 100, beatsPerBar = 4): WaterfallSong {
+  const compases = 4;
+  return {
+    id: `comp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+    title,
+    composer: 'Vos',
+    difficulty: 'Fácil',
+    bpm,
+    beatsPerBar,
+    duration: (60 / bpm) * beatsPerBar * compases,
+    notesCount: 0,
+    description: 'Escrita en la catarata.',
+    notes: [],
+    isCustom: true,
+    composed: true,
+    tracks: HAND_TRACKS.map(t => ({ ...t })),
+  };
 }
 
 // Convert MIDI pitch number (e.g. 60) to Note Name (e.g. "C4")

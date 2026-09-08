@@ -69,7 +69,7 @@ export const MidiButton: React.FC<{ className?: string }> = ({ className }) => {
         <PianoIcon size={15} className={conectado ? 'text-ok' : undefined} />
         {conectado && (
           <>
-            <span className="hidden xl:inline max-w-[110px] truncate text-[12px]">{corto}</span>
+            <span className="hidden 2xl:inline max-w-[110px] truncate text-[12px]">{corto}</span>
             {/* Late con cada mensaje que llega del instrumento */}
             <span className={cn('w-1.5 h-1.5 rounded-full transition-colors duration-100',
               activo ? 'bg-ok' : 'bg-ok/25')} />

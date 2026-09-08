@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Play, Pause, Square, Upload, Repeat, Settings2, HelpCircle, Volume2, VolumeX,
   Maximize2, Minimize2, AlignJustify, LayoutPanelTop, Triangle, RotateCcw,
-  Hand, EyeOff, ChevronDown, X, Cable, Flame, Mic, MicOff, Search, Layers, FileMusic, Loader2, Undo2, Redo2, Trash2, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, MoveLeft, MoveRight, Scissors, StretchHorizontal, ArrowRightLeft, Download, Wand2, Music2,
+  Hand, EyeOff, ChevronDown, X, Cable, Flame, Mic, MicOff, Search, Layers, FileMusic, Loader2, Undo2, Redo2, Trash2, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, MoveLeft, MoveRight, Scissors, StretchHorizontal, ArrowRightLeft, Download, Wand2, Music2, MousePointer2, PencilLine, Disc3, Music4, Plus,
 } from 'lucide-react';
 import * as Tone from 'tone';
 import {
   WaterfallSong, WaterfallNote, WaterfallTrack, PRELOADED_WATERFALL_SONGS,
-  parseMidiFile, midiToNoteName, songTracks, noteTrackId,
+  parseMidiFile, midiToNoteName, songTracks, noteTrackId, emptySong,
 } from '../lib/midiWaterfall';
 import { soundEngine, SoundPreset, SOUND_PRESETS, getSavedSoundPreset, saveSoundPreset } from '../lib/soundPresets';
 import { cn } from '../lib/utils';
@@ -64,6 +64,42 @@ interface TrackState extends WaterfallTrack {
   visible: boolean;   // se dibuja
   practice: boolean;  // el alumno la toca (modo espera la espera; no suena sola)
   muted: boolean;     // no suena automáticamente
+  /** Sonido guardado del Kross con el que suena esta pista, si hay uno. */
+  krossPresetId?: string | null;
+  /** Canal MIDI de la pista (1–16). Sin esto todas suenan igual. */
+  channel?: number;
+}
+
+/**
+ * El sonido de cada pista se guarda aparte de la pieza: la pieza es de la
+ * app y viaja al servidor, pero qué preset del Kross usa cada pista depende
+ * del teclado que uno tenga enchufado, así que vive en este navegador.
+ *
+ * La clave es `<id de pieza>` y adentro va `<id de pista> → {preset, canal}`.
+ */
+const TRACK_SOUND_KEY = 'pianomaster_track_sounds_v1';
+type TrackSound = { krossPresetId: string | null; channel: number };
+
+function loadTrackSounds(songId: string): Record<string, TrackSound> {
+  try {
+    const all = JSON.parse(localStorage.getItem(TRACK_SOUND_KEY) || '{}');
+    const v = all?.[songId];
+    return v && typeof v === 'object' ? v : {};
+  } catch { return {}; }
+}
+
+function saveTrackSounds(songId: string, tracks: TrackState[]) {
+  try {
+    const all = JSON.parse(localStorage.getItem(TRACK_SOUND_KEY) || '{}');
+    const entry: Record<string, TrackSound> = {};
+    for (const t of tracks) {
+      if (t.krossPresetId || (t.channel && t.channel !== 1)) {
+        entry[t.id] = { krossPresetId: t.krossPresetId ?? null, channel: t.channel ?? 1 };
+      }
+    }
+    if (Object.keys(entry).length) all[songId] = entry; else delete all[songId];
+    localStorage.setItem(TRACK_SOUND_KEY, JSON.stringify(all));
+  } catch { /* sin espacio: se pierde el sonido, no la pieza */ }
 }
 
 /** Variantes de color por pista, derivadas del hex base (cacheadas). */
@@ -86,7 +122,15 @@ function colorSet(hex: string): ColorSet {
 
 /** Pistas iniciales para una pieza: manos → ambas se practican; instrumentos → solo el piano. */
 function initialTracks(song: WaterfallSong): TrackState[] {
-  return songTracks(song).map(t => ({ ...t, visible: true, practice: !song.tracks || t.id === 'piano', muted: false }));
+  const sonidos = loadTrackSounds(song.id);
+  return songTracks(song).map((t, i) => ({
+    ...t,
+    visible: true,
+    practice: !song.tracks || t.id === 'piano',
+    muted: false,
+    krossPresetId: sonidos[t.id]?.krossPresetId ?? null,
+    channel: sonidos[t.id]?.channel ?? (i + 1),
+  }));
 }
 
 const CUSTOM_SONGS_KEY = 'pianomaster_custom_songs_v1';
@@ -137,11 +181,13 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     } catch { /* sin storage */ }
     return PRELOADED_WATERFALL_SONGS[0].id;
   });
+  const activeSongIdRef = useRef('');
   const setActiveSongId = useCallback((id: string) => {
     setActiveSongIdRaw(id);
     if (isDemo) return;   // una demo no cambia la pieza que estabas estudiando
     try { localStorage.setItem(ACTIVE_SONG_KEY, id); } catch { /* sin storage */ }
   }, [isDemo]);
+  activeSongIdRef.current = activeSongId;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeSong = useMemo(
     () => songList.find(s => s.id === activeSongId) || songList[0],
@@ -190,6 +236,37 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     if (isSoloed) setTracks(prev => prev.map(t => ({ ...t, visible: true })));
     else setTracks(prev => prev.map(t => (t.id === id ? { ...t, visible: true, practice: true } : { ...t, visible: false })));
   };
+
+  /* ---------------- Sonido del instrumento por pista ---------------- */
+
+  /**
+   * Le dice al Kross qué sonido poner en cada canal.
+   *
+   * Un cambio de programa no es como una nota: el teclado lo recuerda hasta
+   * que alguien se lo cambie. Por eso se manda al elegir el sonido (para
+   * escucharlo enseguida) y otra vez al dar play (por si en el medio uno tocó
+   * el dial del teclado).
+   */
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
+  const pushTrackPresets = useCallback(() => {
+    if (!midi.canPlayOut()) return;
+    for (const t of tracksRef.current) {
+      if (t.krossPresetId) midi.applyPreset(t.krossPresetId, t.channel);
+    }
+  }, []);
+
+  const setTrackSound = useCallback((id: string, patch: { krossPresetId?: string | null; channel?: number }) => {
+    /* El cambio de programa se manda acá afuera y no adentro del actualizador:
+       React puede llamar al actualizador más de una vez, y el teclado
+       recibiría el mismo cambio de sonido dos veces. */
+    const next = tracksRef.current.map(t => (t.id === id ? { ...t, ...patch } : t));
+    tracksRef.current = next;
+    setTracks(next);
+    saveTrackSounds(activeSongIdRef.current, next);
+    const t = next.find(x => x.id === id);
+    if (t?.krossPresetId && midi.canPlayOut()) midi.applyPreset(t.krossPresetId, t.channel);
+  }, []);
 
   /* ---------------- Edición de notas (menú contextual, undo/redo) ---------------- */
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -317,6 +394,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
 
   // ---- UI ----
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
   const [tracksOpen, setTracksOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -442,6 +520,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     /* Tu propio toque también golpea la línea, con la fuerza con que lo
        tocaste: así se ve la diferencia entre acariciar la tecla y clavarla. */
     impactsRef.current.push({ midi: midiNote, t0: performance.now(), rgb: [125, 211, 252], velocity });
+    /* Grabando, la tecla queda abierta hasta que la sueltes: el largo real de
+       la nota es lo que distingue una pieza tocada de una pieza escrita. */
+    if (recordingRef.current) openNotesRef.current.set(midiNote, { time: timeRef.current, velocity });
     const midiPitch = midiNote;
 
     const { tracks: tr, practiceMode: pm } = stateRef.current;
@@ -468,9 +549,15 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     }
   }, [soundPreset, onScoreGain]);
 
+  /* Cerrar una nota grabada necesita cosas que se arman más abajo (la pista
+     elegida, el alta en la pieza). Se deja el hueco acá y se rellena allá. */
+  const recordNoteEndRef = useRef<(midi: number) => void>(() => { /* sin grabar */ });
+  const recordingRef = useRef(false);
+
   const handleUserNoteRelease = useCallback((midiNote: number) => {
     setPressedNotes(prev => { const n = new Set(prev); n.delete(midiNote); return n; });
     pressedRef.current = new Set([...pressedRef.current].filter(m => m !== midiNote));
+    if (recordingRef.current) recordNoteEndRef.current(midiNote);
   }, []);
 
   useEffect(() => {
@@ -547,9 +634,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     /* El reloj MIDI sale con el play: el arpegiador y las baterías del
        instrumento arrancan al tempo de la pieza sin tener que ponérselo a
        mano. Al parar, además, se corta todo lo que quedó sonando. */
-    if (next) midi.startClock(activeSongRef.current?.bpm ?? 100);
+    if (next) { pushTrackPresets(); midi.startClock(activeSongRef.current?.bpm ?? 100); }
     else { midi.stopClock(); midi.panic(); }
-  }, []);
+  }, [pushTrackPresets]);
   const togglePlayRef = useRef(handleTogglePlay);
   togglePlayRef.current = handleTogglePlay;
   const activeSongRef = useRef(activeSong);
@@ -792,6 +879,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       const trackById = new Map(S.tracks.map(t => [t.id, t]));
       const practiceOf = (n: WaterfallNote) => trackById.get(noteTrackId(n))?.practice ?? true;
       const mutedOf = (n: WaterfallNote) => trackById.get(noteTrackId(n))?.muted ?? false;
+      const channelOf = (n: WaterfallNote) => trackById.get(noteTrackId(n))?.channel;
       const colorOf = (n: WaterfallNote) => colorSet(trackById.get(noteTrackId(n))?.color ?? '#f97316');
       const selectedId = selectedNoteRef.current;
       const selSet = selectedIdsRef.current;
@@ -842,7 +930,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
               if (practiceOf(n) || mutedOf(n)) return;
               if (n.time > prevTime && n.time <= t) {
                 // El acompañamiento suena por el instrumento si así se pidió
-                if (porElInstrumento) midi.playNote(n.midi, n.velocity, Math.max(0.1, n.duration));
+                if (porElInstrumento) midi.playNote(n.midi, n.velocity, Math.max(0.1, n.duration), channelOf(n));
                 else if (synthRef.current) {
                   try { synthRef.current.triggerAttackRelease(n.name, Math.max(0.1, n.duration), undefined, n.velocity); } catch { /* noop */ }
                 }
@@ -889,6 +977,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
 
       const totalWhites = whiteKeys.length;
       const beatLen = 60 / (song.bpm || 90);
+      /* El compás de la pieza: una pieza en 3/4 tiene que verse en 3/4, o el
+         número de compás miente y la grilla no ayuda a escribir. */
+      const porCompas = song.beatsPerBar || 4;
       const pxPerSec = PX_PER_SECOND * S.playbackSpeed;
 
 
@@ -1046,7 +1137,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         for (let b = firstBeat; b * beatLen < time + LOOKAHEAD_SECONDS + 1; b++) {
           const y = hitY - (b * beatLen - time) * pxPerSec;
           if (y < 0 || y > hitY) continue;
-          const isBar = b % 4 === 0;
+          const isBar = b % porCompas === 0;
           ctx.strokeStyle = isBar ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)';
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(0, Math.round(y) + 0.5); ctx.lineTo(W, Math.round(y) + 0.5); ctx.stroke();
@@ -1054,7 +1145,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.font = '10px "JetBrains Mono", monospace';
             ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-            ctx.fillText(String(b / 4 + 1), 8, y - 3);
+            ctx.fillText(String(Math.floor(b / porCompas) + 1), 8, y - 3);
           }
         }
         // Notas
@@ -1142,13 +1233,13 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         for (let b = firstBeat; b * beatLen < time + LOOKAHEAD_SECONDS * 2; b++) {
           const x = hitX + (b * beatLen - time) * pxPerSec;
           if (x < hitX || x > W) continue;
-          const isBar = b % 4 === 0;
+          const isBar = b % porCompas === 0;
           ctx.strokeStyle = isBar ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)';
           ctx.beginPath(); ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, H); ctx.stroke();
           if (isBar) {
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.font = '10px "JetBrains Mono", monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-            ctx.fillText(String(b / 4 + 1), x + 4, 4);
+            ctx.fillText(String(Math.floor(b / porCompas) + 1), x + 4, 4);
           }
         }
         // Notas
@@ -1425,6 +1516,192 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     soundEngine.playNote(midiToNoteName(k.midi), soundPreset, '0.6s');
   };
 
+  /* ---------------- Componer: lápiz, goma y grabación ---------------- */
+  /* Editar una transcripción y escribir una pieza desde cero son la misma
+     cosa vista de dos maneras. La catarata ya sabía mover notas; con el lápiz
+     también sabe crearlas, y con la grabación las crea el teclado. */
+
+  /**
+   * Agrega notas a la pieza activa.
+   *
+   * Va con actualizador funcional a propósito: el lápiz y la grabación
+   * disparan varias veces seguidas, y leer `songList` del closure hacía que
+   * la segunda nota pisara a la primera. Acá cada llamada parte de lo último
+   * que hay en el estado, no de lo que había cuando se creó la función.
+   */
+  const appendNotes = useCallback((nuevas: WaterfallNote[]) => {
+    if (!nuevas.length) return;
+    setSongList(prev => {
+      const next = prev.map(s => {
+        if (s.id !== activeSongIdRef.current) return s;
+        const notes = [...s.notes, ...nuevas].sort((a, b) => a.time - b.time);
+        const fin = notes.reduce((m, n) => Math.max(m, n.time + n.duration), 0);
+        return { ...s, notes, notesCount: notes.length, duration: Math.max(s.duration, fin + 1), isCustom: true };
+      });
+      saveCustomSongs(next);
+      queueServerSave(next.find(s => s.id === activeSongIdRef.current));
+      return next;
+    });
+  }, [queueServerSave]);
+
+  const [tool, setTool] = useState<'pointer' | 'pencil'>('pointer');
+  /** Largo de la nota que dibuja el lápiz, en negras. */
+  const [drawBeats, setDrawBeats] = useState(1);
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
+
+  /** Arma una nota en la pista seleccionada. */
+  const makeNote = useCallback((midiNum: number, time: number, duration: number, velocity = 0.8): WaterfallNote => {
+    const trackId = selectedTrackId || tracks[0]?.id || 'right';
+    return {
+      id: `n-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      name: midiToNoteName(midiNum),
+      midi: midiNum,
+      time: +Math.max(0, time).toFixed(3),
+      duration: +Math.max(0.05, duration).toFixed(3),
+      velocity,
+      hand: activeSong.tracks ? 'right' : (trackId as 'right' | 'left'),
+      ...(activeSong.tracks ? { track: trackId } : {}),
+    };
+  }, [selectedTrackId, tracks, activeSong.tracks]);
+
+  /** El lápiz: un clic escribe una nota del largo elegido. */
+  const startDraw = useCallback((px: number, py: number, free: boolean) => {
+    const k = keyAt(px, py);
+    if (!k) return;
+    const beat = 60 / (activeSong.bpm || 100);
+    const g = beat / 4;
+    const bruto = timeAt(px, py);
+    const t = free ? Math.max(0, +bruto.toFixed(3)) : Math.max(0, +(Math.round(bruto / g) * g).toFixed(3));
+    const n = makeNote(k.midi, t, beat * drawBeats);
+    appendNotes([n]);
+    selectOne(n.id);
+    soundEngine.playNote(n.name, soundPreset, '0.5s');
+  }, [activeSong.bpm, makeNote, drawBeats, appendNotes, selectOne, soundPreset]);
+
+  /** La goma: borra la nota que esté bajo el puntero. */
+  const eraseAt = useCallback((px: number, py: number) => {
+    const hit = noteAt(px, py);
+    if (!hit) return;
+    const cur = songList.find(s => s.id === activeSongIdRef.current);
+    if (!cur) return;
+    replaceNotes(cur.notes.filter(n => n.id !== hit.id));
+    selectOne(null);
+  }, [songList, replaceNotes, selectOne]);
+
+  /* ---------------- Grabar lo que tocás ---------------- */
+  /* La catarata ya escuchaba el teclado para corregir; grabando, además,
+     guarda. Va con cuenta de entrada porque nadie entra a tiempo en el
+     silencio, y lo grabado cae en la grilla para que quede legible. */
+
+  const [recording, setRecording] = useState(false);
+  const [countIn, setCountIn] = useState(0);
+  const recStartRef = useRef(0);
+  /** Notas que están sonando ahora: midi → { inicio, velocidad }. */
+  const openNotesRef = useRef<Map<number, { time: number; velocity: number }>>(new Map());
+  const countTimer = useRef<number | null>(null);
+
+  const stopRecording = useCallback(() => {
+    recordingRef.current = false;
+    setRecording(false);
+    setCountIn(0);
+    if (countTimer.current !== null) { window.clearInterval(countTimer.current); countTimer.current = null; }
+    // Lo que quedó con la tecla apretada se cierra con el largo mínimo
+    const abiertas = openNotesRef.current;
+    if (abiertas.size) {
+      const g = 60 / (activeSongRef.current?.bpm || 100) / 4;
+      const fin = timeRef.current;
+      const cierre: WaterfallNote[] = [];
+      abiertas.forEach((v, m) => cierre.push(makeNote(m, v.time, Math.max(g, fin - v.time), v.velocity)));
+      abiertas.clear();
+      appendNotes(cierre);
+    }
+  }, [makeNote, appendNotes]);
+
+  /* Se suelta la tecla: la nota se cierra, se lleva a la grilla y entra en la
+     pieza. Cuantizar acá y no después es lo que hace que lo grabado se pueda
+     leer y editar como cualquier otra nota. */
+  recordNoteEndRef.current = (midiNote: number) => {
+    const abierta = openNotesRef.current.get(midiNote);
+    if (!abierta) return;
+    openNotesRef.current.delete(midiNote);
+    const bpm = activeSongRef.current?.bpm || 100;
+    const g = 60 / bpm / 4;                                   // semicorchea
+    const inicio = Math.max(0, +(Math.round(abierta.time / g) * g).toFixed(3));
+    const largo = Math.max(g, +(Math.round((timeRef.current - abierta.time) / g) * g).toFixed(3));
+    appendNotes([makeNote(midiNote, inicio, largo, abierta.velocity)]);
+  };
+
+  const startRecording = useCallback(async () => {
+    if (recordingRef.current) { stopRecording(); return; }
+    await Tone.start();
+    openNotesRef.current.clear();
+    // Cuenta de entrada de un compás
+    const bpm = activeSongRef.current?.bpm || 100;
+    const porCompas = activeSongRef.current?.beatsPerBar || 4;
+    setCountIn(porCompas);
+    let quedan = porCompas;
+    const tick = () => {
+      try { clickRef.current?.triggerAttackRelease(quedan === porCompas ? 'C6' : 'G5', '32n'); } catch { /* noop */ }
+      quedan--;
+      setCountIn(quedan);
+      if (quedan <= 0) {
+        if (countTimer.current !== null) { window.clearInterval(countTimer.current); countTimer.current = null; }
+        recordingRef.current = true;
+        setRecording(true);
+        recStartRef.current = timeRef.current;
+        if (!playingRef.current) togglePlayRef.current();
+      }
+    };
+    tick();
+    countTimer.current = window.setInterval(tick, (60 / bpm) * 1000);
+  }, [stopRecording]);
+
+  useEffect(() => () => { if (countTimer.current !== null) window.clearInterval(countTimer.current); }, []);
+
+  /* ---------------- Componer: la pieza en sí ---------------- */
+
+  const patchSong = useCallback((patch: Partial<WaterfallSong>) => {
+    setSongList(prev => {
+      const next = prev.map(s => {
+        if (s.id !== activeSongIdRef.current) return s;
+        const nuevo = { ...s, ...patch, isCustom: true };
+        /* Cambiar el tempo o el compás no acorta la pieza: los compases que
+           tenía los sigue teniendo, sólo duran otra cosa. Si no, subir el
+           tempo se comía el final de lo que ya estaba escrito. */
+        if ((patch.bpm !== undefined || patch.beatsPerBar !== undefined) && patch.duration === undefined) {
+          const compasViejo = (60 / (s.bpm || 100)) * (s.beatsPerBar || 4);
+          const compases = Math.max(1, Math.round(s.duration / compasViejo));
+          const compasNuevo = (60 / (nuevo.bpm || 100)) * (nuevo.beatsPerBar || 4);
+          nuevo.duration = +(compases * compasNuevo).toFixed(2);
+        }
+        return nuevo;
+      });
+      saveCustomSongs(next);
+      queueServerSave(next.find(s => s.id === activeSongIdRef.current));
+      return next;
+    });
+  }, [queueServerSave]);
+
+  /** Pieza en blanco: se agrega a la biblioteca y queda abierta. */
+  const nuevaPieza = useCallback(() => {
+    const s = emptySong();
+    setSongList(prev => { const next = [s, ...prev]; saveCustomSongs(next); return next; });
+    setActiveSongId(s.id);
+    selectOne(null);
+    setHistory({ past: [], future: [] });
+    setTool('pencil');
+    queueServerSave(s);
+  }, [setActiveSongId, selectOne, queueServerSave]);
+
+  /** Alarga la línea de tiempo. Sin esto no se puede escribir más allá del final. */
+  const agregarCompases = useCallback((cuantos: number) => {
+    const cur = songList.find(s => s.id === activeSongIdRef.current);
+    if (!cur) return;
+    const largo = (60 / (cur.bpm || 100)) * (cur.beatsPerBar || 4) * cuantos;
+    patchSong({ duration: +(cur.duration + largo).toFixed(2) });
+  }, [songList, patchSong]);
+
   /* ---------------- Acciones sobre varias notas ---------------- */
   /* Rejillas de cuantización. La de semicorcheas es la que sirve casi siempre;
      las otras están para transcripciones de audio, que llegan con todo corrido
@@ -1499,6 +1776,15 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     if (down) {
       setCtxMenu(null);
       const hit = noteAt(x, y);
+      /* Con el lápiz, el escenario escribe en vez de reproducir: sobre el
+         vacío nace una nota, y sobre una que ya está se la selecciona (así
+         un clic torpe no apila dos notas en el mismo lugar). Alt saca la
+         nota de la grilla, como en el arrastre. */
+      if (toolRef.current === 'pencil' && !(viewMode === 'roll' && x <= 74)) {
+        if (hit) { selectOne(hit.id); return; }
+        startDraw(x, y, e.altKey);
+        return;
+      }
       if (hit) {
         if (e.shiftKey || e.ctrlKey || e.metaKey) toggleInSelection(hit.id);
         else if (!selectedIdsRef.current.has(hit.id)) selectOne(hit.id);
@@ -1530,7 +1816,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         if (viewMode !== 'roll' || x > 74) {
           selectOne(null);
           // El doble clic agrega una nota: que no dispare además play/pausa
-          if ((e as unknown as MouseEvent).detail < 2) handleTogglePlay();
+          if ((e as unknown as MouseEvent).detail < 2 && toolRef.current !== 'pencil') handleTogglePlay();
         }
         return;
       }
@@ -1595,6 +1881,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const hit = noteAt(x, y);
+    /* Con el lápiz, el botón derecho es la goma: borra sin abrir menú. Es el
+       gesto de cualquier editor de piano roll y ahorra el viaje al menú. */
+    if (toolRef.current === 'pencil') { setCtxMenu(null); eraseAt(x, y); return; }
     if (!hit) { setCtxMenu(null); return; }
     if (!selectedIdsRef.current.has(hit.id)) selectOne(hit.id); else setSelectedNoteId(hit.id);
     setCtxMenu({ x: Math.min(x, rect.width - 230), y: Math.min(y, rect.height - 330), noteId: hit.id });
@@ -1798,30 +2087,76 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         </div>
 
         {/* Vista */}
-        <div className="seg bg-[#141b2b] border-white/8 shrink-0">
+        <div className="seg bg-[#141b2b] border-white/8 shrink-0 justify-self-center">
           <button type="button" data-active={viewMode === 'roll'} onClick={() => setViewMode('roll')} className="seg-item flex items-center gap-1.5" aria-label="Vista Roll" data-tip="Vista Roll">
-            <AlignJustify size={14} /> <span className="hidden sm:inline">Roll</span>
+            <AlignJustify size={14} /> <span className="hidden 2xl:inline">Roll</span>
           </button>
           <button type="button" data-active={viewMode === 'vertical'} onClick={() => setViewMode('vertical')} className="seg-item flex items-center gap-1.5" aria-label="Vista Vertical" data-tip="Vista Vertical">
-            <LayoutPanelTop size={14} /> <span className="hidden sm:inline">Vertical</span>
+            <LayoutPanelTop size={14} /> <span className="hidden 2xl:inline">Vertical</span>
           </button>
         </div>
 
         {/* Herramientas */}
-        <div className="flex items-center justify-end gap-1.5 shrink-0">
+        <div className="flex items-center justify-end gap-1.5 min-w-0 flex-wrap sm:flex-nowrap">
+          {!isDemo && (
+            <div className="seg bg-[#141b2b] border-white/8 shrink-0">
+              <button type="button" data-active={tool === 'pointer'} onClick={() => setTool('pointer')}
+                      className="seg-item flex items-center gap-1.5" aria-label="Puntero" data-tip="Puntero: seleccionar y arrastrar">
+                <MousePointer2 size={14} />
+              </button>
+              <button type="button" data-active={tool === 'pencil'} onClick={() => setTool('pencil')}
+                      className="seg-item flex items-center gap-1.5" aria-label="Lápiz" data-tip="Lápiz: clic escribe una nota, botón derecho borra">
+                <PencilLine size={14} />
+              </button>
+            </div>
+          )}
           <IconBtn label="Deshacer (Ctrl+Z)" onClick={undo} className={cn('hidden sm:inline-flex', !history.past.length && 'opacity-40 pointer-events-none')}><Undo2 size={15} /></IconBtn>
           <IconBtn label="Rehacer (Ctrl+Y)" onClick={redo} className={cn('hidden sm:inline-flex', !history.future.length && 'opacity-40 pointer-events-none')}><Redo2 size={15} /></IconBtn>
           <IconBtn label="Volver al inicio" onClick={handleStop} className="hidden md:inline-flex"><RotateCcw size={15} /></IconBtn>
           <IconBtn label="Descargar la pieza como .mid" onClick={() => downloadSongAsMidi(activeSong)} className="hidden md:inline-flex"><Download size={15} /></IconBtn>
           <IconBtn label="Repetir la pieza al terminar" active={loopEnabled} onClick={() => setLoopEnabled(v => !v)}>
-            <Repeat size={15} /><span className="hidden md:inline">Bucle</span>
+            <Repeat size={15} /><span className="hidden 2xl:inline">Bucle</span>
           </IconBtn>
           <IconBtn label="Metrónomo" active={metronomeOn} onClick={() => setMetronomeOn(v => !v)} className="hidden sm:inline-flex"><Triangle size={15} /></IconBtn>
           <IconBtn label={micOn ? 'Micrófono activo: tocá tu piano acústico' : 'Escuchar el piano acústico por micrófono'} active={micOn} onClick={() => setMicOn(v => !v)}>
             {micOn ? <Mic size={15} /> : <MicOff size={15} />}
           </IconBtn>
+          {!isDemo && (
+            <div className="relative">
+              <IconBtn label="Componer: pieza nueva, tempo, compás y sonido de cada pista"
+                       active={composeOpen || recording}
+                       onClick={() => { setComposeOpen(v => !v); setSettingsOpen(false); setHelpOpen(false); }}>
+                {recording ? <Disc3 size={15} className="animate-spin text-danger" /> : <Music4 size={15} />}
+                <span className="hidden 2xl:inline">Componer</span>
+              </IconBtn>
+              <AnimatePresence>
+                {composeOpen && (
+                  <Popover onClose={() => setComposeOpen(false)} title="Componer">
+                    <ComposePanel
+                      song={activeSong}
+                      tracks={tracks}
+                      selectedTrackId={selectedTrackId}
+                      onSelectTrack={setSelectedTrackId}
+                      tool={tool}
+                      onTool={setTool}
+                      drawBeats={drawBeats}
+                      onDrawBeats={setDrawBeats}
+                      recording={recording}
+                      countIn={countIn}
+                      onRecord={() => void startRecording()}
+                      onStopRecord={stopRecording}
+                      onNueva={nuevaPieza}
+                      onPatch={patchSong}
+                      onAgregarCompases={agregarCompases}
+                      onTrackSound={setTrackSound}
+                    />
+                  </Popover>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
           <div className="relative">
-            <IconBtn label="Ajustes de la catarata" active={settingsOpen} onClick={() => { setSettingsOpen(v => !v); setHelpOpen(false); }}><Settings2 size={15} /></IconBtn>
+            <IconBtn label="Ajustes de la catarata" active={settingsOpen} onClick={() => { setSettingsOpen(v => !v); setComposeOpen(false); setHelpOpen(false); }}><Settings2 size={15} /></IconBtn>
             <AnimatePresence>
               {settingsOpen && (
                 <Popover onClose={() => setSettingsOpen(false)} title="Ajustes">
@@ -1921,7 +2256,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
           <div className="relative flex-1 min-h-0">
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 w-full h-full block cursor-pointer touch-none"
+              className={cn('absolute inset-0 w-full h-full block touch-none', tool === 'pencil' ? 'cursor-crosshair' : 'cursor-pointer')}
               onPointerDown={e => rollPointer(e, true)}
               onPointerUp={e => rollPointer(e, false)}
               onPointerLeave={e => rollPointer(e, false)}
@@ -2250,5 +2585,183 @@ const TrackBtn: React.FC<{ label: string; active: boolean; activeClass: string; 
     </button>
   );
 
+/* ------------------------------------------------------------------ */
+/*  Componer                                                           */
+/* ------------------------------------------------------------------ */
 
+/**
+ * El panel de composición.
+ *
+ * La catarata nació para leer piezas ajenas; esto la convierte en un lugar
+ * donde escribir las propias sin cambiar de herramienta. Son tres cosas:
+ * cómo se escribe (lápiz o grabando), cómo suena la línea de tiempo (tempo,
+ * compás, largo) y con qué sonido del Kross suena cada pista.
+ *
+ * El sonido por pista es la parte que da el salto: con un preset del teclado
+ * en cada pista, una pieza de tres pistas suena a tres instrumentos de
+ * verdad, no a tres pianos.
+ */
+const ComposePanel: React.FC<{
+  song: WaterfallSong;
+  tracks: TrackState[];
+  selectedTrackId: string;
+  onSelectTrack: (id: string) => void;
+  tool: 'pointer' | 'pencil';
+  onTool: (t: 'pointer' | 'pencil') => void;
+  drawBeats: number;
+  onDrawBeats: (n: number) => void;
+  recording: boolean;
+  countIn: number;
+  onRecord: () => void;
+  onStopRecord: () => void;
+  onNueva: () => void;
+  onPatch: (patch: Partial<WaterfallSong>) => void;
+  onAgregarCompases: (n: number) => void;
+  onTrackSound: (id: string, patch: { krossPresetId?: string | null; channel?: number }) => void;
+}> = ({
+  song, tracks, selectedTrackId, onSelectTrack, tool, onTool, drawBeats, onDrawBeats,
+  recording, countIn, onRecord, onStopRecord, onNueva, onPatch, onAgregarCompases, onTrackSound,
+}) => {
+  const presets = midi.presets();
+  const porCompas = song.beatsPerBar || 4;
+  const compases = Math.max(1, Math.round(song.duration / ((60 / (song.bpm || 100)) * porCompas)));
+  const largos: { beats: number; label: string }[] = [
+    { beats: 0.25, label: '1/16' },
+    { beats: 0.5, label: '1/8' },
+    { beats: 1, label: '1/4' },
+    { beats: 2, label: '1/2' },
+    { beats: 4, label: '1' },
+  ];
 
+  return (
+    <div className="space-y-2.5">
+
+      <button type="button" onClick={onNueva} className="btn btn-secondary btn-sm w-full bg-[#141b2b]">
+        <Plus size={12} /> Pieza en blanco
+      </button>
+
+      {/* Cómo se escribe */}
+      <Row label="Escribir notas">
+        <div className="seg w-full">
+          <button type="button" className="seg-item flex-1 flex items-center justify-center gap-1.5"
+                  data-active={tool === 'pointer'} onClick={() => onTool('pointer')}>
+            <MousePointer2 size={12} /> Puntero
+          </button>
+          <button type="button" className="seg-item flex-1 flex items-center justify-center gap-1.5"
+                  data-active={tool === 'pencil'} onClick={() => onTool('pencil')}>
+            <PencilLine size={12} /> Lápiz
+          </button>
+        </div>
+        <p className="text-[11px] text-ink-3 mt-1.5 leading-snug">
+          {tool === 'pencil'
+            ? 'Clic sobre la línea de tiempo escribe una nota; botón derecho la borra. Con Alt queda fuera de la grilla.'
+            : 'Arrastrar mueve, el borde estira y la marquesina encierra varias.'}
+        </p>
+      </Row>
+
+      {tool === 'pencil' && (
+        <Row label="Largo de la nota">
+          <div className="seg w-full">
+            {largos.map(l => (
+              <button key={l.beats} type="button" className="seg-item flex-1 font-mono text-[11px]"
+                      data-active={drawBeats === l.beats} onClick={() => onDrawBeats(l.beats)}>{l.label}</button>
+            ))}
+          </div>
+        </Row>
+      )}
+
+      {/* Grabar */}
+      <div className="rounded-xl border border-white/8 bg-[#141b2b] px-2.5 py-2">
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={recording ? onStopRecord : onRecord}
+                  className={cn('btn btn-sm shrink-0', recording ? 'btn-primary bg-danger border-danger' : 'btn-secondary bg-[#0f1626]')}>
+            <Disc3 size={12} className={recording ? 'animate-spin' : undefined} />
+            {recording ? 'Parar' : 'Grabar'}
+          </button>
+          <span className="text-[11px] text-ink-3 leading-snug min-w-0">
+            {countIn > 0
+              ? `Entrás en ${countIn}…`
+              : recording
+                ? 'Grabando en la pista elegida. Lo que toques cae en la grilla.'
+                : 'Un compás de cuenta y lo que toques en el teclado se escribe solo.'}
+          </span>
+        </div>
+      </div>
+
+      {/* La línea de tiempo */}
+      <Row label="La pieza">
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="flex items-center gap-1.5 text-[11px] text-ink-2">
+            Tempo
+            <input type="number" min={30} max={240} value={song.bpm} aria-label="Tempo"
+                   onChange={e => onPatch({ bpm: Math.max(30, Math.min(240, Number(e.target.value) || 100)) })}
+                   className="w-16 bg-[#0f1626] border border-white/10 rounded-lg px-1.5 py-1 text-[11.5px] font-mono text-ink" />
+            <span className="text-ink-3">BPM</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-[11px] text-ink-2">
+            Compás
+            <select value={porCompas} aria-label="Compás"
+                    onChange={e => onPatch({ beatsPerBar: Number(e.target.value) })}
+                    className="bg-[#0f1626] border border-white/10 rounded-lg px-1.5 py-1 text-[11.5px] font-mono text-ink">
+              {[2, 3, 4, 5, 6, 7].map(n => <option key={n} value={n}>{n}/4</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-[11px] text-ink-3 flex-1">{compases} compases · {fmtTime(song.duration)}</span>
+          <button type="button" onClick={() => onAgregarCompases(4)} className="btn btn-ghost btn-sm py-0.5">
+            <Plus size={11} /> 4 compases
+          </button>
+        </div>
+      </Row>
+
+      {/* Sonido de cada pista */}
+      <Row label="Sonido de cada pista">
+        {presets.length === 0 ? (
+          <p className="text-[11px] text-ink-3 leading-snug">
+            Todavía no hay sonidos guardados del teclado. Se guardan desde el panel del
+            instrumento, en la barra de arriba: girás el dial del Kross y le ponés nombre.
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            {tracks.map(t => (
+              <div key={t.id} className="rounded-lg border border-white/8 bg-[#0f1626] px-2 py-1.5 space-y-1.5">
+                <button type="button" onClick={() => onSelectTrack(t.id)}
+                        aria-pressed={selectedTrackId === t.id}
+                        className="flex items-center gap-1.5 w-full text-left"
+                        data-tip={`Escribir en ${t.name}`}>
+                  <span className={cn('h-4 w-4 shrink-0 rounded border transition-colors',
+                          selectedTrackId === t.id ? 'border-white/60' : 'border-white/10')}
+                        style={{ background: t.color }} />
+                  <span className={cn('text-[11.5px] truncate', selectedTrackId === t.id ? 'text-ink font-medium' : 'text-ink-2')}>
+                    {t.name}
+                  </span>
+                  {selectedTrackId === t.id && <span className="text-[10px] text-ink-3 ml-auto shrink-0">escribiendo acá</span>}
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <select value={t.krossPresetId ?? ''} aria-label={`Sonido de ${t.name}`}
+                          onChange={e => onTrackSound(t.id, { krossPresetId: e.target.value || null })}
+                          className="min-w-0 flex-1 bg-[#141b2b] border border-white/10 rounded-lg px-1.5 py-1 text-[11px] text-ink">
+                    <option value="">Piano de la app</option>
+                    {presets.map(pr => <option key={pr.id} value={pr.id}>{pr.name}</option>)}
+                  </select>
+                  <label className="flex items-center gap-1 text-[10.5px] text-ink-3 shrink-0">
+                    canal
+                    <select value={t.channel ?? 1} aria-label={`Canal de ${t.name}`}
+                            onChange={e => onTrackSound(t.id, { channel: Number(e.target.value) })}
+                            className="bg-[#141b2b] border border-white/10 rounded-lg px-1 py-1 text-[11px] font-mono text-ink">
+                      {Array.from({ length: 16 }, (_, i) => i + 1).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                </div>
+              </div>
+            ))}
+            <p className="text-[11px] text-ink-3 leading-snug">
+              Cada pista sale por su canal, así el Kross puede tener un sonido distinto en cada una.
+            </p>
+          </div>
+        )}
+      </Row>
+    </div>
+  );
+};

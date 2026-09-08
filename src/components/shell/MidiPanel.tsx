@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Cable, Music4, Play, Zap, AlertCircle, RotateCcw, Footprints } from 'lucide-react';
-import { midi } from '../../lib/midi';
+import { Cable, Music4, Play, Zap, AlertCircle, RotateCcw, Footprints, Bookmark, Plus, X, Pencil } from 'lucide-react';
+import { midi, type KrossPreset } from '../../lib/midi';
 import { useMidi } from '../../lib/useMidi';
 import { cn } from '../../lib/utils';
 
@@ -155,7 +155,9 @@ export const MidiPanel: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
+              <SonidosGuardados onChange={() => setPrefs(midi.getPrefs())} />
+
+              <div className="flex items-center gap-2 flex-wrap">
                 <label className="flex items-center gap-1.5 text-[11px] text-ink-2">
                   Canal
                   <select value={prefs.channel} onChange={e => set({ channel: Number(e.target.value) })}
@@ -181,6 +183,109 @@ export const MidiPanel: React.FC = () => {
       )}
 
       {state.error && <p className="text-[11px] text-danger">{state.error}</p>}
+    </div>
+  );
+};
+
+/**
+ * Los sonidos del Kross, guardados con nombre.
+ *
+ * El teclado se cambia de sonido con tres números (banco grueso, banco fino y
+ * programa) que no le dicen nada a nadie. Acá se hace una vez el trabajo de
+ * ponerles nombre: se gira el dial del Kross hasta el sonido que uno quiere,
+ * se aprieta "Guardar el que está sonando" y queda como "Rhodes" o "Pad".
+ * Después, en la catarata, cada pista se elige por ese nombre.
+ *
+ * Para quien tenga el banco y el programa anotados, está la carga a mano.
+ */
+const SonidosGuardados: React.FC<{ onChange: () => void }> = ({ onChange }) => {
+  const [lista, setLista] = useState<KrossPreset[]>(() => midi.presets());
+  const [nombre, setNombre] = useState('');
+  const [aMano, setAMano] = useState(false);
+  const [msb, setMsb] = useState(0);
+  const [lsb, setLsb] = useState(0);
+  const [prg, setPrg] = useState(0);
+
+  const refrescar = () => { setLista([...midi.presets()]); onChange(); };
+  const actual = midi.pendingCapture();
+
+  const guardar = () => {
+    const n = nombre.trim();
+    if (!n) return;
+    if (aMano) midi.addPreset(n, msb, lsb, prg);
+    else if (!midi.capturePreset(n)) return;
+    setNombre('');
+    refrescar();
+  };
+
+  return (
+    <div className="rounded-xl border border-line bg-surface-2 px-3 py-2 space-y-2">
+      <div className="flex items-center gap-1.5">
+        <Bookmark size={13} className="text-ink-3 shrink-0" />
+        <span className="text-[12px] font-medium text-ink whitespace-nowrap">Sonidos guardados</span>
+        <button type="button" onClick={() => setAMano(v => !v)}
+                aria-label={aMano ? 'Tomar el sonido del teclado' : 'Cargar el banco y el programa a mano'}
+                className="btn btn-ghost btn-sm ml-auto py-0.5 shrink-0 whitespace-nowrap"
+                data-tip={aMano ? 'Tomar el sonido que tenga puesto el teclado' : 'Cargar el banco y el programa a mano'}>
+          <Pencil size={11} /> {aMano ? 'Del teclado' : 'A mano'}
+        </button>
+      </div>
+
+      {lista.length > 0 && (
+        <ul className="space-y-1">
+          {lista.map(p => (
+            <li key={p.id} className="flex items-center gap-1.5">
+              <button type="button" onClick={() => { midi.applyPreset(p.id); }}
+                      className="btn btn-ghost btn-sm flex-1 justify-start min-w-0 py-0.5"
+                      data-tip="Ponerlo en el instrumento">
+                <span className="truncate">{p.name}</span>
+              </button>
+              <span className="text-[10px] font-mono text-ink-3 shrink-0 tabular-nums">
+                {p.bankMsb}·{p.bankLsb}·{p.program}
+              </span>
+              <button type="button" aria-label={`Renombrar ${p.name}`}
+                      onClick={() => {
+                        const n = window.prompt('Nombre del sonido', p.name);
+                        if (n) { midi.renamePreset(p.id, n); refrescar(); }
+                      }}
+                      className="btn btn-ghost btn-sm shrink-0 px-1 py-0.5"><Pencil size={10} /></button>
+              <button type="button" aria-label={`Borrar ${p.name}`}
+                      onClick={() => { midi.removePreset(p.id); refrescar(); }}
+                      className="btn btn-ghost btn-sm shrink-0 px-1 py-0.5"><X size={11} /></button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {aMano ? (
+        <div className="flex items-center gap-1.5">
+          {([['MSB', msb, setMsb], ['LSB', lsb, setLsb], ['Prg', prg, setPrg]] as const).map(([et, val, set]) => (
+            <label key={et} className="flex items-center gap-1 text-[10.5px] text-ink-3">
+              {et}
+              <input type="number" min={0} max={127} value={val} aria-label={`Banco ${et}`}
+                     onChange={e => (set as (n: number) => void)(Number(e.target.value))}
+                     className="w-12 bg-surface border border-line rounded-lg px-1 py-0.5 text-[11px] font-mono text-ink" />
+            </label>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-ink-3 leading-snug">
+          {actual
+            ? <>El instrumento tiene puesto <span className="font-mono text-ink-2">{actual.bankMsb}·{actual.bankLsb}·{actual.program}</span>. Ponele nombre y queda guardado.</>
+            : 'Girá el dial del Kross hasta el sonido que quieras y aparece acá.'}
+        </p>
+      )}
+
+      <div className="flex items-center gap-1.5">
+        <input value={nombre} onChange={e => setNombre(e.target.value)}
+               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); guardar(); } }}
+               placeholder="Rhodes, Pad, Órgano…" aria-label="Nombre del sonido"
+               className="flex-1 min-w-0 bg-surface border border-line rounded-lg px-2 py-1 text-[11.5px] text-ink" />
+        <button type="button" onClick={guardar} disabled={!nombre.trim() || (!aMano && !actual)}
+                className="btn btn-secondary btn-sm shrink-0 disabled:opacity-40">
+          <Plus size={11} /> {aMano ? 'Agregar' : 'Guardar el que está sonando'}
+        </button>
+      </div>
     </div>
   );
 };

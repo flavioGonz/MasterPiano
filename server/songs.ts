@@ -44,6 +44,7 @@ function writeSong(userId: string, song: any) {
 const summary = (s: any) => ({
   id: s.id, title: s.title, composer: s.composer, difficulty: s.difficulty,
   bpm: s.bpm, duration: s.duration, notesCount: s.notesCount,
+  beatsPerBar: s.beatsPerBar, composed: s.composed,
   description: s.description, isCustom: true,
   tracks: s.tracks, sourceJobId: s.sourceJobId, importedAt: s.importedAt,
 });
@@ -52,7 +53,11 @@ const summary = (s: any) => ({
 function sanitize(body: any, fallbackId: string): any | null {
   if (!body || typeof body !== "object") return null;
   const notes = Array.isArray(body.notes) ? body.notes : null;
-  if (!notes || !notes.length) return null;
+  /* Una pieza importada sin notas es basura y se rechaza. Una que estás
+     escribiendo empieza vacía a propósito: si no se pudiera guardar, la
+     primera nota se perdería al recargar. */
+  const composed = body.composed === true;
+  if (!notes || (!notes.length && !composed)) return null;
   const id = typeof body.id === "string" && safeId(body.id) ? body.id : fallbackId;
   return {
     id,
@@ -61,6 +66,8 @@ function sanitize(body: any, fallbackId: string): any | null {
     difficulty: ["Fácil", "Intermedio", "Avanzado"].includes(body.difficulty) ? body.difficulty : "Intermedio",
     bpm: Number.isFinite(body.bpm) ? Math.min(400, Math.max(20, Math.round(body.bpm))) : 100,
     duration: Number.isFinite(body.duration) ? Math.max(0, body.duration) : 0,
+    beatsPerBar: Number.isFinite(body.beatsPerBar) ? Math.min(16, Math.max(1, Math.round(body.beatsPerBar))) : undefined,
+    composed: composed || undefined,
     notesCount: notes.length,
     description: String(body.description || "").slice(0, 500),
     notes,

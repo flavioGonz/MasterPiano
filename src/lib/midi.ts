@@ -56,6 +56,20 @@ export interface MidiState {
   needsPermission: boolean;
 }
 
+/**
+ * Un sonido del instrumento guardado con nombre. El Kross se maneja con
+ * banco (dos CC) + programa, tres números que no dicen nada; acá se les pone
+ * el nombre que uno lee en la pantalla del teclado ("E.Piano Rhodes") y ya se
+ * elige por nombre desde cualquier parte de la app.
+ */
+export interface KrossPreset {
+  id: string;
+  name: string;
+  bankMsb: number;
+  bankLsb: number;
+  program: number;
+}
+
 export interface MidiPrefs {
   inputId: string | null;
   outputId: string | null;
@@ -75,21 +89,33 @@ export interface MidiPrefs {
   footCc: number | null;
   /** Último sonido que mandó el instrumento, para poder volver a él. */
   lastProgram: { bankMsb: number; bankLsb: number; program: number } | null;
+  /** Sonidos del instrumento guardados con nombre. */
+  presets: KrossPreset[];
 }
 
 const PREFS_KEY = 'pianomaster_midi_v1';
 const DEFAULT_PREFS: MidiPrefs = {
   inputId: null, outputId: null, channel: 1,
   throughOut: false, sendClock: false, latencyMs: 0,
-  footCc: null, lastProgram: null,
+  footCc: null, lastProgram: null, presets: [],
 };
 
 function loadPrefs(): MidiPrefs {
   try {
     const raw = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null');
-    if (raw && typeof raw === 'object') return { ...DEFAULT_PREFS, ...raw };
+    if (raw && typeof raw === 'object') {
+      const merged = { ...DEFAULT_PREFS, ...raw } as MidiPrefs;
+      if (!Array.isArray(merged.presets)) merged.presets = [];
+      return merged;
+    }
   } catch { /* se usan los de fábrica */ }
   return DEFAULT_PREFS;
+}
+
+/** Los datos MIDI van de 0 a 127 y nada más. */
+function clamp7(n: number, min = 0): number {
+  if (!Number.isFinite(n)) return min;
+  return Math.max(min, Math.min(127, Math.round(n)));
 }
 
 type Listener = () => void;
@@ -323,30 +349,43 @@ class MidiHub {
     try { o.send(bytes, when === undefined ? undefined : when + this.prefs.latencyMs); } catch { /* puerto cerrado */ }
   }
 
+  /**
+   * Canal en el que hay que mandar. Sin argumento va el canal global de los
+   * ajustes; con argumento, el de la pista (1–16), que es lo que permite que
+   * cada pista de una pieza suene con un sonido distinto del Kross.
+   */
+  private ch(channel?: number): number {
+    const n = channel && channel >= 1 && channel <= 16 ? channel : this.prefs.channel;
+    return Math.max(0, Math.min(15, n - 1));
+  }
+
   /** Toca una nota en el instrumento. `duration` en segundos. */
-  playNote(midi: number, velocity = 0.8, duration = 0.6) {
-    const ch = Math.max(0, Math.min(15, this.prefs.channel - 1));
-    const v = Math.max(1, Math.min(127, Math.round(velocity * 127)));
+  playNote(midi: number, velocity = 0.8, duration = 0.6, channel?: number) {
+    const ch = this.ch(channel);
+    const v = clamp7(Math.round(velocity * 127), 1);
     const now = performance.now();
     this.send([0x90 | ch, midi, v], now);
     this.send([0x80 | ch, midi, 0], now + duration * 1000);
   }
 
-  noteOn(midi: number, velocity = 0.8) {
-    const ch = Math.max(0, Math.min(15, this.prefs.channel - 1));
-    this.send([0x90 | ch, midi, Math.max(1, Math.min(127, Math.round(velocity * 127)))]);
+  noteOn(midi: number, velocity = 0.8, channel?: number) {
+    this.send([0x90 | this.ch(channel), midi, clamp7(Math.round(velocity * 127), 1)]);
   }
-  noteOff(midi: number) {
-    const ch = Math.max(0, Math.min(15, this.prefs.channel - 1));
-    this.send([0x80 | ch, midi, 0]);
+  noteOff(midi: number, channel?: number) {
+    this.send([0x80 | this.ch(channel), midi, 0]);
   }
 
-  /** Corta todo: al parar, al cambiar de pieza o al salir de la sección. */
+  /**
+   * Corta todo: al parar, al cambiar de pieza o al salir de la sección. Va por
+   * los 16 canales porque una pieza puede haber dejado notas colgadas en
+   * cualquiera de ellos.
+   */
   panic() {
-    const ch = Math.max(0, Math.min(15, this.prefs.channel - 1));
-    this.send([0xb0 | ch, 120, 0]);   // all sound off
-    this.send([0xb0 | ch, 123, 0]);   // all notes off
-    this.send([0xb0 | ch, 64, 0]);    // pedal arriba
+    for (let ch = 0; ch < 16; ch++) {
+      this.send([0xb0 | ch, 120, 0]);   // all sound off
+      this.send([0xb0 | ch, 123, 0]);   // all notes off
+      this.send([0xb0 | ch, 64, 0]);    // pedal arriba
+    }
   }
 
   /** Vuelve al último sonido que el instrumento avisó tener puesto. */
@@ -357,12 +396,69 @@ class MidiHub {
     return true;
   }
 
-  /** Cambia el sonido del instrumento (banco + programa). */
+  /** Cambia el sonido del instrumento (banco + programa) en el canal global. */
   selectProgram(bankMsb: number, bankLsb: number, program: number) {
-    const ch = Math.max(0, Math.min(15, this.prefs.channel - 1));
-    this.send([0xb0 | ch, 0, bankMsb & 0x7f]);
-    this.send([0xb0 | ch, 32, bankLsb & 0x7f]);
-    this.send([0xc0 | ch, program & 0x7f]);
+    this.selectProgramOn(this.prefs.channel, bankMsb, bankLsb, program);
+  }
+
+  /** Lo mismo, pero en el canal que se le diga (1–16). */
+  selectProgramOn(channel: number, bankMsb: number, bankLsb: number, program: number) {
+    const ch = this.ch(channel);
+    this.send([0xb0 | ch, 0, clamp7(bankMsb)]);
+    this.send([0xb0 | ch, 32, clamp7(bankLsb)]);
+    this.send([0xc0 | ch, clamp7(program)]);
+  }
+
+  /* ---------------- Sonidos guardados ---------------- */
+
+  /**
+   * Lo último que el instrumento avisó tener puesto, aunque todavía no se
+   * haya guardado con nombre. Es lo que se ofrece al apretar "guardar este
+   * sonido": uno gira el dial del Kross y la app ya sabe qué eligió.
+   */
+  pendingCapture(): { bankMsb: number; bankLsb: number; program: number } | null {
+    return this.state.program ?? this.prefs.lastProgram ?? null;
+  }
+
+  presets(): KrossPreset[] { return this.prefs.presets; }
+
+  findPreset(id: string | null | undefined): KrossPreset | null {
+    if (!id) return null;
+    return this.prefs.presets.find(p => p.id === id) ?? null;
+  }
+
+  /** Guarda con nombre el sonido que el instrumento tiene puesto ahora. */
+  capturePreset(name: string): KrossPreset | null {
+    const cur = this.pendingCapture();
+    if (!cur) return null;
+    return this.addPreset(name, cur.bankMsb, cur.bankLsb, cur.program);
+  }
+
+  /** Alta a mano, para cuando uno tiene el banco y el programa en papel. */
+  addPreset(name: string, bankMsb: number, bankLsb: number, program: number): KrossPreset {
+    const preset: KrossPreset = {
+      id: `kp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+      name: name.trim() || 'Sonido',
+      bankMsb: clamp7(bankMsb), bankLsb: clamp7(bankLsb), program: clamp7(program),
+    };
+    this.setPrefs({ presets: [...this.prefs.presets, preset] });
+    return preset;
+  }
+
+  renamePreset(id: string, name: string) {
+    this.setPrefs({ presets: this.prefs.presets.map(p => p.id === id ? { ...p, name: name.trim() || p.name } : p) });
+  }
+
+  removePreset(id: string) {
+    this.setPrefs({ presets: this.prefs.presets.filter(p => p.id !== id) });
+  }
+
+  /** Pone ese sonido en el canal indicado (o en el global). */
+  applyPreset(id: string, channel?: number): boolean {
+    const p = this.findPreset(id);
+    if (!p) return false;
+    this.selectProgramOn(channel ?? this.prefs.channel, p.bankMsb, p.bankLsb, p.program);
+    return true;
   }
 
   /* ---------------- Reloj ---------------- */

@@ -80,8 +80,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {/* Derecha: progreso, acciones, ajustes */}
-        <div className="flex items-center gap-2 shrink-0">
-          <CurriculumProgressBar userProgress={userProgress} variant="compact" className="hidden xl:flex" />
+        {/* Puede encoger: con el teclado conectado y el progreso a la vista,
+            este bloque se desbordaba de la pantalla a 1280. */}
+        <div className="flex items-center gap-2 shrink min-w-0">
+          <CurriculumProgressBar userProgress={userProgress} variant="compact" className="hidden 2xl:flex" />
 
           <button
             type="button"
