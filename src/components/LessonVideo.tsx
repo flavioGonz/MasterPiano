@@ -38,7 +38,11 @@ const fmtSize = (b: number) => b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : `${Math
  *    vista y dice cuánto ocupa. Si el video existe en el servidor, se
  *    reproduce ese archivo y ya no depende de que YouTube siga teniéndolo.
  */
-export const LessonVideo: React.FC<{ lessonId: string; query: string; title: string }> = ({ lessonId, query, title }) => {
+export const LessonVideo: React.FC<{
+  lessonId: string; query: string; title: string;
+  /** Video elegido a mano para esta lección; si ya no existe, se busca. */
+  pinnedId?: string;
+}> = ({ lessonId, query, title, pinnedId }) => {
   const [video, setVideo] = useState<VideoPick | null>(null);
   const [offline, setOffline] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -54,7 +58,9 @@ export const LessonVideo: React.FC<{ lessonId: string; query: string; title: str
     setLoading(true); setError(null); setPlaying(false);
     try {
       const r = await fetch(
-        `/api/videos/lesson/${encodeURIComponent(lessonId)}?q=${encodeURIComponent(query)}${refresh ? '&refresh=1' : ''}`,
+        `/api/videos/lesson/${encodeURIComponent(lessonId)}?q=${encodeURIComponent(query)}`
+        + (pinnedId && !refresh ? `&pin=${encodeURIComponent(pinnedId)}` : '')
+        + (refresh ? '&refresh=1' : ''),
         { credentials: 'same-origin' });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'no se pudo buscar el video');

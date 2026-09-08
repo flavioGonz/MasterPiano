@@ -58,6 +58,50 @@ export const MINOR_FINGERINGS: Record<string, ScaleFingering> = {
   'G#': { root: 'G#', right: [3, 4, 1, 2, 3, 1, 2, 3], left: [3, 2, 1, 4, 3, 2, 1, 3] },
 };
 
+/**
+ * Menor armónica y melódica.
+ *
+ * La digitación estándar de las menores está pensada para la forma
+ * **armónica** —es la que se examina— y sirve tal cual para la natural. La
+ * melódica sube el 6º y el 7º al subir, y eso convierte en negras dos notas
+ * que en la natural eran blancas: en Do♯ y Fa♯ menor el pulgar derecho
+ * terminaría en tecla negra, así que esas dos llevan digitación propia.
+ *
+ * (Comprobado sobre las 12 × 3 formas: no hay ningún otro caso.)
+ */
+export const MINOR_MELODIC_RIGHT: Record<string, number[]> = {
+  'C#': [2, 3, 1, 2, 3, 4, 1, 2],
+  'F#': [2, 3, 1, 2, 3, 4, 1, 2],
+};
+
+export type MinorForm = 'natural' | 'harmonic' | 'melodic';
+
+/** Digitación de una menor según la forma. */
+export function minorFingering(rootName: string, form: MinorForm): ScaleFingering | null {
+  const base = MINOR_FINGERINGS[rootName];
+  if (!base) return null;
+  if (form !== 'melodic') return base;
+  const right = MINOR_MELODIC_RIGHT[rootName];
+  return right ? { ...base, right } : base;
+}
+
+/** Aviso a mostrar cuando la forma elegida tiene una particularidad. */
+export function minorFormNote(rootName: string, form: MinorForm): string | null {
+  if (form === 'melodic' && MINOR_MELODIC_RIGHT[rootName]) {
+    return 'La melódica sube el 6º y el 7º al subir, y en esta tonalidad eso deja al pulgar sobre una tecla negra con la digitación de siempre. Por eso la derecha cambia: acá arranca con el 2. Bajando, la escala vuelve a ser natural y también la digitación.';
+  }
+  if (form === 'natural' && rootName === 'G#') {
+    return 'Ojo: en la forma natural el pulgar izquierdo cae en Fa♯, que es negra. La digitación estándar está pensada para la forma armónica, donde ese grado sube a Sol y queda blanco. Es la de todas las ediciones: si te molesta en la natural, tocá esa nota con el 2.';
+  }
+  if (form === 'melodic') {
+    return 'Subiendo se levantan el 6º y el 7º; bajando la escala vuelve a ser natural. La digitación no cambia: es la misma que la armónica.';
+  }
+  if (form === 'harmonic') {
+    return 'Es la forma para la que se pensó esta digitación: sólo sube el 7º grado, y eso no mueve ningún pulgar de sitio.';
+  }
+  return null;
+}
+
 /* ================================================================== */
 /*  2. Cómo memorizar cada tonalidad                                   */
 /* ================================================================== */
@@ -378,6 +422,86 @@ export function buildArpeggio(
     left: expand(lh, count),
     suggested: false,
     note: 'El patrón se repite cada octava: una vez que la mano lo agarra, sirve para todas las octavas que quieras.',
+  };
+}
+
+/**
+ * Arpegio en inversión: no es el de posición fundamental empezado más
+ * arriba — cambia dónde queda el salto de cuarta, y con él la digitación.
+ *
+ * La regla es una sola: el hueco de la cuarta se salta dejando un dedo
+ * "libre" en el medio. En 1ª inversión la cuarta queda en el centro, así que
+ * las dos manos se apoyan en 1-2-4-5 y el 3 no se usa; en 2ª inversión la
+ * cuarta queda abajo, la izquierda va 5-3-2-1 y la derecha elige entre 3 y 4
+ * según le cierre la mano. Sobre eso se aplica, como siempre, el corrimiento
+ * para que el pulgar caiga en blanca.
+ */
+export function buildArpeggioInversion(
+  rootName: string, typeId: string, inversion: number, octaves = 2, baseOctave = 3,
+): ArpeggioPlan {
+  const type = ARPEGGIO_TYPES.find(t => t.id === typeId) ?? ARPEGGIO_TYPES[0];
+  const per = type.intervals.length;
+  const inv = ((inversion % per) + per) % per;
+  const pc = pcOf(rootName);
+  const count = per * octaves + 1;
+
+  /* Las notas: la misma tríada empezando por otro de sus grados. */
+  const rot = type.intervals.map((_, i) => {
+    const j = (i + inv) % per;
+    return type.intervals[j] + (j < inv ? 12 : 0);
+  });
+  const base = rot[0];
+
+  const notes: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const semis = rot[i % per] - base + 12 * Math.floor(i / per);
+    const total = pc + base + semis;
+    notes.push(`${CHROMATIC_NOTES[total % 12]}${baseOctave + Math.floor(total / 12)}`);
+  }
+
+  if (inv === 0) return buildArpeggio(rootName, typeId, octaves, baseOctave);
+
+  /* Dónde queda el hueco grande dentro del grupo. */
+  const pasos = rot.map((v, i) => (i === per - 1 ? (rot[0] + 12 - v) : (rot[i + 1] - v)));
+  const hueco = pasos.indexOf(Math.max(...pasos));
+
+  /* Los dedos de un grupo, por posición dentro del grupo. El hueco de la
+     cuarta se salta dejando un dedo libre: por eso en 1ª inversión no se usa
+     el 3 (queda justo en el medio) y en 2ª la izquierda va 5-3-2-1. */
+  const rhUnit = per === 3 ? [1, 2, 4] : [1, 2, 3, 4];
+  const lhUnit = per === 3 ? (hueco === 0 ? [1, 3, 2] : [1, 4, 2]) : [1, 4, 3, 2];
+
+  /* El pulgar no pisa negra. Cada mano se corre por su cuenta: en una
+     inversión el pulgar derecho y el izquierdo no caen en la misma nota. */
+  const negra = (n: string) => n.includes('#');
+  const todasNegras = notes.slice(0, per).every(negra);
+  const desfaseDe = (unit: number[]) => {
+    if (todasNegras) return 0;
+    const iPulgar = unit.indexOf(1);
+    for (let d = 0; d < per; d++) {
+      if (!negra(notes[(iPulgar + d) % per])) return d;
+    }
+    return 0;
+  };
+  const dRh = desfaseDe(rhUnit);
+  const dLh = desfaseDe(lhUnit);
+
+  const right: number[] = [];
+  const left: number[] = [];
+  for (let i = 0; i < count; i++) {
+    right.push(rhUnit[(((i - dRh) % per) + per) % per]);
+    left.push(lhUnit[(((i - dLh) % per) + per) % per]);
+  }
+  if (left[0] === 1) left[0] = 5;   // abajo de todo no hay de dónde cruzar: va el meñique
+
+  const nombre = inv === 1 ? 'primera inversión' : inv === 2 ? 'segunda inversión' : 'tercera inversión';
+  return {
+    notes, right, left, suggested: true,
+    note: todasNegras
+      ? `En ${nombre} todas las notas del grupo son negras, así que el pulgar pisa negra: es la excepción.`
+      : per === 3 && hueco === 1
+        ? `En ${nombre} el salto de cuarta queda en el medio: las dos manos se apoyan en 1-2-4-5 y el 3 queda libre justo en el hueco.`
+        : `En ${nombre} el salto de cuarta cambia de lugar, y con él la digitación. La derecha puede usar 3 o 4 arriba, lo que le cierre mejor a la mano.`,
   };
 }
 

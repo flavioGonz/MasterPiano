@@ -14,10 +14,10 @@ interface CurriculumRoadmapProps {
 
 const MODULES = [
   { number: 1, title: 'Fundamentos absolutos', range: '0–9%' },
-  { number: 2, title: 'Escalas e intervalos', range: '9–44%' },
-  { number: 3, title: 'El poder de los acordes', range: '44–74%' },
-  { number: 4, title: 'Inversiones y conducción', range: '74–88%' },
-  { number: 5, title: 'Armonía maestra', range: '88–100%' },
+  { number: 2, title: 'Escalas e intervalos', range: '9–36%' },
+  { number: 3, title: 'El poder de los acordes', range: '36–58%' },
+  { number: 4, title: 'Inversiones y conducción', range: '58–80%' },
+  { number: 5, title: 'Armonía maestra', range: '80–100%' },
 ];
 
 const LEVELS = ['Principiante', 'Intermedio', 'Avanzado'] as const;

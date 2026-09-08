@@ -180,7 +180,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     tracksSongRef.current = key;
     const next = initialTracks(activeSong);
     setTracks(next); setSelectedTrackId(next[0].id);
-    setSelectedNoteId(null); setHistory({ past: [], future: [] });
+    selectOne(null); setHistory({ past: [], future: [] });
   }, [activeSong]);
   const trackOf = (id: string): TrackState => tracks.find(t => t.id === id) ?? tracks[0];
   const updateTrack = (id: string, patch: Partial<TrackState>) =>
@@ -193,6 +193,23 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
 
   /* ---------------- Edición de notas (menú contextual, undo/redo) ---------------- */
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  /* Selección múltiple: el set manda, y `selectedNoteId` es la nota "primaria"
+     (la última tocada) que usan el chip de acciones y el menú contextual. */
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectedIdsRef = useRef<Set<string>>(selectedIds);
+  selectedIdsRef.current = selectedIds;
+  const selectOne = useCallback((id: string | null) => {
+    setSelectedNoteId(id);
+    setSelectedIds(id ? new Set([id]) : new Set());
+  }, []);
+  const toggleInSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+    setSelectedNoteId(id);
+  }, []);
   const [history, setHistory] = useState<{ past: WaterfallNote[][]; future: WaterfallNote[][] }>({ past: [], future: [] });
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; noteId: string } | null>(null);
   const selectedNoteRef = useRef<string | null>(null);
@@ -777,6 +794,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       const mutedOf = (n: WaterfallNote) => trackById.get(noteTrackId(n))?.muted ?? false;
       const colorOf = (n: WaterfallNote) => colorSet(trackById.get(noteTrackId(n))?.color ?? '#f97316');
       const selectedId = selectedNoteRef.current;
+      const selSet = selectedIdsRef.current;
 
       if (!lastTsRef.current) lastTsRef.current = ts;
       const delta = Math.min(0.1, (ts - lastTsRef.current) / 1000);
@@ -1052,7 +1070,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
           const c = colorOf(n);
           const onLine = tth <= 0.02 && tth + n.duration > 0;
           const pressed = pressedRef.current.has(n.midi) && Math.abs(tth) < HIT_WINDOW;
-          const isSel = n.id === selectedId;
+          const isSel = n.id === selectedId || selSet.has(n.id);
           const r = Math.min(7, w / 3);
           ctx.save();
           ctx.beginPath(); ctx.roundRect(x, top, w, h, r);
@@ -1144,7 +1162,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
           const w = Math.max(12, n.duration * pxPerSec - 2);
           const c = colorOf(n);
           const onLine = tth <= 0.02 && tth + n.duration > 0;
-          const isSel = n.id === selectedId;
+          const isSel = n.id === selectedId || selSet.has(n.id);
           ctx.save();
           ctx.beginPath(); ctx.roundRect(Math.max(x, hitX - 0.5), y, w - Math.max(0, hitX - x), h, 4);
           const g = ctx.createLinearGradient(x, 0, x + w, 0);
@@ -1262,8 +1280,18 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
      que uno espera de un editor, así que el canvas ahora la mueve, la estira y
      deja agregar notas nuevas. Todo cae en la grilla de semicorcheas salvo que
      se mantenga Alt, y un arrastre entero es un solo paso de deshacer. */
-  const dragRef = useRef<{ id: string; kind: 'move' | 'resize'; x0: number; y0: number; orig: WaterfallNote; moved: boolean } | null>(null);
+  const dragRef = useRef<{
+    id: string; kind: 'move' | 'resize'; x0: number; y0: number;
+    orig: WaterfallNote; moved: boolean;
+    /** Las otras notas seleccionadas, como estaban al empezar el arrastre. */
+    others: Map<string, WaterfallNote>;
+  } | null>(null);
   const [dragging, setDragging] = useState(false);
+  /* Marquesina: arrastrar sobre el vacío encierra notas. Un clic sin
+     movimiento sigue siendo play/pausa, así que la caja recién nace a los
+     4 px de recorrido. */
+  const marqueeRef = useRef<{ x0: number; y0: number; x: number; y: number; add: boolean; live: boolean } | null>(null);
+  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   const gridStep = () => 60 / (activeSong.bpm || 100) / 4;   // semicorchea
   const snap = (t: number, free: boolean) => {
@@ -1344,11 +1372,27 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       const cur = songList.find(s => s.id === activeSongId);
       if (cur) setHistory(h => ({ past: [...h.past.slice(-49), cur.notes], future: [] }));
     }
-    setSongList(prev => prev.map(s => (
-      s.id === activeSongId
-        ? { ...s, notes: s.notes.map(n => (n.id === d.id ? next : n)), isCustom: true }
-        : s
-    )));
+
+    /* Si la nota arrastrada es parte de una selección, se mueve el bloque
+       entero con el mismo desplazamiento. La nota bajo el puntero manda: las
+       demás la siguen, así que sólo una cae exactamente en la grilla. */
+    const dMidi = next.midi - d.orig.midi;
+    const dTime = next.time - d.orig.time;
+    const dDur = next.duration - d.orig.duration;
+    const bloque = d.others;
+
+    setSongList(prev => prev.map(s => {
+      if (s.id !== activeSongId) return s;
+      const notes = s.notes.map(n => {
+        if (n.id === d.id) return next;
+        const o = bloque.get(n.id);
+        if (!o) return n;
+        if (d.kind === 'resize') return { ...o, duration: Math.max(0.05, +(o.duration + dDur).toFixed(3)) };
+        const midi = Math.max(21, Math.min(108, o.midi + dMidi));
+        return { ...o, midi, name: midiToNoteName(midi), time: Math.max(0, +(o.time + dTime).toFixed(3)) };
+      });
+      return { ...s, notes, isCustom: true };
+    }));
   };
 
   const endDrag = () => {
@@ -1377,9 +1421,75 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     const cur = songList.find(s => s.id === activeSongId);
     if (!cur) return;
     replaceNotes([...cur.notes, note].sort((a, b) => a.time - b.time));
-    setSelectedNoteId(note.id);
+    selectOne(note.id);
     soundEngine.playNote(midiToNoteName(k.midi), soundPreset, '0.6s');
   };
+
+  /* ---------------- Acciones sobre varias notas ---------------- */
+  /* Rejillas de cuantización. La de semicorcheas es la que sirve casi siempre;
+     las otras están para transcripciones de audio, que llegan con todo corrido
+     unos milisegundos. */
+  const GRIDS: { id: string; label: string; beats: number }[] = [
+    { id: '4n', label: '1/4', beats: 1 },
+    { id: '8n', label: '1/8', beats: 0.5 },
+    { id: '16n', label: '1/16', beats: 0.25 },
+    { id: '8t', label: '1/8 T', beats: 1 / 3 },
+  ];
+  const [quantGrid, setQuantGrid] = useState('16n');
+  const [quantDur, setQuantDur] = useState(false);
+  const [quantMsg, setQuantMsg] = useState<string | null>(null);
+
+  const gridSeconds = useCallback((id: string) => {
+    const g = GRIDS.find(x => x.id === id) ?? GRIDS[2];
+    return (60 / (activeSong.bpm || 100)) * g.beats;
+  }, [activeSong.bpm]);
+
+  /** Alinea a la grilla las notas que cumplan el filtro. */
+  const quantizeNotes = useCallback((filtro: (n: WaterfallNote) => boolean, gridId: string, tambienDuracion: boolean) => {
+    const cur = songList.find(s => s.id === activeSongId);
+    if (!cur) return 0;
+    const g = gridSeconds(gridId);
+    let movidas = 0;
+    const notes = cur.notes.map(n => {
+      if (!filtro(n)) return n;
+      const time = Math.max(0, +(Math.round(n.time / g) * g).toFixed(4));
+      const duration = tambienDuracion
+        ? Math.max(g, +(Math.round(n.duration / g) * g).toFixed(4))
+        : n.duration;
+      if (time === n.time && duration === n.duration) return n;
+      movidas++;
+      return { ...n, time, duration };
+    });
+    if (movidas) replaceNotes(notes.sort((a, b) => a.time - b.time));
+    return movidas;
+  }, [songList, activeSongId, gridSeconds, replaceNotes]);
+
+  const quantizeSelection = useCallback(() => {
+    const sel = selectedIdsRef.current;
+    const n = quantizeNotes(x => sel.has(x.id), quantGrid, quantDur);
+    setQuantMsg(n ? `${n} ${n === 1 ? 'nota alineada' : 'notas alineadas'}` : 'ya estaban en la grilla');
+    window.setTimeout(() => setQuantMsg(null), 2500);
+  }, [quantizeNotes, quantGrid, quantDur]);
+
+  const quantizeTrack = useCallback((trackId: string) => {
+    const n = quantizeNotes(x => noteTrackId(x) === trackId, quantGrid, quantDur);
+    setQuantMsg(n ? `${n} ${n === 1 ? 'nota alineada' : 'notas alineadas'}` : 'ya estaban en la grilla');
+    window.setTimeout(() => setQuantMsg(null), 2500);
+  }, [quantizeNotes, quantGrid, quantDur]);
+
+  const deleteSelection = useCallback(() => {
+    const sel = selectedIdsRef.current;
+    const cur = songList.find(s => s.id === activeSongId);
+    if (!cur || !sel.size) return;
+    replaceNotes(cur.notes.filter(n => !sel.has(n.id)));
+    selectOne(null);
+  }, [songList, activeSongId, replaceNotes, selectOne]);
+
+  const selectTrackNotes = useCallback((trackId: string) => {
+    const ids = activeSong.notes.filter(n => noteTrackId(n) === trackId).map(n => n.id);
+    setSelectedIds(new Set(ids));
+    setSelectedNoteId(ids[ids.length - 1] ?? null);
+  }, [activeSong]);
 
   /* Click en el escenario: nota → seleccionar; teclado del roll → tocar; vacío → play/pausa */
   const rollPointer = (e: React.PointerEvent<HTMLCanvasElement>, down: boolean) => {
@@ -1390,9 +1500,16 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       setCtxMenu(null);
       const hit = noteAt(x, y);
       if (hit) {
-        setSelectedNoteId(hit.id);
+        if (e.shiftKey || e.ctrlKey || e.metaKey) toggleInSelection(hit.id);
+        else if (!selectedIdsRef.current.has(hit.id)) selectOne(hit.id);
+        else setSelectedNoteId(hit.id);
         // Arrastrar mueve; el borde de salida estira
-        dragRef.current = { id: hit.id, kind: onResizeEdge(hit, x, y) ? 'resize' : 'move', x0: x, y0: y, orig: hit, moved: false };
+        const sel = selectedIdsRef.current;
+        const others = new Map<string, WaterfallNote>();
+        if (sel.has(hit.id) && sel.size > 1) {
+          for (const n of activeSong.notes) if (n.id !== hit.id && sel.has(n.id)) others.set(n.id, n);
+        }
+        dragRef.current = { id: hit.id, kind: onResizeEdge(hit, x, y) ? 'resize' : 'move', x0: x, y0: y, orig: hit, moved: false, others };
         e.currentTarget.setPointerCapture(e.pointerId);
         return;
       }
@@ -1401,11 +1518,22 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         const wi = Math.min(whiteKeys.length - 1, Math.max(0, Math.floor((rect.height - y) / rowH)));
         handleUserNotePress(whiteKeys[wi].midi); return;
       }
-      setSelectedNoteId(null);
-      // El doble clic agrega una nota: que no dispare además play/pausa
-      if ((e as unknown as MouseEvent).detail < 2) handleTogglePlay();
+      marqueeRef.current = { x0: x, y0: y, x, y, add: e.shiftKey || e.ctrlKey || e.metaKey, live: false };
+      e.currentTarget.setPointerCapture(e.pointerId);
     } else {
       if (dragRef.current) { endDrag(); return; }
+      const m = marqueeRef.current;
+      if (m) {
+        marqueeRef.current = null;
+        setMarquee(null);
+        if (m.live) { commitMarquee(m); return; }
+        if (viewMode !== 'roll' || x > 74) {
+          selectOne(null);
+          // El doble clic agrega una nota: que no dispare además play/pausa
+          if ((e as unknown as MouseEvent).detail < 2) handleTogglePlay();
+        }
+        return;
+      }
       if (viewMode === 'roll' && x <= 74) {
         const rowH = rect.height / whiteKeys.length;
         const wi = Math.min(whiteKeys.length - 1, Math.max(0, Math.floor((rect.height - y) / rowH)));
@@ -1414,9 +1542,38 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     }
   };
 
+  /** Al soltar: se seleccionan las notas encerradas por la caja. */
+  const commitMarquee = (m: { x0: number; y0: number; x: number; y: number; add: boolean }) => {
+    const x1 = Math.min(m.x0, m.x), x2 = Math.max(m.x0, m.x);
+    const y1 = Math.min(m.y0, m.y), y2 = Math.max(m.y0, m.y);
+    const dentro = activeSong.notes.filter(n => {
+      const r = noteRect(n);
+      if (!r) return false;
+      return r.x < x2 && r.x + r.w > x1 && r.y < y2 && r.y + r.h > y1;
+    });
+    setSelectedIds(prev => {
+      const next = m.add ? new Set(prev) : new Set<string>();
+      for (const n of dentro) next.add(n.id);
+      return next;
+    });
+    setSelectedNoteId(dentro.length ? dentro[dentro.length - 1].id : null);
+  };
+
   const onCanvasPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     if (dragRef.current) { applyDrag(e, rect); return; }
+    const m = marqueeRef.current;
+    if (m) {
+      m.x = e.clientX - rect.left; m.y = e.clientY - rect.top;
+      if (!m.live && (Math.abs(m.x - m.x0) > 4 || Math.abs(m.y - m.y0) > 4)) m.live = true;
+      if (m.live) {
+        setMarquee({
+          x: Math.min(m.x0, m.x), y: Math.min(m.y0, m.y),
+          w: Math.abs(m.x - m.x0), h: Math.abs(m.y - m.y0),
+        });
+      }
+      return;
+    }
     // El cursor cuenta lo que se puede hacer sin tener que probar
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const hit = noteAt(x, y);
@@ -1439,7 +1596,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const hit = noteAt(x, y);
     if (!hit) { setCtxMenu(null); return; }
-    setSelectedNoteId(hit.id);
+    if (!selectedIdsRef.current.has(hit.id)) selectOne(hit.id); else setSelectedNoteId(hit.id);
     setCtxMenu({ x: Math.min(x, rect.width - 230), y: Math.min(y, rect.height - 330), noteId: hit.id });
   };
 
@@ -1451,6 +1608,16 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
       if (e.key === 'Escape') { setCtxMenu(null); setSelectedNoteId(null); return; }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        const ids = activeSongRef.current?.notes.map(n => n.id) ?? [];
+        setSelectedIds(new Set(ids));
+        setSelectedNoteId(ids[ids.length - 1] ?? null);
+        return;
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIdsRef.current.size > 1) {
+        e.preventDefault(); deleteSelection(); return;
+      }
       const id = selectedNoteRef.current; if (!id) return;
       const act = (k: string) => { const a = NOTE_ACTIONS.find(x => x.id === k); if (a) editNote(id, a.apply); };
       if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); act('delete'); setSelectedNoteId(null); }
@@ -1567,16 +1734,54 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
                             </div>
                           </div>
                           {isSelected && (
-                            <div className="mt-1 pl-4.5 text-[10.5px] text-ink-3">
-                              {t.practice ? 'la tocás vos' : 'suena sola'}
-                              {!t.visible && ' · oculta'}
-                              {t.muted && ' · silenciada'}
-                            </div>
+                            <>
+                              <div className="mt-1 pl-4.5 text-[10.5px] text-ink-3">
+                                {t.practice ? 'la tocás vos' : 'suena sola'}
+                                {!t.visible && ' · oculta'}
+                                {t.muted && ' · silenciada'}
+                              </div>
+                              <div className="mt-1.5 pl-4.5 flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={e => { e.stopPropagation(); selectTrackNotes(t.id); }}
+                                  className="h-6 px-2 rounded-md border border-white/10 text-[10.5px] text-ink-2 hover:bg-white/8"
+                                  data-tip="Seleccionar todas las notas de esta pista"
+                                >
+                                  Seleccionar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={e => { e.stopPropagation(); quantizeTrack(t.id); }}
+                                  className="h-6 px-2 rounded-md border border-white/10 text-[10.5px] text-ink-2 hover:bg-white/8 flex items-center gap-1"
+                                  data-tip={`Alinear la pista entera a la grilla de ${GRIDS.find(g => g.id === quantGrid)?.label}`}
+                                >
+                                  <Wand2 size={11} /> Cuantizar
+                                </button>
+                              </div>
+                            </>
                           )}
                         </div>
                       );
                     })}
                   </div>
+                  <div className="pt-1.5 mt-1 border-t border-white/8 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-ink-3 shrink-0">Grilla</span>
+                      <div className="seg bg-[#141b2b] border-white/8 flex-1">
+                        {GRIDS.map(g => (
+                          <button key={g.id} type="button" data-active={quantGrid === g.id} onClick={() => setQuantGrid(g.id)} className="seg-item flex-1 text-[11px]">
+                            {g.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-1.5 text-[11px] text-ink-2 cursor-pointer">
+                      <input type="checkbox" checked={quantDur} onChange={e => setQuantDur(e.target.checked)} className="accent-[var(--color-brand)]" />
+                      Alinear también las duraciones
+                    </label>
+                    {quantMsg && <p className="text-[11px] text-ok">{quantMsg}</p>}
+                  </div>
+
                   {!isDemo && (
                     <div className="pt-1 border-t border-white/8 flex items-center justify-between gap-2">
                       <span className="text-[11px] text-ok">Pistas listas ✓</span>
@@ -1695,7 +1900,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
                     <li><strong className="text-ink">Las notas caen hacia la línea roja.</strong> Tocá la tecla justo cuando la nota la toca.</li>
                     <li><strong className="text-ink">Pistas:</strong> ✓ muestra u oculta la mano, la manito marca la que practicás vos (en <em>Espera</em> la catarata frena hasta que la toques), <strong>S</strong> la deja sola, el parlante la silencia.</li>
                     <li><strong className="text-ink">Entrada:</strong> teclado USB MIDI, el teclado de pantalla o las teclas <span className="font-mono">A S D F G H J K</span> (blancas) y <span className="font-mono">W E T Y U</span> (negras). <span className="font-mono">Espacio</span> reproduce/pausa.</li>
-                    <li><strong className="text-ink">Editar:</strong> arrastrá una nota para moverla, tirá del borde de salida para estirarla, y hacé doble clic en un lugar vacío para agregar una. Todo cae en la grilla de semicorcheas; con <span className="font-mono">Alt</span> queda libre. Clic derecho abre el resto de las acciones.</li>
+                    <li><strong className="text-ink">Editar:</strong> arrastrá una nota para moverla, tirá del borde de salida para estirarla, y hacé doble clic en un lugar vacío para agregar una. Todo cae en la grilla; con <span className="font-mono">Alt</span> queda libre. Clic derecho abre el resto de las acciones.</li>
+                    <li><strong className="text-ink">Varias notas:</strong> arrastrá sobre el vacío para encerrarlas, o <span className="font-mono">Shift</span>+clic para sumarlas de a una. <span className="font-mono">Ctrl+A</span> las selecciona todas. Después se mueven juntas, se borran juntas o se alinean a la grilla de una.</li>
+                    <li><strong className="text-ink">Cuantizar:</strong> en el panel de Pistas elegís la grilla y alineás una pista entera. Es lo que arregla una transcripción de audio, que llega toda corrida unos milisegundos.</li>
                   </ul>
                   <div className={cn('mt-3 flex items-center gap-2 text-[11px]', midiDeviceName ? 'text-ok' : 'text-ink-3')}>
                     <Cable size={13} /> {midiDeviceName ? `MIDI conectado: ${midiDeviceName}` : 'Sin teclado MIDI conectado'}
@@ -1719,13 +1926,40 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
               onPointerUp={e => rollPointer(e, false)}
               onPointerLeave={e => rollPointer(e, false)}
               onPointerMove={onCanvasPointerMove}
-              onPointerCancel={endDrag}
+              onPointerCancel={() => { endDrag(); marqueeRef.current = null; setMarquee(null); }}
               onDoubleClick={onCanvasDoubleClick}
               onContextMenu={onCanvasContextMenu}
             />
 
+            {/* Marquesina */}
+            {marquee && (
+              <div
+                className="absolute pointer-events-none rounded-[3px] border border-white/60 bg-white/10"
+                style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }}
+              />
+            )}
+
+            {/* Varias notas seleccionadas: acciones en bloque */}
+            {selectedIds.size > 1 && !ctxMenu && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-xl border border-white/12 bg-[#0d1322]/95 backdrop-blur px-2 py-1 text-xs">
+                <span className="font-mono font-semibold text-ink px-1">{selectedIds.size} notas</span>
+                <span className="text-ink-3 hidden sm:inline">arrastrá cualquiera para moverlas juntas</span>
+                <span className="w-px h-4 bg-white/10 mx-1" />
+                <button type="button" onClick={quantizeSelection} className="h-7 px-2 rounded-md flex items-center gap-1 text-ink-2 hover:bg-white/8" data-tip={`Alinear a la grilla de ${GRIDS.find(g => g.id === quantGrid)?.label}`}>
+                  <Wand2 size={13} /> Cuantizar
+                </button>
+                {quantMsg && <span className="text-[11px] text-ok px-1">{quantMsg}</span>}
+                <button type="button" onClick={deleteSelection} className="w-7 h-7 rounded-md flex items-center justify-center text-danger hover:bg-white/8" data-tip="Borrar las seleccionadas" aria-label="Borrar las seleccionadas">
+                  <Trash2 size={13} />
+                </button>
+                <button type="button" onClick={() => selectOne(null)} className="w-7 h-7 rounded-md flex items-center justify-center text-ink-3 hover:bg-white/8" data-tip="Deseleccionar" aria-label="Deseleccionar">
+                  <X size={13} />
+                </button>
+              </div>
+            )}
+
             {/* Nota seleccionada: chip con acciones rápidas */}
-            {selectedNote && !ctxMenu && (
+            {selectedNote && selectedIds.size <= 1 && !ctxMenu && (
               <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-xl border border-white/12 bg-[#0d1322]/95 backdrop-blur px-2 py-1 text-xs">
                 <span className="font-mono font-semibold text-ink px-1">{prettyAccidentals(spellName(selectedNote.name))}</span>
                 <span className="text-ink-3 font-mono">{selectedNote.time.toFixed(2)}s · {selectedNote.duration.toFixed(2)}s</span>
@@ -1807,7 +2041,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
 
             {/* Overlay de inicio (no bloquea el lienzo: se puede editar con la pieza detenida) */}
             <AnimatePresence>
-              {!isPlaying && currentTime === 0 && !selectedNote && !ctxMenu && (
+              {!isPlaying && currentTime === 0 && !selectedNote && !marquee && !ctxMenu && (
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="absolute inset-0 flex flex-col items-center justify-center gap-4 pointer-events-none"

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import * as Tone from 'tone';
 import {
-  ARPEGGIO_TYPES, ARPEGGIO_DRILLS, buildArpeggio, type Drill,
+  ARPEGGIO_TYPES, ARPEGGIO_DRILLS, buildArpeggioInversion, type Drill,
 } from '../lib/practiceLibrary';
 import {
   ALL_SCALE_ROOTS, preferredRootName, keyName, spellChordNotes, ENHARMONIC_MAP,
@@ -58,30 +58,13 @@ export const ArpeggiosGym: React.FC<ArpeggiosGymProps> = ({ onScoreGain }) => {
     [rootPc, typeId]
   );
 
-  const plan = useMemo(
-    () => buildArpeggio(keyName(rootPc), typeId, octaves, hand === 'left' ? 2 : 3),
-    [rootPc, typeId, octaves, hand]
+  /* Cada posición tiene su propia digitación: no es el arpegio de posición
+     fundamental empezado más arriba. Al invertir, el salto de cuarta cambia de
+     lugar y con él qué dedo salta el hueco. */
+  const rotated = useMemo(
+    () => buildArpeggioInversion(keyName(rootPc), typeId, inversion, octaves, hand === 'left' ? 2 : 3),
+    [rootPc, typeId, inversion, octaves, hand]
   );
-
-  /* Rotar la posición: la misma forma empezando por la tercera o la quinta.
-     Es lo que pasa en la música real, donde el arpegio casi nunca empieza en
-     la fundamental. */
-  const rotated = useMemo(() => {
-    if (inversion === 0) return plan;
-    const per = type.intervals.length;
-    const notes = plan.notes.slice(inversion);
-    const right = plan.right.slice(inversion);
-    const left = plan.left.slice(inversion);
-    // Se completa arriba con las notas que faltan para cerrar la octava
-    for (let i = 0; i < inversion; i++) {
-      const src = plan.notes[per * octaves - inversion + i + 1] ?? plan.notes[plan.notes.length - 1];
-      const m = /^([A-G]#?)(-?\d+)$/.exec(src);
-      notes.push(m ? `${m[1]}${Number(m[2]) + 1}` : src);
-      right.push(right[right.length - 1]);
-      left.push(left[left.length - 1]);
-    }
-    return { ...plan, notes, right, left };
-  }, [plan, inversion, type, octaves]);
 
   /** Nombres escritos como corresponde (Mi♭ y no Re♯). */
   const spelled = useMemo(() => {

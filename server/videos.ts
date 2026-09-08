@@ -95,6 +95,37 @@ function score(v: { title: string; views: number; duration: number; channel: str
   return s;
 }
 
+/**
+ * Los datos de un video concreto, por id.
+ *
+ * Sirve para las lecciones que traen un video elegido a mano (`videoId`). El
+ * módulo evita los ids cableados porque se pudren en silencio, así que esto
+ * NO reemplaza a la búsqueda: si el video ya no está, quien llama se cae a
+ * buscar y el catálogo se sigue reparando solo.
+ */
+export async function videoById(id: string): Promise<VideoPick | null> {
+  if (!safeVideoId(id)) return null;
+  try {
+    const raw = await run(YTDLP, [
+      `https://www.youtube.com/watch?v=${id}`,
+      "--dump-single-json", "--no-warnings", "--skip-download",
+      "--extractor-args", "youtube:player_client=web",
+    ], 45_000);
+    const d = JSON.parse(raw);
+    if (!safeVideoId(String(d.id || ""))) return null;
+    return {
+      id: String(d.id),
+      title: String(d.title || "").slice(0, 200),
+      channel: String(d.uploader || d.channel || "").slice(0, 120),
+      views: Number(d.view_count) || 0,
+      duration: Number(d.duration) || 0,
+      pickedAt: Date.now(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function searchVideos(query: string): Promise<VideoPick[]> {
   const raw = await run(YTDLP, [
     `ytsearch${SEARCH_N}:${query}`,
@@ -179,6 +210,18 @@ export function registerVideoRoutes(app: Express) {
     if (cached && req.query.refresh !== "1") {
       return res.json({ video: cached, offline: downloadedBytes(cached.id) !== null });
     }
+    /* Video elegido a mano en la lección: se respeta la primera vez, y si ya
+       no existe se cae a la búsqueda como cualquier otra lección. */
+    const pin = String(req.query.pin || "");
+    if (pin && !cached) {
+      const v = await videoById(pin);
+      if (v) {
+        idx[req.params.lessonId] = v;
+        writeIndex(idx);
+        return res.json({ video: v, offline: downloadedBytes(v.id) !== null, pinned: true });
+      }
+    }
+
     const query = String(req.query.q || "").slice(0, 200);
     if (!query) return res.status(400).json({ error: "falta la búsqueda" });
     try {

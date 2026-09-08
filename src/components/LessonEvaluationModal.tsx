@@ -4,7 +4,7 @@ import {
   CheckCircle2, XCircle, ArrowRight, RotateCcw, Award, Sparkles, BookOpen, Music,
   GraduationCap, Clock, X, PartyPopper, Hand, Target, Loader2, ChevronLeft,
 } from 'lucide-react';
-import { Lesson, UserProgress } from '../types';
+import { Lesson, UserProgress, LessonEvaluation } from '../types';
 import { Piano } from './Piano';
 import { cn } from '../lib/utils';
 import { triggerCurriculumConfetti } from '../lib/celebration';
@@ -12,6 +12,8 @@ import { CurriculumProgressBar } from './CurriculumProgressBar';
 
 interface LessonEvaluationModalProps {
   lesson: Lesson;
+  /** El cuerpo de la lección viaja aparte de la lista: lo trae el visor. */
+  evaluation?: LessonEvaluation;
   isOpen: boolean;
   onClose: () => void;
   onPassLesson: (lessonId: string, score: number) => void;
@@ -20,6 +22,7 @@ interface LessonEvaluationModalProps {
 
 export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
   lesson,
+  evaluation: propEvaluation,
   isOpen,
   onClose,
   onPassLesson,
@@ -40,9 +43,10 @@ export const LessonEvaluationModal: React.FC<LessonEvaluationModalProps> = ({
   const [maestroFeedback, setMaestroFeedback] = useState<string>('');
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
 
-  const evaluation = lesson.evaluation;
-  const questions = evaluation.theoreticalQuestions;
-  const practical = evaluation.practicalTask;
+  const evaluation = propEvaluation;
+  const questions0 = evaluation?.theoreticalQuestions ?? [];
+  const questions = questions0;
+  const practical = evaluation?.practicalTask;
 
   // Reset when opening a new lesson evaluation
   useEffect(() => {

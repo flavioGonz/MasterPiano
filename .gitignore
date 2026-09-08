@@ -6,7 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
-data/
+# Sólo la carpeta de datos del servidor, en la raíz: `data/` a secas también
+# tapaba src/data/, que es código y sí va al repo.
+/data/
 
 # Artefactos de las sesiones de Claude (staging local, capturas, tarballs)
 _to_delete/

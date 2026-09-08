@@ -15,7 +15,8 @@ import { WaterfallDemoModal } from './WaterfallDemoModal';
 import { buildWaterfallFromScale } from '../lib/midiWaterfall';
 import { pianoPitchDetector } from '../lib/pitchDetector';
 import {
-  MAJOR_FINGERINGS, MINOR_FINGERINGS, MAJOR_KEY_MEMORY, MINOR_KEY_MEMORY, fingerLandmark,
+  MAJOR_FINGERINGS, MAJOR_KEY_MEMORY, MINOR_KEY_MEMORY, fingerLandmark,
+  minorFingering, minorFormNote, type MinorForm,
 } from '../lib/practiceLibrary';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
@@ -192,11 +193,25 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
      porque es negra. La tabla real vive en `practiceLibrary`; para las escalas
      que no son mayor ni menor natural (pentatónicas, blues, modos) se sigue
      usando la digitación genérica del tipo. */
+  const minorForm = useMemo<MinorForm | null>(() => (
+    selectedScaleId === 'minor_natural' ? 'natural'
+      : selectedScaleId === 'minor_harmonic' ? 'harmonic'
+        : selectedScaleId === 'minor_melodic' ? 'melodic'
+          : null
+  ), [selectedScaleId]);
+
   const keyFingering = useMemo(() => {
     if (selectedScaleId === 'major') return MAJOR_FINGERINGS[rootName] ?? null;
-    if (selectedScaleId === 'minor_natural') return MINOR_FINGERINGS[rootName] ?? null;
+    if (minorForm) return minorFingering(rootName, minorForm);
     return null;
-  }, [selectedScaleId, rootName]);
+  }, [selectedScaleId, minorForm, rootName]);
+
+  /* Particularidades de la forma menor elegida (la melódica cambia la
+     digitación en Do♯ y Fa♯; la natural de Sol♯ deja el pulgar en negra). */
+  const formNote = useMemo(
+    () => (minorForm ? minorFormNote(rootName, minorForm) : null),
+    [minorForm, rootName]
+  );
 
   const currentFingering = useMemo(() => {
     if (keyFingering) return selectedHand === 'right' ? keyFingering.right : keyFingering.left;
@@ -206,9 +221,9 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
   /* Ficha de memoria de la tonalidad (sólo mayor y menor natural la tienen). */
   const keyMemory = useMemo(() => {
     if (selectedScaleId === 'major') return MAJOR_KEY_MEMORY[rootName] ?? null;
-    if (selectedScaleId === 'minor_natural') return MINOR_KEY_MEMORY[rootName] ?? null;
+    if (minorForm) return MINOR_KEY_MEMORY[rootName] ?? null;
     return null;
-  }, [selectedScaleId, rootName]);
+  }, [selectedScaleId, minorForm, rootName]);
 
   /* El faro: dónde cae el 4º dedo. Es el dato que hace memorizable la escala. */
   const landmark4 = useMemo(() => {
@@ -489,6 +504,13 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
               <p className="text-[12.5px] text-ink-2 leading-relaxed">{keyMemory.trap}</p>
             </div>
           </div>
+
+          {formNote && (
+            <div className="flex items-start gap-2 rounded-xl border border-line bg-surface-2 px-3 py-2.5 text-[12px] text-ink-2 leading-relaxed">
+              <Hand size={13} className="text-brand shrink-0 mt-0.5" />
+              <span><strong className="text-ink">Esta forma:</strong> {formNote}</span>
+            </div>
+          )}
 
           <div className="flex items-start gap-2 text-[11.5px] text-ink-3 leading-snug pt-0.5">
             <AlertCircle size={12} className="shrink-0 mt-0.5" />

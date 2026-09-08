@@ -9,6 +9,7 @@ import {
 import { Lesson, LessonPractice, LESSONS, UserProgress } from '../types';
 import { Piano } from './Piano';
 import { LessonEvaluationModal } from './LessonEvaluationModal';
+import { LESSON_BODIES } from '../data/lessonContent';
 import { InstructorChatModal } from './InstructorChatModal';
 import { WaterfallDemoModal } from './WaterfallDemoModal';
 import { LessonVideo } from './LessonVideo';
@@ -48,6 +49,12 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
   const [demonstrationActiveNote, setDemonstrationActiveNote] = useState<string | null>(null);
   const [imageOk, setImageOk] = useState(true);
 
+  /* El texto, el dictado y la evaluación viajan aparte de la lista de
+     lecciones: pesan y sólo hacen falta acá. Este componente ya es diferido,
+     así que la importación estática los deja en su propio trozo. */
+  const body = LESSON_BODIES[lesson.id];
+  const dictationScript = body?.dictationScript ?? '';
+
   const currentIndex = LESSONS.findIndex(l => l.id === lesson.id);
   const prevLesson = currentIndex > 0 ? LESSONS[currentIndex - 1] : null;
   const nextLesson = currentIndex < LESSONS.length - 1 ? LESSONS[currentIndex + 1] : null;
@@ -69,7 +76,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
       maestroVoice.stop(); setIsSpeaking(false); setIsVoiceLoading(false); return;
     }
     setIsVoiceLoading(true);
-    await maestroVoice.speak(`${lesson.title}. ${lesson.dictationScript}`, {
+    await maestroVoice.speak(`${lesson.title}. ${dictationScript}`, {
       onStart: () => { setIsVoiceLoading(false); setIsSpeaking(true); },
       onEnd: () => { setIsSpeaking(false); setIsVoiceLoading(false); },
       onError: () => { setIsSpeaking(false); setIsVoiceLoading(false); },
@@ -118,20 +125,20 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {isCurrentPassed ? (
             <>
-              <span className="badge badge-ok"><CheckCircle2 size={11} /> Aprobada · {currentScore ?? 100} pts</span>
+              <span className="badge badge-ok shrink-0"><CheckCircle2 size={11} /> Aprobada · {currentScore ?? 100} pts</span>
               <button type="button" onClick={() => triggerCurriculumConfetti('grand')} className="btn btn-ghost btn-icon text-brand-2" data-tip="Celebrar" aria-label="Celebrar">
                 <PartyPopper size={14} />
               </button>
             </>
           ) : (
-            <span className="badge badge-neutral"><Lock size={10} /> Evaluación pendiente</span>
+            <span className="badge badge-neutral shrink-0"><Lock size={10} /> Evaluación pendiente</span>
           )}
 
-          {/* Mapa rápido de lecciones */}
-          <div className="hidden lg:flex items-center gap-1 ml-2 pl-3 border-l border-line">
+          {/* Mapa rápido de lecciones. Con 45 no entra de una: scrollea. */}
+          <div className="hidden lg:flex items-center gap-1 ml-2 pl-3 border-l border-line min-w-0 overflow-x-auto no-scrollbar">
             {LESSONS.map(l => {
               const isThis = l.id === lesson.id;
               const isDone = userProgress.completedLessons.includes(l.id);
@@ -144,7 +151,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
                   onClick={() => onSelectLesson(l.id)}
                   title={`Lección ${l.number}: ${l.title}`}
                   className={cn(
-                    'w-6 h-6 rounded-md text-[10px] font-mono font-semibold flex items-center justify-center border transition-colors',
+                    'w-6 h-6 shrink-0 rounded-md text-[10px] font-mono font-semibold flex items-center justify-center border transition-colors',
                     isThis ? 'bg-brand text-brand-ink border-brand'
                       : isDone ? 'bg-ok-soft border-ok/30 text-ok hover:border-ok/60'
                         : isLock ? 'border-line text-ink-3/50 cursor-not-allowed'
@@ -193,7 +200,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               <span className="text-[11px] text-ink-3">Voz rioplatense</span>
               {isSpeaking && <span className="badge badge-brand">Hablando…</span>}
             </div>
-            <p className="text-[13px] text-ink-2 italic leading-relaxed mt-0.5 line-clamp-2">“{lesson.dictationScript}”</p>
+            <p className="text-[13px] text-ink-2 italic leading-relaxed mt-0.5 line-clamp-2">“{dictationScript}”</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -223,7 +230,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
           {/* Antes acá había una foto de archivo que no enseñaba nada. Ahora va
               un video de la lección; la foto queda solo de reserva. */}
           {lesson.videoQuery ? (
-            <LessonVideo lessonId={lesson.id} query={lesson.videoQuery} title={lesson.title} />
+            <LessonVideo lessonId={lesson.id} query={lesson.videoQuery} title={lesson.title} pinnedId={lesson.videoId} />
           ) : lesson.image && imageOk ? (
             <div className="relative aspect-[21/9] rounded-2xl overflow-hidden border border-line bg-surface-2">
               <img
@@ -247,7 +254,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
                   </div>
                 ),
               }}
-            >{lesson.content}</Markdown>
+            >{body?.content ?? ''}</Markdown>
           </div>
 
           <aside className="card-2 p-4 flex gap-3 border-brand-line/60">
@@ -372,7 +379,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
       </div>
 
       {/* ---- Modales ---- */}
-      <LessonEvaluationModal lesson={lesson} isOpen={isEvaluationOpen} onClose={() => setIsEvaluationOpen(false)} onPassLesson={onPassLesson} userProgress={userProgress} />
+      <LessonEvaluationModal lesson={lesson} evaluation={body?.evaluation} isOpen={isEvaluationOpen} onClose={() => setIsEvaluationOpen(false)} onPassLesson={onPassLesson} userProgress={userProgress} />
       <InstructorChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} currentLesson={lesson} userLevel={userProgress.userLevel} />
       {isWaterfallModalOpen && hasKeys && (
         <WaterfallDemoModal
