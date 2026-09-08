@@ -9,6 +9,7 @@ import { BottomNav } from './components/shell/BottomNav';
 import { PageHeader } from './components/ui/PageHeader';
 import { TabId } from './components/shell/navConfig';
 import { UpdateToast } from './components/shell/UpdateToast';
+import { TooltipLayer } from './components/ui/Tooltip';
 import { registerServiceWorker } from './lib/pwa';
 import { startAutoSync, pull } from './lib/profileSync';
 import { me, claimQrToken, type AuthState, type AuthUser } from './lib/auth';
@@ -764,6 +765,8 @@ export default function App() {
       {applyUpdate && (
         <UpdateToast onApply={applyUpdate} onDismiss={() => setApplyUpdate(null)} />
       )}
+
+      <TooltipLayer />
     </div>
   );
 }

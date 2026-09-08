@@ -409,6 +409,17 @@
   @apply bg-surface-2 border border-line rounded-2xl;
 }
 
+/* Campo de texto */
+.input {
+  @apply bg-surface border border-line rounded-lg px-2.5 py-1.5 text-[12.5px] text-ink;
+  outline: none;
+}
+.input::placeholder { color: var(--color-ink-3); }
+.input:focus {
+  border-color: var(--color-brand-line);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 14%, transparent);
+}
+
 /* Etiqueta pequeña en mayúsculas (eyebrow) */
 .eyebrow {
   /* brand-2 es el dorado pensado para texto: en oscuro aclara, en claro tuesta */
@@ -465,25 +476,31 @@
 
 }
 
-/* Tooltip simple via data-tip */
+/* Tooltips: los dibuja <TooltipLayer/> en un portal, fuera de cualquier
+   overflow. Acá vive solo la pinta. */
 [data-tip] { position: relative; }
-[data-tip]:hover::after {
-  content: attr(data-tip);
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  white-space: nowrap;
+.tip-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  max-width: min(260px, calc(100vw - 16px));
   padding: 6px 9px;
   border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
   color: var(--color-ink);
   background: var(--color-surface-3);
   border: 1px solid var(--color-line-strong);
-  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.7);
-  z-index: 60;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.75);
   pointer-events: none;
+  will-change: transform;
+  transition: opacity 0.12s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tip-box { transition: none; }
 }
 
 

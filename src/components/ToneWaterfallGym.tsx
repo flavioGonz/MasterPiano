@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Play, Pause, Square, Upload, Repeat, Settings2, HelpCircle, Volume2, VolumeX,
   Maximize2, Minimize2, AlignJustify, LayoutPanelTop, Triangle, RotateCcw,
-  Hand, EyeOff, ChevronDown, X, Cable, Flame, Mic, MicOff, Search, Layers, FileMusic, Loader2, Undo2, Redo2, Trash2, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, MoveLeft, MoveRight, Scissors, StretchHorizontal, ArrowRightLeft, Download, Wand2,
+  Hand, EyeOff, ChevronDown, X, Cable, Flame, Mic, MicOff, Search, Layers, FileMusic, Loader2, Undo2, Redo2, Trash2, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, MoveLeft, MoveRight, Scissors, StretchHorizontal, ArrowRightLeft, Download, Wand2, Music2,
 } from 'lucide-react';
 import * as Tone from 'tone';
 import {
@@ -16,9 +16,10 @@ import { IconBtn, Popover, Row, Toggle } from './ui/StageControls';
 import { midi } from '../lib/midi';
 import { useMidi } from '../lib/useMidi';
 import { PieceLibraryModal } from './PieceLibraryModal';
+import { MidiImportDialog } from './MidiImportDialog';
 import { resolvePiece, loadLibraryState, pushRecent } from '../lib/pieceLibrary';
 import { lockLandscape, unlockOrientation, isTouchDevice } from '../lib/standMode';
-import { importMidiFiles, filesFromDrop, dragHasFiles, type ImportResult } from '../lib/midiImport';
+import { readMidiFiles, saveImports, filesFromDrop, dragHasFiles, type ImportResult, type PendingImport } from '../lib/midiImport';
 import { listSongs, getSong, deleteSong, saveSong } from '../lib/songStore';
 import { downloadSongAsMidi } from '../lib/midiExport';
 import { detectKey, keyLabel, spellingForKey } from '../lib/keyDetect';
@@ -30,12 +31,29 @@ import { pianoPitchDetector, noteNameToMidiSafe } from '../lib/pitchDetector';
 /*  Tipos y constantes                                                 */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Modo demostración: la misma catarata, pero mostrando una pieza suelta que
+ * viene de afuera (un ejercicio de método, una escala, la lección abierta).
+ * No toca la biblioteca ni el localStorage: se abre, se mira y se cierra.
+ */
+export interface WaterfallDemo {
+  song: WaterfallSong;
+  /** Arranca sola al abrir. */
+  autoPlay?: boolean;
+  /** Qué mano se muestra al entrar. */
+  hand?: 'both' | 'right' | 'left';
+}
+
 interface ToneWaterfallGymProps {
   onScoreGain?: (points: number) => void;
   /** Piezas externas (p. ej. transcriptas desde Bases .WAV) que se suman a la biblioteca. */
   extraSongs?: WaterfallSong[];
   /** Id de la pieza que debe quedar seleccionada al montar / al cambiar. */
   requestedSongId?: string | null;
+  /** Ver <WaterfallDemo>. Cuando viene, la catarata se acota a esa pieza. */
+  demo?: WaterfallDemo;
+  /** Alto del contenedor. Por defecto ocupa la ventana menos el encabezado. */
+  fillParent?: boolean;
 }
 
 type ViewMode = 'vertical' | 'roll';
@@ -101,15 +119,18 @@ const fmtTime = (s: number) => {
 /*  Componente                                                         */
 /* ------------------------------------------------------------------ */
 
-export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain, extraSongs, requestedSongId }) => {
+export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain, extraSongs, requestedSongId, demo, fillParent }) => {
+  const isDemo = !!demo;
   // ---- Biblioteca ----
   const [songList, setSongList] = useState<WaterfallSong[]>(() => {
+    if (demo) return [demo.song];
     const custom = loadCustomSongs();
     const ids = new Set(custom.map(s => s.id));
     return [...custom, ...PRELOADED_WATERFALL_SONGS.filter(s => !ids.has(s.id))];
   });
   // Se recuerda la última pieza abierta: al volver a la Catarata seguís donde estabas.
   const [activeSongId, setActiveSongIdRaw] = useState<string>(() => {
+    if (demo) return demo.song.id;
     try {
       const saved = localStorage.getItem(ACTIVE_SONG_KEY);
       if (saved && [...loadCustomSongs(), ...PRELOADED_WATERFALL_SONGS].some(s => s.id === saved)) return saved;
@@ -118,8 +139,9 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
   });
   const setActiveSongId = useCallback((id: string) => {
     setActiveSongIdRaw(id);
+    if (isDemo) return;   // una demo no cambia la pieza que estabas estudiando
     try { localStorage.setItem(ACTIVE_SONG_KEY, id); } catch { /* sin storage */ }
-  }, []);
+  }, [isDemo]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeSong = useMemo(
     () => songList.find(s => s.id === activeSongId) || songList[0],
@@ -248,7 +270,8 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);       // para la UI (throttled)
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [practiceMode, setPracticeMode] = useState<PracticeMode>('wait');
+  /* Una demostración se mira: va de corrido, no espera a que toques. */
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>(demo ? 'flow' : 'wait');
   const [viewMode, setViewMode] = useState<ViewMode>('vertical');
   const [keyboardRange, setKeyboardRange] = useState<KeyboardRange>('auto');
   const [loopEnabled, setLoopEnabled] = useState(true);
@@ -518,6 +541,23 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
      rápida de quedarse con un nota pegado. */
   useEffect(() => () => { midi.stopClock(); midi.panic(); }, []);
 
+  /* Una demo se abre andando: el sentido de mirarla es ver el movimiento. El
+     autoplay necesita el gesto previo del usuario (el clic que abrió el
+     modal), así que Tone arranca sin problema. */
+  useEffect(() => {
+    if (!demo?.autoPlay) return;
+    let cancel = false;
+    const t = window.setTimeout(() => { if (!cancel) void togglePlayRef.current(); }, 260);
+    return () => { cancel = true; window.clearTimeout(t); };
+  }, [demo?.autoPlay, demo?.song.id]);
+
+  /* Mano pedida por quien abrió la demo: se apagan las pistas de la otra. */
+  useEffect(() => {
+    const h = demo?.hand;
+    if (!h || h === 'both') return;
+    setTracks(prev => prev.map(t => ({ ...t, visible: t.id === h || prev.length === 1, muted: t.id !== h && prev.length > 1 })));
+  }, [demo?.hand, demo?.song.id]);
+
   const handleStop = useCallback(() => {
     playingRef.current = false;
     setIsPlaying(false);
@@ -555,23 +595,15 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
   const [dropActive, setDropActive] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  /* Lo leído y todavía sin guardar, mientras se confirma el nombre. */
+  const [pendingImport, setPendingImport] = useState<{ pending: PendingImport[]; failed: { name: string; reason: string }[] } | null>(null);
   const dragDepth = useRef(0);   // dragenter/leave se disparan por cada hijo
 
   /**
    * Guarda las piezas y abre la primera. Habla el Maestro solo cuando entra
    * una sola: con doce archivos, doce frases serían insoportables.
    */
-  const ingestFiles = useCallback(async (files: File[]) => {
-    if (!files.length) return;
-    setImporting(true);
-    setImportMsg(null);
-    let r: ImportResult;
-    try {
-      r = await importMidiFiles(files);
-    } finally {
-      setImporting(false);
-    }
-
+  const finishImport = useCallback((r: ImportResult) => {
     if (r.saved.length) {
       setSongList(prev => {
         const ids = new Set(r.saved.map(s => s.id));
@@ -599,6 +631,39 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       maestroVoice.speak('Che, no pude leer ese archivo. Asegurate de que sea un .mid estándar.');
     }
   }, [handleStop]);
+
+  /**
+   * Leer primero, guardar después: entre las dos cosas se pregunta con qué
+   * nombre y con qué autor queda cada pieza. Si no se pudo leer ninguno no se
+   * abre el diálogo — no hay nada que confirmar.
+   */
+  const ingestFiles = useCallback(async (files: File[]) => {
+    if (!files.length) return;
+    setImporting(true);
+    setImportMsg(null);
+    try {
+      const read = await readMidiFiles(files);
+      if (!read.pending.length) {
+        finishImport({ saved: [], failed: read.failed, offline: false });
+        return;
+      }
+      setPendingImport(read);
+    } finally {
+      setImporting(false);
+    }
+  }, [finishImport]);
+
+  const confirmImport = useCallback(async (songs: WaterfallSong[]) => {
+    const failed = pendingImport?.failed ?? [];
+    setImporting(true);
+    try {
+      const r = await saveImports(songs);
+      setPendingImport(null);
+      finishImport({ ...r, failed: [...failed, ...r.failed] });
+    } finally {
+      setImporting(false);
+    }
+  }, [pendingImport, finishImport]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -635,6 +700,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
   /* Las piezas importadas viven en el servidor: se traen al abrir la catarata
      y se suman a la lista sin sus notas (se piden al elegirlas). */
   useEffect(() => {
+    if (isDemo) return;            // la demo muestra una sola pieza y nada más
     let alive = true;
     void listSongs().then(list => {
       if (!alive || !list.length) return;
@@ -645,7 +711,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       });
     });
     return () => { alive = false; };
-  }, []);
+  }, [isDemo]);
 
   const [libraryOpen, setLibraryOpen] = useState(false);
   // "/" abre la biblioteca, como en cualquier buscador
@@ -1416,7 +1482,11 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
       onDrop={onDrop}
       className={cn(
         'stage-dark relative flex flex-col bg-[#0a0f1a] overflow-hidden select-none text-ink',
-        isFullscreen ? 'fixed inset-0 z-50' : 'h-[calc(100dvh-64px-60px)] lg:h-[calc(100dvh-64px)] min-h-[480px]'
+        isFullscreen
+          ? 'fixed inset-0 z-50'
+          : fillParent
+            ? 'h-full min-h-0'
+            : 'h-[calc(100dvh-64px-60px)] lg:h-[calc(100dvh-64px)] min-h-[480px]'
       )}
     >
       {/* ============ Barra superior ============ */}
@@ -1425,6 +1495,17 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
             ancho al lienzo. Ahora viven acá arriba, plegados, y el escenario
             se queda con toda la pantalla. */}
         <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto sm:flex-1 md:flex-none">
+          {isDemo ? (
+            <div className="min-w-0 flex-1 md:flex-none md:max-w-[420px] h-9 flex items-center gap-2 px-1">
+              <Music2 size={14} className="text-brand shrink-0" />
+              <span className="min-w-0 text-left">
+                <span className="block text-[12.5px] font-medium text-ink truncate leading-tight">{activeSong.title}</span>
+                <span className="hidden sm:block text-[10px] text-ink-3 truncate leading-tight">
+                  {activeSong.composer} · {activeSong.bpm} bpm
+                </span>
+              </span>
+            </div>
+          ) : (
           <button
             type="button"
             onClick={() => setLibraryOpen(true)}
@@ -1440,6 +1521,7 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
             </span>
             <kbd className="hidden lg:block shrink-0 font-mono text-[10px] text-ink-3 border border-white/10 rounded px-1">/</kbd>
           </button>
+          )}
 
           <div className="relative shrink-0">
             <IconBtn
@@ -1495,13 +1577,15 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
                       );
                     })}
                   </div>
-                  <div className="pt-1 border-t border-white/8 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-ok">Pistas listas ✓</span>
-                    <input ref={fileInputRef} id="file-upload-midi" type="file" accept=".mid,.midi,audio/midi" multiple onChange={handleFileUpload} className="hidden" />
-                    <label htmlFor="file-upload-midi" className="btn btn-secondary btn-sm cursor-pointer bg-[#141b2b]" title="Subir un archivo .mid">
-                      <Upload size={12} /> Añadir MIDI
-                    </label>
-                  </div>
+                  {!isDemo && (
+                    <div className="pt-1 border-t border-white/8 flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-ok">Pistas listas ✓</span>
+                      <input ref={fileInputRef} id="file-upload-midi" type="file" accept=".mid,.midi,audio/midi" multiple onChange={handleFileUpload} className="hidden" />
+                      <label htmlFor="file-upload-midi" className="btn btn-secondary btn-sm cursor-pointer bg-[#141b2b]" title="Subir un archivo .mid">
+                        <Upload size={12} /> Añadir MIDI
+                      </label>
+                    </div>
+                  )}
                 </Popover>
               )}
             </AnimatePresence>
@@ -1895,7 +1979,18 @@ export const ToneWaterfallGym: React.FC<ToneWaterfallGymProps> = ({ onScoreGain,
         onSelect={selectSong}
         onUpload={() => { setLibraryOpen(false); fileInputRef.current?.click(); }}
         onDropFiles={ingestFiles}
+        onRenamed={(id, patch) => setSongList(prev => prev.map(s => (s.id === id ? { ...s, ...patch } : s)))}
       />
+
+      {pendingImport && (
+        <MidiImportDialog
+          pending={pendingImport.pending}
+          failed={pendingImport.failed}
+          busy={importing}
+          onCancel={() => setPendingImport(null)}
+          onConfirm={songs => { void confirmImport(songs); }}
+        />
+      )}
     </div>
   );
 };

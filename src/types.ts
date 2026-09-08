@@ -130,8 +130,8 @@ export const LESSONS: Lesson[] = [
     id: '1',
     number: 1,
     moduleNumber: 1,
-    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 14%)',
-    progressPercent: 5,
+    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 9%)',
+    progressPercent: 3,
     title: '1. El Mapa del Piano y el Secreto del DO',
     level: 'Principiante',
     description: 'Aprende a ubicar todas las notas sin memorizar a ciegas usando los grupos de teclas negras.',
@@ -196,8 +196,8 @@ No mires el teclado como 88 teclas individuales. Míralo como una escalera circu
     id: '2',
     number: 2,
     moduleNumber: 1,
-    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 14%)',
-    progressPercent: 10,
+    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 9%)',
+    progressPercent: 6,
     title: '2. Postura Biomecánica y Numeración de Dedos',
     level: 'Principiante',
     description: 'Protege tus tendones, adopta la postura del concertista y domina la numeración 1 al 5.',
@@ -266,8 +266,8 @@ Coloca tu mano derecha:
     id: '3',
     number: 3,
     moduleNumber: 1,
-    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 14%)',
-    progressPercent: 14,
+    moduleTitle: 'Módulo 1: Fundamentos Absolutos (0% - 9%)',
+    progressPercent: 9,
     title: '3. Pulso, Ritmo y Compás de 4/4',
     level: 'Principiante',
     description: 'El latido del corazón de la música. Domina las figuras rítmicas y el metrónomo.',
@@ -324,8 +324,8 @@ Empieza siempre lento: a **60 BPM** (un golpe por segundo). No aumentes la veloc
     id: '4',
     number: 4,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
-    progressPercent: 19,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 12,
     title: '4. Tonos y Semitonos: El ADN de las Escalas',
     level: 'Principiante',
     description: 'Aprende a medir distancias en el piano y descubre la fórmula secreta de las escalas mayores.',
@@ -385,12 +385,93 @@ Desde cualquier nota raíz, aplica esta fórmula:
     }
   },
   {
-    id: '5',
+    id: '4b',
     number: 5,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
-    progressPercent: 24,
-    title: '5. La Escala de Do Mayor y el Paso del Pulgar',
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 15,
+    title: '5. Intervalos: el número y la calidad',
+    level: 'Principiante',
+    description: 'Medir cualquier distancia entre dos notas y reconocerla de oído con canciones que ya conocés.',
+    image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'intervalos musicales en piano numero y calidad ejemplos canciones',
+    dictationScript: 'Un intervalo tiene dos apellidos, che, y hay que decir los dos. El número se cuenta con los dedos sobre los nombres de las notas: de Do a Mi hay tres nombres, Do, Re, Mi, entonces es una tercera. La calidad se cuenta en semitonos: de Do a Mi hay cuatro semitonos, tercera mayor; de Do a Mi bemol hay tres, tercera menor. Mismo número, distinto color. Y para reconocerlos de oído usá canciones que ya tenés en la cabeza: el cumpleaños feliz empieza con una segunda mayor, y el Himno a la Alegría sube de a segundas.',
+    demonstrationNotes: ['C4', 'D4', 'C4', 'E4', 'C4', 'F4', 'C4', 'G4'],
+    targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+    content: `
+### Toda la armonía empieza acá
+
+Un acorde es un puñado de intervalos apilados. Una escala es una fila de intervalos. Una melodía es una sucesión de intervalos. Si medís bien, después todo se explica solo.
+
+#### 1. Dos apellidos: número y calidad
+
+- **El número** se cuenta sobre los *nombres* de las notas, incluyendo las dos puntas. De Do a Sol: Do-Re-Mi-Fa-Sol = **cinco** nombres → una **quinta**.
+- **La calidad** se cuenta en *semitonos*, y es lo que le da el color: mayor, menor, justa, aumentada, disminuida.
+
+Contar el número mal es el error más común: se cuentan los *pasos* en vez de los *nombres*. De Do a Re hay un paso, pero es una **segunda**, no una primera.
+
+#### 2. La tabla que conviene saber de memoria
+
+| Semitonos | Intervalo | Referencia para el oído |
+|---|---|---|
+| 0 | Unísono justo | la misma tecla |
+| 1 | Segunda menor | *Tiburón* |
+| 2 | Segunda mayor | *Cumpleaños feliz* (las dos primeras) |
+| 3 | Tercera menor | *Para Elisa* (el giro Mi–Re♯ no; el salto de la campana sí) |
+| 4 | Tercera mayor | *Oh when the saints* |
+| 5 | Cuarta justa | *La marcha nupcial* |
+| 6 | Tritono | *Los Simpsons* |
+| 7 | Quinta justa | *Star Wars* |
+| 8 | Sexta menor | *Love Story* |
+| 9 | Sexta mayor | *NBC* |
+| 10 | Séptima menor | *Somewhere* (West Side Story) |
+| 11 | Séptima mayor | *Take on me* (el estribillo) |
+| 12 | Octava justa | *Somewhere over the rainbow* |
+
+#### 3. Justos y mayores: por qué no todos se llaman igual
+
+La unísono, la cuarta, la quinta y la octava son **justas**: suenan tan estables que no admiten "mayor" ni "menor". El resto —segundas, terceras, sextas y séptimas— viene en **mayor** y **menor**. Bajá un semitono un intervalo mayor y se vuelve menor; bajá un semitono uno justo y se vuelve **disminuido**.
+
+#### 4. El truco de la mano
+
+Poné el pulgar en la nota de abajo y el meñique en la de arriba, sin mover la mano. La **forma de la mano** es la que aprendés: una quinta justa se siente en la palma abierta, una tercera se siente cerrada. Con el tiempo reconocés el intervalo por el cuerpo antes que por la cuenta.
+    `,
+    practice: { gym: 'earTraining', label: 'Oído: Intervalos y Tríadas', hint: 'Primero adivinás el número, después la calidad: son dos preguntas distintas' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: 'De Do a Sol, ¿qué intervalo hay?',
+          options: ['Cuarta justa', 'Quinta justa', 'Sexta mayor', 'Quinta disminuida'],
+          correctIndex: 1,
+          explanation: 'Do-Re-Mi-Fa-Sol son cinco nombres (quinta) y siete semitonos (justa). La quinta justa es el intervalo más estable después de la octava: es lo que sostiene todo acorde mayor y menor.'
+        },
+        {
+          question: '¿Qué diferencia hay entre una tercera mayor y una tercera menor?',
+          options: [
+            'El número de nombres que abarcan',
+            'Un semitono: la mayor tiene 4 y la menor 3',
+            'La mayor se toca con la derecha y la menor con la izquierda',
+            'Ninguna, son dos nombres para lo mismo'
+          ],
+          correctIndex: 1,
+          explanation: 'Las dos abarcan tres nombres de nota; cambia la distancia en semitonos. Ese único semitono es lo que separa un acorde mayor de uno menor.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Sobre Do central, tocá la tercera mayor, después la quinta justa y por último la octava.',
+        requiredSequence: ['E4', 'G4', 'C5'],
+        mode: 'sequence',
+        hint: 'Cuatro semitonos, siete semitonos y doce semitonos arriba de Do.'
+      }
+    }
+  },
+  {
+    id: '5',
+    number: 6,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 18,
+    title: '6. La Escala de Do Mayor y el Paso del Pulgar',
     level: 'Principiante',
     description: 'Domina la técnica legendaria del cruce del pulgar para tocar líneas melódicas continuas.',
     image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
@@ -447,11 +528,11 @@ No levantes el codo de golpe. El pulgar debe comenzar a deslizarse hacia adentro
   },
   {
     id: '5b',
-    number: 6,
+    number: 7,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
-    progressPercent: 29,
-    title: '6. Las 5 familias de digitación: 12 escalas, 5 formas de mano',
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 21,
+    title: '7. Las 5 familias de digitación: 12 escalas, 5 formas de mano',
     level: 'Principiante',
     description: 'Dejá de memorizar doce escalas sueltas: son cinco formas de mano que se repiten.',
     image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
@@ -539,12 +620,334 @@ Do mayor es la escala más fácil de **entender** y una de las más difíciles d
     }
   },
   {
-    id: '5c',
-    number: 7,
+    id: '5e',
+    number: 8,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
-    progressPercent: 33,
-    title: '7. El sistema de las 3 escalas del día',
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 24,
+    title: '8. Las tres escalas menores',
+    level: 'Intermedio',
+    description: 'Natural, armónica y melódica: qué cambia en cada una y cuándo se usa cada una.',
+    image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'escala menor natural armonica y melodica en piano explicacion',
+    dictationScript: 'La escala menor no es una, son tres, y la diferencia está toda en el final. La natural es la escala mayor con el tercero, el sexto y el séptimo grado bajados: suena antigua, modal, como el folclore. La armónica sube de nuevo el séptimo grado y eso arma la sensible, esa nota que tira hacia la tónica con fuerza: es la que te da el acorde de dominante mayor y el sabor español de ese salto de segunda aumentada. Y la melódica sube el sexto y el séptimo cuando va para arriba, para que ese salto raro no moleste en una melodía, y baja natural cuando vuelve. Regla vieja: subiendo, melódica; bajando, natural.',
+    demonstrationNotes: ['A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G#4', 'A4'],
+    fingerGuide: { 'A3': 1, 'B3': 2, 'C4': 3, 'D4': 1, 'E4': 2, 'F4': 3, 'G#4': 4, 'A4': 5 },
+    targetKeys: ['A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'G#4', 'A4'],
+    content: `
+### Una tonalidad, tres versiones
+
+La escala mayor es una sola. La menor viene en tres, y no es un capricho de la teoría: cada una resuelve un problema distinto.
+
+#### 1. Menor natural — la relativa
+
+Es la escala mayor **empezada desde el sexto grado**. La menor natural de La usa exactamente las mismas teclas que Do mayor: todas blancas. Su fórmula, en tonos (T) y semitonos (S):
+
+**T – S – T – T – S – T – T**
+
+Suena antigua y abierta. Es la de casi todo el folclore y buena parte del rock.
+
+#### 2. Menor armónica — la que arma la dominante
+
+Problema de la natural: el séptimo grado está a un tono de la tónica, y a un tono de distancia no "tira". Sin esa tracción, el acorde de dominante sale menor y la cadencia queda floja.
+
+Solución: **subir medio tono el séptimo grado**. En La menor, el Sol pasa a Sol♯. Aparece la **sensible**, el acorde de Mi se vuelve Mayor, y la resolución Mi → Lam suena como tiene que sonar.
+
+Efecto colateral: entre el sexto (Fa) y el séptimo (Sol♯) queda un salto de **segunda aumentada**, tres semitonos. Es ese giro "español" o "de Medio Oriente" que reconocés al toque.
+
+#### 3. Menor melódica — la de las melodías
+
+Ese salto de segunda aumentada es hermoso como color, pero incómodo de cantar. La melódica lo evita **subiendo también el sexto grado**, pero solo **al subir**. Al bajar vuelve a ser natural, porque bajando ya no hace falta empujar hacia ningún lado.
+
+| | Grados 6 y 7 subiendo | Grados 6 y 7 bajando |
+|---|---|---|
+| Natural | ♮6 ♮7 | ♮6 ♮7 |
+| Armónica | ♮6 ♯7 | ♮6 ♯7 |
+| Melódica | ♯6 ♯7 | ♮6 ♮7 |
+
+#### 4. Cómo se estudia sin volverse loco
+
+Elegí **una** tonalidad menor y hacé las tres seguidas: natural, armónica, melódica. Escuchá el cambio de clima entre una y otra; lo que fija no es la digitación sino el oído reconociendo qué versión está sonando.
+    `,
+    practice: { gym: 'scales', label: 'Gimnasio de Escalas', hint: 'Elegí una menor y pasá por las tres versiones seguidas' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Qué cambia la menor armónica respecto de la natural?',
+          options: [
+            'Sube medio tono el 3er grado',
+            'Sube medio tono el 7º grado y crea la sensible',
+            'Baja el 5º grado',
+            'Nada: cambia solo la digitación'
+          ],
+          correctIndex: 1,
+          explanation: 'Al subir el 7º grado aparece la sensible, a medio tono de la tónica. Eso convierte el acorde de V en Mayor y le devuelve fuerza a la cadencia.'
+        },
+        {
+          question: '¿Por qué la escala menor melódica baja distinto de como sube?',
+          options: [
+            'Por una convención sin razón musical',
+            'Porque al bajar no hace falta empujar hacia la tónica, y el 6º y 7º subidos sonarían fuera de lugar',
+            'Porque la mano izquierda no llega',
+            'Porque en realidad no baja nunca'
+          ],
+          correctIndex: 1,
+          explanation: 'El 6º y 7º subidos existen para conducir hacia la tónica. Bajando esa función desaparece, así que la escala vuelve a la forma natural.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá la escala de La menor armónica ascendente: La, Si, Do, Re, Mi, Fa, Sol♯, La.',
+        requiredSequence: ['A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G#4', 'A4'],
+        mode: 'sequence',
+        hint: 'Todas blancas menos la anteúltima: el Sol va sostenido.'
+      }
+    }
+  },
+  {
+    id: '5f',
+    number: 9,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 26,
+    title: '9. Armaduras de clave: el orden de sostenidos y bemoles',
+    level: 'Intermedio',
+    description: 'Leer la tonalidad de un vistazo en vez de descifrar alteración por alteración.',
+    image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'armadura de clave orden de sostenidos y bemoles truco para reconocer tonalidad',
+    dictationScript: 'Las alteraciones al principio del pentagrama no están puestas al azar: siempre entran en el mismo orden. Los sostenidos van Fa, Do, Sol, Re, La, Mi, Si. Y los bemoles, exactamente al revés: Si, Mi, La, Re, Sol, Do, Fa. Con eso ya tenés dos trucos que valen oro. Con sostenidos, mirá el último y subí medio tono: ahí está la tónica. Con bemoles, mirá el anteúltimo: ese es el nombre de la tonalidad, listo, no hay que contar nada.',
+    demonstrationNotes: ['F4', 'C5', 'G4', 'D5', 'A4', 'E5', 'B4'],
+    targetKeys: ['F4', 'C5', 'G4', 'D5', 'A4', 'E5', 'B4'],
+    content: `
+### Dejar de contar alteraciones
+
+La armadura no es una lista de accidentes: es el **nombre de la tonalidad escrito en clave**. Y se lee de un vistazo si sabés dos frases.
+
+#### 1. El orden nunca cambia
+
+- **Sostenidos:** Fa – Do – Sol – Re – La – Mi – Si
+- **Bemoles:** Si – Mi – La – Re – Sol – Do – Fa
+
+Son la misma lista leída en las dos direcciones. Cada nueva alteración se suma a las anteriores: si hay tres sostenidos, son sí o sí Fa♯, Do♯ y Sol♯.
+
+#### 2. Los dos trucos de lectura
+
+**Con sostenidos:** mirá el **último** sostenido y subí **medio tono**.
+Tres sostenidos → el último es Sol♯ → medio tono arriba es **La mayor**.
+
+**Con bemoles:** el **anteúltimo** bemol *es* el nombre de la tonalidad.
+Cuatro bemoles (Si♭, Mi♭, La♭, Re♭) → el anteúltimo es La♭ → **La♭ mayor**.
+(La única que hay que memorizar suelta es **Fa mayor**, con un solo bemol.)
+
+#### 3. Mayor o menor: la misma armadura para dos
+
+Cada armadura sirve para una tonalidad mayor y su **relativa menor**, que está una tercera menor abajo. Tres sostenidos son La mayor **o** Fa♯ menor. ¿Cuál de las dos? Lo dice la música, no la armadura: mirá la primera y la última nota del bajo, y qué acorde suena a "casa".
+
+#### 4. Por qué esto acelera todo
+
+Cuando ves la armadura y decís "La mayor" en vez de "Fa♯, Do♯, Sol♯", tu cabeza deja de traducir nota por nota y empieza a leer **grados**. Ahí es donde la lectura a primera vista se vuelve rápida: ya sabés qué teclas negras te esperan antes de tocar la primera nota.
+    `,
+    practice: { gym: 'circleSequence', label: 'Círculo de Quintas', hint: 'Girar el círculo es recorrer las armaduras en orden: una alteración por paso' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: 'Una partitura tiene tres sostenidos en la armadura. ¿En qué tonalidad mayor está?',
+          options: ['Mi mayor', 'La mayor', 'Re mayor', 'Fa♯ mayor'],
+          correctIndex: 1,
+          explanation: 'Con tres sostenidos el último es Sol♯; medio tono arriba está La. También podría ser su relativa menor, Fa♯ menor.'
+        },
+        {
+          question: '¿Cuál es el orden de los bemoles en la armadura?',
+          options: [
+            'Fa, Do, Sol, Re, La, Mi, Si',
+            'Si, Mi, La, Re, Sol, Do, Fa',
+            'Do, Re, Mi, Fa, Sol, La, Si',
+            'Depende de la tonalidad'
+          ],
+          correctIndex: 1,
+          explanation: 'Es el orden de los sostenidos leído al revés. Por eso una sola lista, en dos direcciones, cubre las dos familias.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá los cuatro primeros sostenidos en su orden de armadura, en cualquier octava: Fa, Do, Sol, Re.',
+        requiredSequence: ['F4', 'C5', 'G4', 'D5'],
+        mode: 'sequence',
+        hint: 'Fa – Do – Sol – Re. Cada uno está una quinta arriba del anterior.'
+      }
+    }
+  },
+  {
+    id: '5g',
+    number: 10,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 29,
+    title: '10. Los modos: siete colores de una misma escala',
+    level: 'Intermedio',
+    description: 'Dórico, mixolidio, lidio y compañía: las mismas teclas, siete climas distintos.',
+    image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'modos griegos en piano dorico mixolidio lidio explicados con ejemplos',
+    dictationScript: 'Mirá qué economía: con las teclas blancas ya tenés siete escalas distintas. Si empezás en Re y llegás hasta Re, todo blanco, eso es dórico y suena a menor pero con una luz rara en el sexto grado. Si empezás en Sol, es mixolidio, el modo del blues y del rock. Si empezás en Fa, es lidio, ese cuarto grado subido que suena a banda de sonido. Las mismas teclas, distinta gravedad. Y ahí está el secreto: lo que define el modo no son las notas, es cuál de ellas mandás a ser el centro.',
+    demonstrationNotes: ['D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5'],
+    fingerGuide: { 'D4': 1, 'E4': 2, 'F4': 3, 'G4': 1, 'A4': 2, 'B4': 3, 'C5': 4, 'D5': 5 },
+    targetKeys: ['D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5'],
+    content: `
+### Las mismas siete notas, siete centros
+
+Tocá solo teclas blancas de Do a Do y tenés Do mayor. Tocá solo teclas blancas de **Re a Re** y no tenés Do mayor "empezando de otro lado": tenés otra escala, con otro centro de gravedad y otro color. Eso es un modo.
+
+#### 1. Los siete, desde las blancas
+
+| Empezás en | Modo | Se parece a | La nota que lo delata |
+|---|---|---|---|
+| Do | **Jónico** | mayor | (es la mayor) |
+| Re | **Dórico** | menor | 6ª mayor — menor "con esperanza" |
+| Mi | **Frigio** | menor | ♭2 — tensión española |
+| Fa | **Lidio** | mayor | ♯4 — flota, cine |
+| Sol | **Mixolidio** | mayor | ♭7 — blues, rock |
+| La | **Eólico** | menor | (es la menor natural) |
+| Si | **Locrio** | ninguno | ♭5 — inestable, casi no se usa |
+
+#### 2. La nota característica es todo
+
+No memorices siete escalas: memorizá **qué le cambia cada modo a la mayor o a la menor**.
+
+- Dórico = menor **con el 6º subido**.
+- Frigio = menor **con el 2º bajado**.
+- Lidio = mayor **con el 4º subido**.
+- Mixolidio = mayor **con el 7º bajado**.
+
+Cuatro datos y tenés los cuatro modos que se usan de verdad.
+
+#### 3. Cómo se oye el centro
+
+Un modo no aparece por tocar la escala: aparece cuando el **bajo insiste** en la tónica del modo. Tocá un Re grave sostenido con la izquierda y improvisá con teclas blancas arriba: vas a oír dórico, no Do mayor. Sacá el Re y todo vuelve a sonar a Do.
+
+Por eso los modos se practican con **pedal de tónica**: una nota grave que no se mueve mientras la derecha pasea.
+
+#### 4. Dónde los vas a escuchar
+
+- **Dórico** — *Scarborough Fair*, casi todo el funk menor.
+- **Mixolidio** — *Sweet Home Alabama*, el blues entero.
+- **Lidio** — las bandas de sonido de aventura; ese salto que suena a "algo grande está por pasar".
+- **Frigio** — flamenco, metal.
+    `,
+    practice: { gym: 'scales', label: 'Gimnasio de Escalas', hint: 'Tocá la escala y después sostené la tónica del modo con la izquierda: recién ahí se oye' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Qué le cambia el modo dórico a la escala menor natural?',
+          options: ['Sube el 6º grado', 'Baja el 2º grado', 'Sube el 7º grado', 'Baja el 5º grado'],
+          correctIndex: 0,
+          explanation: 'El dórico es una menor con la 6ª mayor. Ese grado es el que le da ese aire menos sombrío que la menor natural.'
+        },
+        {
+          question: 'Tocando solo teclas blancas, ¿qué hace que suene dórico y no Do mayor?',
+          options: [
+            'Tocar más rápido',
+            'Que el bajo insista en Re como centro',
+            'Usar la mano izquierda',
+            'Nada: son la misma escala y suenan igual'
+          ],
+          correctIndex: 1,
+          explanation: 'El modo lo define el centro de gravedad, no el conjunto de notas. Sin un bajo que fije la tónica del modo, el oído vuelve a escuchar Do mayor.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá el modo dórico de Re, solo teclas blancas, de Re a Re.',
+        requiredSequence: ['D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5'],
+        mode: 'sequence',
+        hint: 'Ocho blancas seguidas desde Re. Prestá atención al Si: ese es el 6º grado mayor que define el modo.'
+      }
+    }
+  },
+  {
+    id: '5h',
+    number: 11,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 32,
+    title: '11. Pentatónicas y blues: la escala que no falla',
+    level: 'Intermedio',
+    description: 'Cinco notas para improvisar sin equivocarse, y la sexta que le pone el barro.',
+    image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'escala pentatonica y de blues en piano como improvisar',
+    dictationScript: 'Te doy la escala más agradecida que existe. Agarrá la escala mayor y sacale el cuarto y el séptimo grado: te quedan cinco notas, y esas cinco no chocan con nada. Eso es la pentatónica mayor. Su versión menor son las mismas cinco empezando desde el sexto grado. Y si querés blues, metele una nota más: la blue note, el quinto grado bajado, esa que suena sucia y hermosa. Probá esto: tocá solo las teclas negras. Son una pentatónica entera. No hay forma de sonar mal.',
+    demonstrationNotes: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
+    fingerGuide: { 'C4': 1, 'D4': 2, 'E4': 3, 'G4': 1, 'A4': 2, 'C5': 4 },
+    targetKeys: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
+    content: `
+### Cinco notas, cero errores
+
+La pentatónica se llama así por sus cinco notas. Lo importante no es cuántas tiene, sino **cuáles le sacaron**: las dos que generan los choques.
+
+#### 1. Pentatónica mayor
+
+Escala mayor **menos el 4º y el 7º grado**.
+En Do: **Do – Re – Mi – Sol – La**.
+
+Esos dos grados eran los que formaban el tritono con el resto. Sin ellos no queda ninguna disonancia fuerte: por eso cualquier nota cae bien sobre cualquier acorde de la tonalidad. Es la escala de las canciones infantiles, del folclore de medio mundo y de casi todo solo de rock.
+
+#### 2. Pentatónica menor
+
+Las mismas cinco notas empezando desde la **relativa menor**.
+En La menor: **La – Do – Re – Mi – Sol**.
+
+Misma digitación mental, otro centro. Si sabés la mayor, la menor te salió gratis.
+
+#### 3. La blue note
+
+Agregale a la pentatónica menor el **5º grado bajado** (en La menor: Mi♭) y tenés la **escala de blues**: seis notas.
+
+Esa nota no se queda: se **pasa por arriba**. Sube de Re a Mi♭ y de Mi♭ a Mi, o baja al revés. Sola, en tiempo fuerte y sostenida, suena a error; de paso, es el sonido del blues entero.
+
+#### 4. El regalo de las teclas negras
+
+Las cinco teclas negras son **exactamente** una pentatónica mayor de Sol♭ (o menor de Mi♭). Poné un bajo de Mi♭ o Sol♭ con la izquierda y paseá con la derecha por las negras nada más: no existe la nota equivocada. Es el mejor primer ejercicio de improvisación que hay, y funciona desde el día uno.
+
+#### 5. Cómo practicarla para que sirva
+
+Tocarla de punta a punta enseña poco. Lo que sirve:
+
+1. **Grupos de tres** — sube de a tres notas y volvé una.
+2. **Saltos** — salteá una nota de la escala en vez de ir seguido.
+3. **Frases de cuatro tiempos** — tocá dos tiempos y callate dos. El silencio es la mitad de un solo.
+    `,
+    practice: { gym: 'scales', label: 'Gimnasio de Escalas', hint: 'Después de la escala, improvisá un minuto solo con esas cinco notas' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Qué grados se le sacan a la escala mayor para armar la pentatónica mayor?',
+          options: ['El 2º y el 6º', 'El 4º y el 7º', 'El 3º y el 5º', 'El 5º y el 6º'],
+          correctIndex: 1,
+          explanation: 'El 4º y el 7º son los que forman el tritono de la tonalidad. Sin ellos no quedan choques fuertes y cualquier nota suena bien.'
+        },
+        {
+          question: '¿Cómo se usa bien la blue note (5º bemol)?',
+          options: [
+            'Sosteniéndola largo en el tiempo fuerte',
+            'Como nota de paso, entrando y saliendo rápido',
+            'Solo en la mano izquierda',
+            'Como nota final de la frase'
+          ],
+          correctIndex: 1,
+          explanation: 'La blue note es tensión de paso. Sostenida en tiempo fuerte suena a error; de paso, entre el 4º y el 5º, es el sonido característico del blues.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá la pentatónica mayor de Do ascendente: Do, Re, Mi, Sol, La, Do.',
+        requiredSequence: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
+        mode: 'sequence',
+        hint: 'Es la escala de Do salteando Fa y Si.'
+      }
+    }
+  },
+  {
+    id: '5c',
+    number: 12,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 35,
+    title: '12. El sistema de las 3 escalas del día',
     level: 'Principiante',
     description: 'Repetición espaciada e intercalada: por qué practicar peor hoy te hace tocar mejor el mes que viene.',
     image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
@@ -642,11 +1045,11 @@ La consolidación motora ocurre mientras dormís. **20 minutos por día durante 
   },
   {
     id: '5d',
-    number: 8,
+    number: 13,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
     progressPercent: 38,
-    title: '8. Práctica mental y audiación',
+    title: '13. Práctica mental y audiación',
     level: 'Intermedio',
     description: 'Memorizar la escala sin tocarla: dónde poner la atención y cómo ensayar con la cabeza.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
@@ -723,12 +1126,95 @@ Tocá la escala completa **sobre la tapa cerrada del piano**, con la digitación
     }
   },
   {
-    id: '6',
-    number: 9,
+    id: '5i',
+    number: 14,
     moduleNumber: 2,
-    moduleTitle: 'Módulo 2: Escalas e Intervalos (14% - 43%)',
-    progressPercent: 43,
-    title: '9. Lectura Musical: El Gran Pentagrama y Claves',
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 41,
+    title: '14. Escalas en terceras, en sextas y en movimiento contrario',
+    level: 'Avanzado',
+    description: 'Las cuatro variantes que convierten una escala aburrida en técnica de verdad.',
+    image: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'escalas en terceras y movimiento contrario piano tecnica',
+    dictationScript: 'Si la escala te sale bien en paralelo, ya no te está enseñando nada. Ahí empiezan las variantes. Movimiento contrario: las dos manos salen de la misma nota y se van para lados opuestos, y como la digitación es simétrica sale sola. En terceras, una mano toca la escala y la otra la misma escala arrancando dos notas después: te obliga a coordinar dos líneas. Y hay una variante que rinde más que ninguna: cambiar el ritmo. La misma escala en tresillos, después punteada, después con acentos cada tres notas. La mano cree que está aprendiendo otra cosa y en realidad está afinando la misma.',
+    demonstrationNotes: ['C4', 'D4', 'E4', 'F4', 'G4', 'F4', 'E4', 'D4', 'C4'],
+    targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+    content: `
+### Cuando la escala paralela ya no enseña nada
+
+Tocar la escala con las dos manos en paralelo, cuatro octavas, todos los días, deja de rendir apenas sale limpia. Estas cuatro variantes la vuelven a poner difícil — en el sentido bueno.
+
+#### 1. Movimiento contrario
+
+Las dos manos arrancan en la **misma nota** (el mismo nombre, distinta octava, o incluso el mismo Do) y se abren para lados opuestos.
+
+En Do mayor, la digitación es **espejo perfecto**: el 1 con el 1, el 2 con el 2, el pulgar pasa en las dos manos al mismo tiempo. Por eso es la primera variante que se aprende: la simetría trabaja a favor.
+
+#### 2. En terceras
+
+La mano toca **dos líneas de escala a la vez**, separadas por una tercera: Do+Mi, Re+Fa, Mi+Sol… Es el ejercicio que más ordena la mano derecha, porque obliga a que los dedos largos y cortos bajen con el mismo peso.
+
+Empezá **una octava, lento, y solo con la derecha**. Si suena "cojo" — una de las dos voces más fuerte —, ahí está el trabajo.
+
+#### 3. En sextas y en décimas
+
+Misma idea con más distancia. Las **décimas** (una tercera más una octava) entre las manos son el sonido de casi todo el romanticismo: la izquierda hace de contrabajo y la derecha canta.
+
+#### 4. La variante que más rinde: el ritmo
+
+Sobre la misma escala de siempre:
+
+- **Tresillos** — el acento cae en una nota distinta en cada octava.
+- **Ritmo punteado** — largo-corto, largo-corto. Después al revés.
+- **Acentos cada 3** — con siete notas por octava, el acento se corre solo.
+
+Esto no es adorno: cambiar el agrupamiento rítmico obliga al cerebro a **re-mapear** el pasaje en vez de repetirlo en piloto automático. Es la misma lógica de la práctica intercalada, aplicada adentro de una sola escala.
+
+#### 5. En qué orden meterlas
+
+Semana 1 paralelo limpio → semana 2 sumá movimiento contrario → semana 3 sumá una variante rítmica → semana 4 terceras, una octava. No las junte todas de una: cada variante tiene que estar cómoda antes de que entre la siguiente.
+    `,
+    practice: { gym: 'classicalMethods', label: 'Métodos Clásicos', hint: 'Hanon y Czerny son exactamente esto: la misma figura movida por toda la escala' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Por qué el movimiento contrario en Do mayor es la variante más fácil de arrancar?',
+          options: [
+            'Porque se toca más lento',
+            'Porque la digitación de las dos manos es simétrica y los pulgares pasan a la vez',
+            'Porque solo usa la mano derecha',
+            'Porque no tiene teclas negras'
+          ],
+          correctIndex: 1,
+          explanation: 'En movimiento contrario desde la misma nota, los dedos se corresponden en espejo: 1 con 1, 2 con 2. Esa simetría es un andamio que el paralelo no te da.'
+        },
+        {
+          question: '¿Qué gana la práctica al cambiarle el ritmo a una escala ya sabida?',
+          options: [
+            'Nada, es solo para no aburrirse',
+            'Obliga a reagrupar el pasaje en vez de repetirlo en automático, y eso fija mejor',
+            'Hace que se toque más rápido enseguida',
+            'Cambia la digitación'
+          ],
+          correctIndex: 1,
+          explanation: 'Reagrupar rompe el automatismo y fuerza a reconstruir el movimiento: es una dificultad deseable, del mismo tipo que la práctica intercalada.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá cinco notas de Do mayor subiendo y volvé bajando, parejo: Do, Re, Mi, Fa, Sol, Fa, Mi, Re, Do.',
+        requiredSequence: ['C4', 'D4', 'E4', 'F4', 'G4', 'F4', 'E4', 'D4', 'C4'],
+        mode: 'sequence',
+        hint: 'Que la vuelta suene igual de pareja que la ida: ahí se nota el control.'
+      }
+    }
+  },
+  {
+    id: '6',
+    number: 15,
+    moduleNumber: 2,
+    moduleTitle: 'Módulo 2: Escalas e Intervalos (9% - 44%)',
+    progressPercent: 44,
+    title: '15. Lectura Musical: El Gran Pentagrama y Claves',
     level: 'Principiante',
     description: 'Decodifica la notación clásica sin estrés: Clave de Sol para la derecha y Clave de Fa para la izquierda.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
@@ -785,11 +1271,11 @@ El Do central se dibuja con una **línea adicional** flotante entre ambos pentag
   // MÓDULO 3: Acordes y Tríadas (40% - 60%)
   {
     id: '7',
-    number: 10,
+    number: 16,
     moduleNumber: 3,
-    moduleTitle: 'Módulo 3: El Poder de los Acordes (43% - 57%)',
-    progressPercent: 48,
-    title: '10. Anatomía de la Tríada: Mayor vs Menor',
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 47,
+    title: '16. Anatomía de la Tríada: Mayor vs Menor',
     level: 'Principiante',
     description: 'Comprende la emoción armónica: por qué un acorde suena radiante o melancólico.',
     image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
@@ -848,12 +1334,184 @@ Se apilan terceras sobre una nota raíz:
     }
   },
   {
-    id: '8',
-    number: 11,
+    id: '7b',
+    number: 17,
     moduleNumber: 3,
-    moduleTitle: 'Módulo 3: El Poder de los Acordes (43% - 57%)',
-    progressPercent: 52,
-    title: '11. Los 7 Acordes Diatónicos de la Tonalidad',
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 50,
+    title: '17. Cifrado americano: leer C, Am, F7 y Csus4',
+    level: 'Principiante',
+    description: 'El idioma con el que están escritas casi todas las canciones que vas a querer tocar.',
+    image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'cifrado americano acordes piano como leer C Am F7 sus',
+    dictationScript: 'Che, el cifrado americano es el idioma en el que está escrita cualquier canción que busques en internet, y se aprende en diez minutos. La letra sola es acorde mayor: C es Do mayor. La letra con eme chica es menor: Am es La menor. Un siete solo quiere decir séptima menor, ese sabor a que algo va a seguir. Sus cuatro es correr la tercera un semitono para arriba, y queda esa cosa suspendida que pide resolver. Y si ves una barra, como C barra E, lo de la derecha es la nota del bajo, nada más. Con esas cinco reglas leés el noventa por ciento de lo que hay dando vueltas.',
+    demonstrationNotes: ['C4', 'E4', 'G4'],
+    targetKeys: ['C4', 'E4', 'G4', 'A4', 'B4', 'D5'],
+    content: `
+### El idioma de las canciones
+
+En una partitura clásica está todo escrito nota por nota. En una canción hay una letra, y arriba, un cifrado. El cifrado no te dice **cómo** tocarlo — eso lo decidís vos — te dice **qué** notas están permitidas.
+
+#### 1. Las cinco reglas que resuelven casi todo
+
+| Escribe | Se llama | Es |
+|---|---|---|
+| **C** | Do mayor | 1 – 3 – 5 |
+| **Cm** | Do menor | 1 – ♭3 – 5 |
+| **C7** | Do con séptima | 1 – 3 – 5 – ♭7 |
+| **Cmaj7** | Do séptima mayor | 1 – 3 – 5 – 7 |
+| **Csus4** | Do suspendida | 1 – **4** – 5 |
+
+Y una regla más, la que más se malinterpreta: **el 7 solo siempre es menor**. **C7** lleva Si♭, no Si. Para el Si natural hay que escribir **Cmaj7** (o **CM7**, o **C△**).
+
+#### 2. La barra: acordes con bajo puesto
+
+**C/E** se lee "Do con bajo Mi". El acorde es Do mayor; lo único que cambia es qué nota va abajo de todo. Sirve para que el bajo camine de a un paso en vez de saltar:
+
+**C – C/B – Am – Am/G – F**  → el bajo baja Do, Si, La, Sol, Fa. Una escalerita.
+
+#### 3. Los apellidos que te vas a cruzar
+
+- **dim** o **°** — disminuido.
+- **aug** o **+** — aumentado.
+- **6** — se le suma la sexta (C6 = Do, Mi, Sol, La). Muy usado en finales.
+- **add9** — se le suma la novena **sin** la séptima.
+- **9, 11, 13** — sí llevan séptima; son extensiones (vienen más adelante).
+
+#### 4. Cómo se toca en la vida real
+
+Nadie toca **C** como tres notas pegadas en el centro del teclado. Lo normal:
+
+- **Izquierda**: la fundamental sola, o fundamental + quinta.
+- **Derecha**: el acorde en la inversión que quede **más cerca** del anterior.
+
+Ese es todo el secreto de que un acompañamiento suene profesional y no a ejercicio.
+    `,
+    practice: { gym: 'chords', label: 'Desafío de Acordes', hint: 'Leé el cifrado y armalo sin pensar la fórmula: esa es la meta' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Qué notas tiene el acorde G7?',
+          options: [
+            'Sol, Si, Re, Fa♯',
+            'Sol, Si, Re, Fa',
+            'Sol, Si♭, Re, Fa',
+            'Sol, Do, Re, Fa'
+          ],
+          correctIndex: 1,
+          explanation: 'El 7 solo indica séptima menor: de Sol a Fa hay diez semitonos. Con Fa♯ sería Gmaj7, que se escribe distinto.'
+        },
+        {
+          question: 'En el cifrado C/E, ¿qué significa el Mi?',
+          options: [
+            'Que hay que tocar dos acordes a la vez',
+            'Que el Mi va en el bajo, pero el acorde sigue siendo Do mayor',
+            'Que el acorde es Mi mayor',
+            'Que se toca Do y después Mi'
+          ],
+          correctIndex: 1,
+          explanation: 'Lo que está después de la barra es la nota del bajo. El acorde no cambia: cambia su inversión y, con eso, cómo camina la línea grave.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Armá el acorde Am (La menor) en posición fundamental: La, Do, Mi.',
+        requiredSequence: ['A4', 'C5', 'E5'],
+        mode: 'chord',
+        hint: 'Letra con eme chica = menor: fundamental, tercera menor y quinta justa.'
+      }
+    }
+  },
+  {
+    id: '7c',
+    number: 18,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 53,
+    title: '18. Disminuidos y aumentados: las dos tríadas raras',
+    level: 'Intermedio',
+    description: 'Las dos que faltaban para completar la familia, y para qué sirve cada una.',
+    image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'acordes disminuidos y aumentados en piano para que sirven',
+    dictationScript: 'Hay cuatro tríadas, no dos. Ya sabés la mayor y la menor; faltan las dos incómodas. La disminuida son dos terceras menores apiladas: suena a suspenso, a que algo malo está por pasar, y es el acorde que se arma sobre el séptimo grado. La aumentada son dos terceras mayores: suena a que el suelo se movió, no tiene tónica clara, y sirve justo para eso, para empujar de un acorde a otro. Las dos son perfectamente simétricas, y por eso mismo no tienen casa: podés resolverlas para cualquier lado.',
+    demonstrationNotes: ['B4', 'D5', 'F5'],
+    targetKeys: ['C4', 'E4', 'G4', 'B4', 'D5', 'F5', 'G#4'],
+    content: `
+### Las cuatro tríadas, completas
+
+Una tríada son dos terceras apiladas. Según qué tercera va abajo y cuál arriba, salen exactamente **cuatro** combinaciones. Ya conocés dos.
+
+| Tríada | Se apila | Suena a |
+|---|---|---|
+| **Mayor** | 3ª mayor + 3ª menor | luz, reposo |
+| **Menor** | 3ª menor + 3ª mayor | sombra, reposo |
+| **Disminuida** | 3ª menor + 3ª menor | suspenso, urgencia |
+| **Aumentada** | 3ª mayor + 3ª mayor | flotar, extrañeza |
+
+#### 1. La disminuida: la que empuja
+
+En Do mayor, la tríada del **séptimo grado** es **Si disminuido** (Si – Re – Fa). Tiene un tritono adentro (Si–Fa), y el tritono nunca se queda quieto: pide resolver.
+
+Por eso Bdim funciona como un **G7 sin la fundamental** — de hecho son las mismas notas menos el Sol. Es un dominante disfrazado: donde diga "resolvé a Do", resuelve a Do.
+
+**El uso que más rinde:** el **disminuido de paso**. Entre dos acordes que están a un tono, metele el disminuido del medio.
+C → **C♯dim** → Dm. El bajo sube de a semitono y todo suena inevitable.
+
+#### 2. La aumentada: la que no tiene casa
+
+Do aumentado (Do – Mi – Sol♯) apila dos terceras mayores. Es **simétrica**: si la invertís, vuelve a ser una tríada aumentada. No tiene fundamental privilegiada, así que el oído no sabe dónde está parado.
+
+Eso, que suena a defecto, es su función: **empujar sin comprometerse**. El caso clásico es la línea que sube por dentro del acorde:
+
+**C → Caug → C6 → C7**  → la voz interna hace Sol, Sol♯, La, Si♭. Suena a los años cincuenta, a Beatles, a bolero.
+
+#### 3. Cómo reconocerlas al tacto
+
+- **Disminuida** — la mano queda *apretada*: tres semitonos y tres semitonos.
+- **Aumentada** — la mano queda *abierta y pareja*: cuatro y cuatro.
+
+Son las dos únicas tríadas donde las dos terceras son **iguales**. Si la mano se siente simétrica, es una de estas dos.
+    `,
+    practice: { gym: 'chords', label: 'Desafío de Acordes', hint: 'Cuando aparezcan dim y aug, escuchá primero y contá después' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Cómo está formada una tríada disminuida?',
+          options: [
+            'Dos terceras mayores',
+            'Dos terceras menores',
+            'Una tercera mayor y una menor',
+            'Una cuarta y una quinta'
+          ],
+          correctIndex: 1,
+          explanation: 'Tercera menor + tercera menor. Entre las puntas queda un tritono, y de ahí sale toda su tensión.'
+        },
+        {
+          question: '¿Cuál es el uso más común del acorde disminuido en una canción?',
+          options: [
+            'Como acorde final',
+            'Como acorde de paso entre dos acordes separados por un tono',
+            'Para reemplazar la tónica',
+            'Solo aparece en música clásica'
+          ],
+          correctIndex: 1,
+          explanation: 'El disminuido de paso (C → C♯dim → Dm) hace que el bajo suba de a semitono y conecta dos acordes vecinos con una tensión brevísima.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Armá la tríada disminuida sobre Si: Si, Re, Fa.',
+        requiredSequence: ['B4', 'D5', 'F5'],
+        mode: 'chord',
+        hint: 'Tres semitonos de Si a Re y tres de Re a Fa. Las tres son teclas blancas.'
+      }
+    }
+  },
+  {
+    id: '8',
+    number: 19,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 56,
+    title: '19. Los 7 Acordes Diatónicos de la Tonalidad',
     level: 'Intermedio',
     description: 'Descubre la familia completa de acordes que nacen de las teclas blancas.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
@@ -901,12 +1559,174 @@ En cualquier tonalidad mayor, los acordes formados sobre cada grado tienen una c
     }
   },
   {
-    id: '9',
-    number: 12,
+    id: '8b',
+    number: 20,
     moduleNumber: 3,
-    moduleTitle: 'Módulo 3: El Poder de los Acordes (43% - 57%)',
-    progressPercent: 57,
-    title: '12. La Progresión de Oro: I - V - vi - IV',
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 59,
+    title: '20. Funciones: tónica, subdominante y dominante',
+    level: 'Intermedio',
+    description: 'Por qué siete acordes hacen en realidad solo tres trabajos.',
+    image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'funciones tonales tonica subdominante dominante explicacion piano',
+    dictationScript: 'Los siete acordes de la tonalidad no hacen siete cosas distintas: hacen tres. Están los que son casa, los que se alejan y los que empujan de vuelta. La tónica es casa: el uno, y también el tres y el seis, que son primos suyos. La subdominante te aleja: el cuatro y el dos. Y la dominante es la que tira para volver: el cinco y el siete. Toda la armonía tonal, desde Bach hasta la cumbia, es ese viaje de ida y vuelta. Cuando escuchás una canción y sabés cuándo va a volver a casa, es porque reconociste la función, no el acorde.',
+    demonstrationNotes: ['C4', 'E4', 'G4'],
+    targetKeys: ['C4', 'E4', 'G4', 'F4', 'A4', 'B4', 'D5'],
+    content: `
+### Siete acordes, tres trabajos
+
+Memorizar siete acordes por tonalidad son 84 acordes en las doce. Memorizar **tres funciones** son tres ideas que se repiten en todas.
+
+#### 1. Las tres funciones
+
+| Función | Grados | Qué hace |
+|---|---|---|
+| **Tónica (T)** | I, vi, iii | Casa. Reposo. |
+| **Subdominante (S)** | IV, ii | Se aleja. Abre la puerta. |
+| **Dominante (D)** | V, vii° | Tensión. Empuja a volver. |
+
+El ciclo natural es **T → S → D → T**. Podés saltear la S, podés repetir, pero el orden nunca se invierte del todo: la dominante no vuelve a la subdominante, va a la tónica.
+
+#### 2. Por qué los grados se agrupan así
+
+Los acordes de una misma función **comparten dos de sus tres notas**:
+
+- **C** (Do-Mi-Sol) y **Am** (La-Do-Mi) comparten Do y Mi → los dos son tónica.
+- **F** (Fa-La-Do) y **Dm** (Re-Fa-La) comparten Fa y La → los dos son subdominante.
+- **G** (Sol-Si-Re) y **Bdim** (Si-Re-Fa) comparten Si y Re → los dos son dominante.
+
+No es una convención: **son parientes de sangre**.
+
+#### 3. Lo que esto te habilita
+
+**Sustituir.** Si una progresión dice C – F – G – C y querés otro color, cambiá el C del medio por Am. La función se respeta, el clima cambia. Eso es todo el "reharmonizado" del pop.
+
+**Predecir.** Si estás sacando una canción de oído y llegaste al V, ya sabés que lo más probable es que vuelva al I. Escuchar armonía es escuchar funciones.
+
+#### 4. La única regla fuerte
+
+**La dominante quiere resolver a la tónica.** Cuando *no* lo hace —cuando el V va al vi— el efecto tiene nombre: **cadencia rota**. Y funciona justamente porque el oído esperaba otra cosa. Sin la regla no habría sorpresa.
+    `,
+    practice: { gym: 'chords', label: 'Desafío de Acordes', hint: 'Nombrá la función de cada acorde que te toque antes de tocarlo' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Qué función cumplen el IV y el ii grado?',
+          options: ['Tónica', 'Subdominante', 'Dominante', 'Ninguna, son de paso'],
+          correctIndex: 1,
+          explanation: 'F y Dm comparten dos notas (Fa y La) y hacen el mismo trabajo: alejarse de la tónica y preparar la dominante.'
+        },
+        {
+          question: '¿Por qué Am puede reemplazar a C en una progresión?',
+          options: [
+            'Porque tiene el mismo número de notas',
+            'Porque comparten dos de sus tres notas y cumplen la misma función de tónica',
+            'Porque las dos son escalas mayores',
+            'Porque están al lado en el teclado'
+          ],
+          correctIndex: 1,
+          explanation: 'C es Do-Mi-Sol y Am es La-Do-Mi: comparten Do y Mi. Ese parentesco es lo que permite sustituir sin romper la progresión.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá un recorrido T → S → D: primero C (Do-Mi-Sol), después F (Fa-La-Do) y por último G (Sol-Si-Re).',
+        requiredSequence: ['C4', 'E4', 'G4', 'F4', 'A4', 'C5', 'G4', 'B4', 'D5'],
+        mode: 'sequence',
+        hint: 'Casa, alejarse, empujar. Escuchá cómo el último pide volver al primero.'
+      }
+    }
+  },
+  {
+    id: '8c',
+    number: 21,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 62,
+    title: '21. Cadencias: cómo se cierra una frase',
+    level: 'Intermedio',
+    description: 'Los cuatro finales posibles y qué siente el oyente en cada uno.',
+    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'cadencias musicales autentica plagal rota semicadencia piano ejemplos',
+    dictationScript: 'La cadencia es el signo de puntuación de la música. La auténtica, del cinco al uno, es el punto final: cierra y no queda nada colgando. La plagal, del cuatro al uno, es el amén de la iglesia: cierra pero más blandito, sin ese empujón. La semicadencia termina en el cinco y queda abierta, como una coma: sí o sí tiene que seguir algo. Y la rota va del cinco al seis, cuando el oído ya estaba preparado para el uno: es el final que te sorprende y que estira la frase un poco más. Si escuchás cadencias, escuchás la forma entera de la canción.',
+    demonstrationNotes: ['G4', 'B4', 'D5'],
+    targetKeys: ['C4', 'E4', 'G4', 'F4', 'A4', 'B4', 'D5'],
+    content: `
+### La puntuación de la música
+
+Una frase musical se cierra con una **cadencia**. Cambiar la cadencia cambia lo que el oyente siente al final, aunque la melodía sea la misma.
+
+#### 1. Los cuatro finales
+
+| Cadencia | Movimiento | Es como |
+|---|---|---|
+| **Auténtica** | V → I | un punto final |
+| **Plagal** | IV → I | un "amén" |
+| **Semicadencia** | ...→ V | una coma |
+| **Rota** | V → vi | un punto suspensivo |
+
+#### 2. Auténtica: el cierre de verdad
+
+**G → C.** El Si (sensible) sube a Do y el Fa baja a Mi: el tritono se resuelve hacia adentro. Es el final más fuerte que existe en la música tonal.
+
+Se vuelve todavía más definitiva si el bajo toca la fundamental de los dos acordes y la melodía termina en la tónica. Eso se llama **cadencia auténtica perfecta**, y es como termina casi toda pieza clásica.
+
+#### 3. Plagal: cerrar sin empujar
+
+**F → C.** No hay sensible, no hay tritono, no hay tensión que resolver: llega a casa caminando en vez de corriendo. De ahí el apodo de "cadencia del amén". El gospel, el soul y buena parte del rock la usan como final principal.
+
+#### 4. Semicadencia: dejar la puerta abierta
+
+Terminar **en** el V. La frase queda a la espera. Es lo que arma el juego de pregunta y respuesta: primera frase termina en V (pregunta), segunda frase termina en I (respuesta). Escuchá cualquier tema con estructura de ocho compases y está ahí.
+
+#### 5. Rota: el final que no fue
+
+**G → Am.** Todo estaba puesto para volver a C y en el último momento aparece el relativo menor. El oído se queda con la sensación de que la frase todavía no terminó — y por eso el compositor puede seguir cuatro compases más.
+
+#### 6. El ejercicio que lo fija
+
+Tocá la misma melodía de cuatro compases cuatro veces, cambiando solo el final: auténtica, plagal, semicadencia, rota. Es la forma más rápida de escuchar que la cadencia **no** es un detalle técnico: es lo que decide qué siente el que escucha.
+    `,
+    practice: { gym: 'chords', label: 'Desafío de Acordes', hint: 'Después de cada ejercicio, cerrá vos con V–I y escuchá el punto final' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: '¿Cuál es la cadencia más conclusiva y por qué?',
+          options: [
+            'La plagal, porque es la de la iglesia',
+            'La auténtica (V→I), porque la sensible sube a la tónica y el tritono resuelve',
+            'La rota, porque sorprende',
+            'La semicadencia, porque termina en el acorde más fuerte'
+          ],
+          correctIndex: 1,
+          explanation: 'En V→I el tritono del acorde de dominante resuelve hacia adentro y la sensible sube medio tono a la tónica. Ninguna otra combinación cierra con esa fuerza.'
+        },
+        {
+          question: '¿Qué efecto busca una cadencia rota (V→vi)?',
+          options: [
+            'Cerrar definitivamente',
+            'Frustrar la resolución esperada para poder estirar la frase',
+            'Cambiar de tonalidad',
+            'Marcar el comienzo de la pieza'
+          ],
+          correctIndex: 1,
+          explanation: 'El oído espera el I y recibe el vi. La expectativa incumplida deja la frase abierta y habilita seguir un poco más antes del cierre real.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá una cadencia auténtica: primero G (Sol-Si-Re) y después C (Do-Mi-Sol).',
+        requiredSequence: ['G4', 'B4', 'D5', 'C4', 'E4', 'G4'],
+        mode: 'sequence',
+        hint: 'Escuchá cómo el Si del primer acorde pide subir al Do del segundo.'
+      }
+    }
+  },
+  {
+    id: '9',
+    number: 22,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 65,
+    title: '22. La Progresión de Oro: I - V - vi - IV',
     level: 'Intermedio',
     description: 'La fórmula armónica detrás de cientos de éxitos mundiales desde los Beatles hasta el pop actual.',
     image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
@@ -963,15 +1783,272 @@ La progresión **I - V - vi - IV** es el ciclo armónico más exitoso en la hist
       }
     }
   },
+  {
+    id: '9b',
+    number: 23,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 68,
+    title: '23. Patrones de acompañamiento: bloque, arpegio, vals y balada',
+    level: 'Intermedio',
+    description: 'Los mismos cuatro acordes, cuatro maneras de tocarlos y cuatro canciones distintas.',
+    image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'patrones de acompañamiento piano balada vals arpegio mano izquierda',
+    dictationScript: 'Ya sabés los acordes; ahora falta lo otro, que es cómo se tocan. Los mismos cuatro acordes suenan a himno, a bolero, a vals o a balada según qué patrón les pongas. En bloque, todo junto, es potencia y es lo que hace el rock. Arpegiado, de a una nota, es intimidad. El vals es bajo, acorde, acorde, y ya con eso se mueve solo. Y el patrón de balada, ese bajo, quinta, acorde, es el que sostiene la mitad de las canciones lentas que conocés. Elegí uno y sostenelo todo el tema: cambiar de patrón cada cuatro compases es el error más común del que recién empieza.',
+    demonstrationNotes: ['C3', 'G3', 'C4', 'E4', 'G4'],
+    targetKeys: ['C3', 'G3', 'C4', 'E4', 'G4'],
+    content: `
+### El acorde no es el sonido: el patrón sí
+
+Cuatro acordes idénticos pueden ser un himno, un bolero o una balada. Lo que cambia es **cómo se reparten en el tiempo**.
+
+#### 1. Bloque
+
+Todas las notas juntas, en el tiempo fuerte. Directo y potente. Es el sonido del rock, del gospel y de cualquier cosa que tenga que empujar.
+
+Truco: **no toques todos los tiempos**. Bloques en 1 y en 3, silencio en 2 y en 4. El silencio es lo que le da el pulso.
+
+#### 2. Arpegio
+
+Una nota por vez, subiendo. Con la izquierda: **fundamental – quinta – octava – quinta**, en corcheas. Con la derecha, el acorde arriba o la melodía.
+
+Es el patrón íntimo por excelencia: baladas de piano solo, intros, cualquier momento que tenga que sonar suave.
+
+#### 3. Vals — bajo, acorde, acorde
+
+En 3/4:
+
+- Tiempo **1**: la fundamental, grave, sola.
+- Tiempos **2 y 3**: el acorde, más agudo, corto.
+
+Se mueve solo. Sirve para vals, para ranchera, para mucho folclore.
+
+#### 4. Balada — el patrón de los cinco dedos
+
+En 4/4, mano izquierda: **fundamental – quinta – octava – quinta**, una por tiempo. La derecha entra recién en el 2 con el acorde.
+
+Es el que sostiene la mitad de las canciones lentas que conocés. Suena rico porque el bajo se mueve y la armonía no.
+
+#### 5. Las dos reglas que separan a un principiante de alguien que acompaña
+
+1. **Un patrón por sección.** Si cambiás de patrón cada cuatro compases, el tema se desarma. El patrón cambia en el estribillo, no antes.
+2. **La mano derecha no repite la fundamental.** Si la izquierda ya tocó el Do grave, la derecha toca Mi–Sol–Do o Sol–Do–Mi, no otro Do abajo de todo. Duplicar la fundamental en el medio embarra el sonido.
+    `,
+    practice: { gym: 'waterfall', label: 'Catarata de Tonos', hint: 'Elegí una pieza fácil y tocá solo la mano izquierda con un patrón sostenido' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: 'En el patrón de vals, ¿qué va en el primer tiempo?',
+          options: [
+            'El acorde completo',
+            'La fundamental sola, en el grave',
+            'La melodía',
+            'Un silencio'
+          ],
+          correctIndex: 1,
+          explanation: 'Bajo – acorde – acorde. La fundamental sola en el 1 marca el pulso y deja que el acorde caiga liviano en 2 y 3.'
+        },
+        {
+          question: '¿Por qué conviene sostener un mismo patrón durante toda una sección?',
+          options: [
+            'Porque es más fácil de tocar',
+            'Porque el patrón es parte de la identidad de la sección y cambiarlo seguido desarma el tema',
+            'Porque lo exige la teoría',
+            'No conviene: hay que variar cada compás'
+          ],
+          correctIndex: 1,
+          explanation: 'El patrón funciona como la textura de la sección. Cambiarlo es un recurso de forma —para el estribillo, para el puente—, no algo que se hace cada cuatro compases.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá un patrón de balada sobre Do: Do grave, Sol, Do, y después el acorde Do-Mi-Sol.',
+        requiredSequence: ['C3', 'G3', 'C4', 'E4', 'G4'],
+        mode: 'sequence',
+        hint: 'Fundamental, quinta y octava con la izquierda; el acorde entra después.'
+      }
+    }
+  },
+  {
+    id: '9c',
+    number: 24,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 71,
+    title: '24. Las progresiones que sostienen mil canciones',
+    level: 'Intermedio',
+    description: 'ii–V–I, la de los cincuenta, el canon y el blues de doce compases.',
+    image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'progresiones de acordes mas usadas piano ii V I blues 12 compases canon',
+    dictationScript: 'Ya tenés la del uno, cinco, seis, cuatro. Ahora te doy cuatro más y con eso sacás casi cualquier cosa. La dos, cinco, uno es el ladrillo del jazz: te la vas a cruzar en todos los standards. La de los cincuenta, uno, seis, cuatro, cinco, es el doo wop entero. El canon de Pachelbel es una escalera que baja y aparece en más canciones pop de las que te imaginás. Y el blues de doce compases es una forma completa, no una progresión: cuatro compases del uno, dos del cuatro, dos del uno, y el final que te devuelve al principio. Con estas cinco tenés el mapa.',
+    demonstrationNotes: ['D4', 'F4', 'A4'],
+    targetKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'],
+    content: `
+### Cinco moldes y ya podés acompañar casi todo
+
+Las canciones no inventan progresiones nuevas: eligen entre unas pocas y las visten distinto.
+
+#### 1. ii – V – I — el ladrillo del jazz
+
+En Do: **Dm7 – G7 – Cmaj7**.
+
+Es una función de cada tipo, en orden: subdominante, dominante, tónica. El bajo cae de quinta en quinta (Re → Sol → Do), que es el movimiento más fuerte que existe. Todo standard de jazz es una cadena de ii–V–I en tonalidades distintas.
+
+#### 2. I – vi – IV – V — la de los cincuenta
+
+En Do: **C – Am – F – G**.
+
+Doo-wop, *Stand by me*, medio bolero. Es la I–V–vi–IV que ya conocés, con las piezas en otro orden: el vi entra segundo y le pone melancolía antes de que llegue el empujón.
+
+#### 3. El canon — la escalera que baja
+
+**C – G – Am – Em – F – C – F – G**.
+
+El bajo baja casi escalonado: Do, Si, La, Sol, Fa, Mi, Fa, Sol. Esa línea descendente es lo que la hace irresistible; está en Pachelbel y en decenas de temas pop.
+
+#### 4. El blues de doce compases
+
+No es una progresión: es una **forma completa**, con su propio reloj.
+
+| Compases | Acorde |
+|---|---|
+| 1–4 | I7 |
+| 5–6 | IV7 |
+| 7–8 | I7 |
+| 9 | V7 |
+| 10 | IV7 |
+| 11 | I7 |
+| 12 | V7 (*turnaround*) |
+
+En Do: C7, F7, G7. Todos con séptima, siempre — incluida la tónica, que en el blues no descansa nunca. El compás 12 no cierra: te devuelve al 1.
+
+#### 5. Cómo se estudian
+
+No de memoria. **En números**. Si aprendés "dos, cinco, uno" y no "Re menor siete, Sol siete, Do", la progresión te sirve en las doce tonalidades desde el primer día. Los números son el idioma; las letras son la traducción.
+    `,
+    practice: { gym: 'chords', label: 'Desafío de Acordes', hint: 'Practicá ii–V–I en tres tonalidades distintas: es el mismo molde' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: 'En Do mayor, ¿cuáles son los acordes de un ii–V–I?',
+          options: [
+            'Dm7 – G7 – Cmaj7',
+            'Em7 – A7 – Dmaj7',
+            'C – F – G',
+            'Am – F – C'
+          ],
+          correctIndex: 0,
+          explanation: 'El ii de Do es Re menor, el V es Sol y el I es Do. El bajo cae de quinta en quinta: Re, Sol, Do.'
+        },
+        {
+          question: 'En un blues de doce compases, ¿qué pasa en el compás 12?',
+          options: [
+            'Se cierra en el I',
+            'Aparece el V7 como turnaround, que devuelve al principio',
+            'Se cambia de tonalidad',
+            'Se hace un silencio'
+          ],
+          correctIndex: 1,
+          explanation: 'El turnaround del compás 12 no cierra: reabre la forma y empuja de vuelta al compás 1. Por eso el blues puede dar vueltas indefinidamente.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá el ii de Do mayor en posición fundamental: Re, Fa, La.',
+        requiredSequence: ['D4', 'F4', 'A4'],
+        mode: 'chord',
+        hint: 'El segundo grado de Do mayor es Re menor.'
+      }
+    }
+  },
+  {
+    id: '9d',
+    number: 25,
+    moduleNumber: 3,
+    moduleTitle: 'Módulo 3: El Poder de los Acordes (44% - 74%)',
+    progressPercent: 74,
+    title: '25. Transportar: la misma canción en cualquier tono',
+    level: 'Intermedio',
+    description: 'Pensar en números en vez de en letras, y bajarle el tono a un tema en treinta segundos.',
+    image: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&q=80&w=800',
+    videoQuery: 'como transportar una cancion de tono en piano numeros romanos',
+    dictationScript: 'Te va a pasar siempre: alguien quiere cantar el tema y no le da la voz en el tono en que está escrito. Transportar no es hacer cuentas nota por nota, eso es un infierno. Es traducir la progresión a números una sola vez y volver a bajarla en el tono nuevo. Do, Sol, La menor, Fa es uno, cinco, seis, cuatro. En Sol, ese mismo uno, cinco, seis, cuatro es Sol, Re, Mi menor, Do. Nada más. Y hay un atajo todavía mejor: si te aprendés la progresión en números desde el principio, ya la sabés en las doce tonalidades y no tenés que transportar nunca.',
+    demonstrationNotes: ['G4', 'B4', 'D5'],
+    targetKeys: ['G4', 'B4', 'D5', 'A4', 'C5', 'E5'],
+    content: `
+### Traducir una vez, no doce
+
+Transportar nota por nota es lento y se equivoca. Transportar por **grados** es instantáneo.
+
+#### 1. El método, en tres pasos
+
+1. **Escribí la progresión en números romanos** en su tonalidad original.
+   C – G – Am – F  →  **I – V – vi – IV**
+2. **Armá los siete grados de la tonalidad nueva.** En Sol: G, Am, Bm, C, D, Em, F♯dim.
+3. **Volvé a bajar los números.**
+   I – V – vi – IV en Sol  →  **G – D – Em – C**
+
+Treinta segundos, y no depende de cuántos acordes tenga el tema.
+
+#### 2. La tabla que conviene tener en la cabeza
+
+Los siete grados de cualquier tonalidad mayor, siempre en el mismo orden de calidades:
+
+**I mayor · ii menor · iii menor · IV mayor · V mayor · vi menor · vii disminuido**
+
+Eso no cambia nunca. Si sabés las siete notas de la escala, ya sabés sus siete acordes.
+
+#### 3. Para qué se transporta en la vida real
+
+- **Para que entre la voz.** Es la razón número uno. Si el cantante no llega al agudo, se baja un tono y listo.
+- **Para que sea más cómodo de tocar.** Un tema en Re♭ mayor, con cinco bemoles, muchas veces se toca mejor en Do o en Re.
+- **Para instrumentos transpositores.** Un saxo alto lee una sexta mayor arriba de lo que suena; si tocás con uno, vas a tener que transportar sí o sí.
+
+#### 4. El atajo definitivo
+
+**Aprendé todo en números desde el principio.** Si en vez de "Do, Sol, La menor, Fa" memorizás "uno, cinco, seis, cuatro", no tenés que transportar nunca: la canción ya está guardada en el formato que sirve en las doce tonalidades. Es exactamente lo mismo que hacer con las escalas la reducción a cinco formas de mano — memorizar el patrón, no los casos.
+    `,
+    practice: { gym: 'circleSequence', label: 'Círculo de Quintas', hint: 'Tocá la misma progresión girando el círculo: eso es transportar' },
+    evaluation: {
+      theoreticalQuestions: [
+        {
+          question: 'La progresión C – G – Am – F transportada a Sol mayor queda:',
+          options: [
+            'G – D – Em – C',
+            'G – C – Dm – A',
+            'G – D – Bm – F',
+            'A – E – F♯m – D'
+          ],
+          correctIndex: 0,
+          explanation: 'Es un I–V–vi–IV. En Sol: I=G, V=D, vi=Em, IV=C.'
+        },
+        {
+          question: '¿Cuál es el orden de calidades de los siete grados de una tonalidad mayor?',
+          options: [
+            'Mayor, mayor, menor, menor, mayor, menor, disminuido',
+            'Mayor, menor, menor, mayor, mayor, menor, disminuido',
+            'Menor, mayor, mayor, menor, menor, mayor, disminuido',
+            'Cambia según la tonalidad'
+          ],
+          correctIndex: 1,
+          explanation: 'I mayor, ii menor, iii menor, IV mayor, V mayor, vi menor, vii disminuido. Este patrón es idéntico en las doce tonalidades mayores.'
+        }
+      ],
+      practicalTask: {
+        instruction: 'Tocá el I de Sol mayor: Sol, Si, Re.',
+        requiredSequence: ['G4', 'B4', 'D5'],
+        mode: 'chord',
+        hint: 'La tónica de Sol mayor es una tríada mayor: fundamental, tercera mayor y quinta justa.'
+      }
+    }
+  },
 
   // MÓDULO 4: Inversiones y Conducción de Voces (60% - 80%)
   {
     id: '10',
-    number: 13,
+    number: 26,
     moduleNumber: 4,
-    moduleTitle: 'Módulo 4: Inversiones y Conducción (57% - 81%)',
-    progressPercent: 62,
-    title: '13. Inversiones y el Arte del Voice Leading',
+    moduleTitle: 'Módulo 4: Inversiones y Conducción (74% - 88%)',
+    progressPercent: 76,
+    title: '26. Inversiones y el Arte del Voice Leading',
     level: 'Intermedio',
     description: 'Elimina los saltos bruscos de la mano y conecta acordes con la elegancia de un profesional.',
     image: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&q=80&w=800',
@@ -1026,11 +2103,11 @@ Al pasar de **Do Mayor** a **Fa Mayor**:
   },
   {
     id: '10b',
-    number: 14,
+    number: 27,
     moduleNumber: 4,
-    moduleTitle: 'Módulo 4: Inversiones y Conducción (57% - 81%)',
-    progressPercent: 67,
-    title: '14. La regla de la cuarta',
+    moduleTitle: 'Módulo 4: Inversiones y Conducción (74% - 88%)',
+    progressPercent: 79,
+    title: '27. La regla de la cuarta',
     level: 'Intermedio',
     description: 'Reconocer cualquier inversión en un segundo, en el papel y bajo los dedos.',
     image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=800',
@@ -1118,11 +2195,11 @@ En posición fundamental las tres notas quedan **las tres en línea o las tres e
   },
   {
     id: '10c',
-    number: 15,
+    number: 28,
     moduleNumber: 4,
-    moduleTitle: 'Módulo 4: Inversiones y Conducción (57% - 81%)',
-    progressPercent: 71,
-    title: '15. El carrusel de las 12 tonalidades',
+    moduleTitle: 'Módulo 4: Inversiones y Conducción (74% - 88%)',
+    progressPercent: 82,
+    title: '28. El carrusel de las 12 tonalidades',
     level: 'Intermedio',
     description: 'Un drill de una octava que fija I-IV-V con inversiones en las doce, sin saltos de mano.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
@@ -1219,11 +2296,11 @@ La velocidad es una consecuencia de la limpieza, nunca un objetivo. Practicar r�
   },
   {
     id: '11',
-    number: 16,
+    number: 29,
     moduleNumber: 4,
-    moduleTitle: 'Módulo 4: Inversiones y Conducción (57% - 81%)',
-    progressPercent: 76,
-    title: '16. Independencia de Manos: Bajo + Armonía',
+    moduleTitle: 'Módulo 4: Inversiones y Conducción (74% - 88%)',
+    progressPercent: 85,
+    title: '29. Independencia de Manos: Bajo + Armonía',
     level: 'Intermedio',
     description: 'El mayor desafío psicológico del principiante: disociar la mano izquierda de la derecha.',
     image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
@@ -1281,11 +2358,11 @@ Al tocar con dos manos no estás haciendo dos cosas a la vez: estás creando una
   },
   {
     id: '12',
-    number: 17,
+    number: 30,
     moduleNumber: 4,
-    moduleTitle: 'Módulo 4: Inversiones y Conducción (57% - 81%)',
-    progressPercent: 81,
-    title: '17. Acordes de Séptima: El Color del Jazz y Soul',
+    moduleTitle: 'Módulo 4: Inversiones y Conducción (74% - 88%)',
+    progressPercent: 88,
+    title: '30. Acordes de Séptima: El Color del Jazz y Soul',
     level: 'Intermedio',
     description: 'Añade una cuarta nota a tus tríadas y descubre la sofisticación del sonido contemporáneo.',
     image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
@@ -1350,11 +2427,11 @@ Un acorde de 7ma se forma añadiendo una tercera más sobre la quinta de una tr�
   // MÓDULO 5: Armonía Maestra y Círculo de Quintas (80% - 100%)
   {
     id: '13',
-    number: 18,
+    number: 31,
     moduleNumber: 5,
-    moduleTitle: 'Módulo 5: Armonía Maestra (81% - 100%)',
-    progressPercent: 86,
-    title: '18. El Círculo de Quintas: La Brújula Universal',
+    moduleTitle: 'Módulo 5: Armonía Maestra (88% - 100%)',
+    progressPercent: 91,
+    title: '31. El Círculo de Quintas: La Brújula Universal',
     level: 'Avanzado',
     description: 'El mapa definitivo de la armonía tonal: cómo navegar entre todas las 12 tonalidades del mundo.',
     image: 'https://images.unsplash.com/photo-1507838596018-bd9451c3a39f?auto=format&fit=crop&q=80&w=800',
@@ -1409,11 +2486,11 @@ Los acordes que están juntos en el círculo comparten casi todas sus notas. Si 
   },
   {
     id: '14',
-    number: 19,
+    number: 32,
     moduleNumber: 5,
-    moduleTitle: 'Módulo 5: Armonía Maestra (81% - 100%)',
-    progressPercent: 90,
-    title: '19. Extensiones y Tensiones (9nas, Sus4, Sus2)',
+    moduleTitle: 'Módulo 5: Armonía Maestra (88% - 100%)',
+    progressPercent: 94,
+    title: '32. Extensiones y Tensiones (9nas, Sus4, Sus2)',
     level: 'Avanzado',
     description: 'Enriquece tus acordes suspendiendo la tercera o añadiendo la novena para sonar a estudio profesional.',
     image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=800',
@@ -1475,11 +2552,11 @@ Los acordes básicos son blanco y negro; las extensiones son toda la gama cromá
   },
   {
     id: '14b',
-    number: 20,
+    number: 33,
     moduleNumber: 5,
-    moduleTitle: 'Módulo 5: Armonía Maestra (81% - 100%)',
-    progressPercent: 95,
-    title: '20. Guide tones y shell voicings',
+    moduleTitle: 'Módulo 5: Armonía Maestra (88% - 100%)',
+    progressPercent: 97,
+    title: '33. Guide tones y shell voicings',
     level: 'Avanzado',
     description: 'Tres notas por acorde, dos que se mueven un semitono: la inversión que suena a disco.',
     image: 'https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=800',
@@ -1582,11 +2659,11 @@ Nada más rinde tanto por minuto invertido: es armonía, oído, voice leading y 
   },
   {
     id: '15',
-    number: 21,
+    number: 34,
     moduleNumber: 5,
-    moduleTitle: 'Módulo 5: Armonía Maestra (81% - 100%)',
+    moduleTitle: 'Módulo 5: Armonía Maestra (88% - 100%)',
     progressPercent: 100,
-    title: '21. Gran Graduación: Improvisación Pentatónica y Maestría',
+    title: '34. Gran Graduación: Improvisación Pentatónica y Maestría',
     level: 'Avanzado',
     description: 'La cima del viaje: libera tu creatividad con la escala pentatónica y recibe tu certificación virtual.',
     image: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=800',
@@ -1649,6 +2726,8 @@ Rinde la prueba final teórica y práctica para graduarte oficialmente del Conse
       }
     }
   }
+
+
 ];
 
 export interface Exercise {

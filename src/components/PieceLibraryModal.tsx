@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search, X, Star, Clock, Music2, Upload, BookOpen, Youtube, Waves, ListMusic, Loader2, FileMusic, Trash2,
+  Pencil, Check,
 } from 'lucide-react';
 import {
   catalog, search, SOURCE_LABEL, loadLibraryState, toggleFavorite,
   type LibraryPiece, type PieceSource, type Difficulty, type LibraryState,
 } from '../lib/pieceLibrary';
-import { deleteSong } from '../lib/songStore';
+import { deleteSong, renameSong } from '../lib/songStore';
 import { dragHasFiles, filesFromDrop } from '../lib/midiImport';
 import { cn } from '../lib/utils';
 
@@ -31,6 +32,8 @@ interface Props {
   onUpload?: () => void;
   /** Archivos soltados sobre la biblioteca: los importa la catarata. */
   onDropFiles?: (files: File[]) => Promise<void> | void;
+  /** Avisa que una pieza cambió de nombre, para refrescarla afuera. */
+  onRenamed?: (id: string, patch: { title: string; composer: string }) => void;
 }
 
 /**
@@ -44,7 +47,7 @@ interface Props {
  * El catálogo se arma una sola vez al abrir. Las piezas generadas (escalas,
  * ejercicios de método) no traen sus notas hasta que se eligen.
  */
-export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, onSelect, onUpload, onDropFiles }) => {
+export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, onSelect, onUpload, onDropFiles, onRenamed }) => {
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<PieceSource | 'all' | 'fav' | 'recent'>('all');
   const [diff, setDiff] = useState<Difficulty | 'all'>('all');
@@ -52,14 +55,17 @@ export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, on
   const [cursor, setCursor] = useState(0);
   const [pieces, setPieces] = useState<LibraryPiece[] | null>(null);
   const [dropActive, setDropActive] = useState(false);
+  /* Renombrar en el lugar: la fila se convierte en dos campos. */
+  const [editing, setEditing] = useState<{ id: string; title: string; composer: string } | null>(null);
+  const [savingName, setSavingName] = useState(false);
   const dragDepth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // El catálogo se arma al abrir, no en cada tecla
   useEffect(() => {
-    if (!open) { setPieces(null); return; }
-    setQuery(''); setCursor(0);
+    if (!open) { setPieces(null); setEditing(null); return; }
+    setQuery(''); setCursor(0); setEditing(null);
     setLib(loadLibraryState());
     const t = setTimeout(() => setPieces(catalog()), 0);
     setTimeout(() => inputRef.current?.focus(), 60);
@@ -88,6 +94,10 @@ export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, on
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
+      if (editing) {
+        if (e.key === 'Escape') { e.preventDefault(); setEditing(null); }
+        return;   // mientras se renombra, el teclado es del formulario
+      }
       if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(c => Math.min(results.length - 1, c + 1)); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); setCursor(c => Math.max(0, c - 1)); }
@@ -95,12 +105,24 @@ export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, on
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, results, cursor, onSelect, onClose]);
+  }, [open, results, cursor, onSelect, onClose, editing]);
 
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>(`[data-i="${cursor}"]`)
       ?.scrollIntoView({ block: 'nearest' });
   }, [cursor]);
+
+  const commitRename = async () => {
+    if (!editing) return;
+    const { id, title, composer } = editing;
+    setSavingName(true);
+    await renameSong(id, { title, composer }).catch(() => {});
+    setSavingName(false);
+    const clean = { title: title.trim() || 'Sin título', composer: composer.trim() || 'MIDI importado' };
+    setPieces(list => (list ? list.map(x => (x.id === id ? { ...x, ...clean } : x)) : list));
+    onRenamed?.(id, clean);
+    setEditing(null);
+  };
 
   const removePiece = async (p: LibraryPiece) => {
     await deleteSong(p.id);
@@ -222,6 +244,43 @@ export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, on
               results.map((p, i) => {
                 const Icon = SOURCE_ICON[p.source];
                 const fav = lib.favorites.includes(p.id);
+                const propia = p.source === 'imported' || p.source === 'stems';
+
+                if (editing?.id === p.id) {
+                  return (
+                    <div key={p.id} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-2 border border-brand-line">
+                      <Icon size={15} className="shrink-0 text-brand-2" />
+                      <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          autoFocus
+                          value={editing.title}
+                          onChange={e => setEditing({ ...editing, title: e.target.value })}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void commitRename(); } }}
+                          className="input w-full"
+                          placeholder="Título"
+                          aria-label="Título de la pieza"
+                        />
+                        <input
+                          value={editing.composer}
+                          onChange={e => setEditing({ ...editing, composer: e.target.value })}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void commitRename(); } }}
+                          className="input w-full"
+                          placeholder="Autor"
+                          aria-label="Autor de la pieza"
+                        />
+                      </div>
+                      <button type="button" onClick={() => void commitRename()} disabled={savingName}
+                        className="btn btn-primary btn-icon shrink-0" aria-label="Guardar el nombre">
+                        {savingName ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      </button>
+                      <button type="button" onClick={() => setEditing(null)} disabled={savingName}
+                        className="btn btn-ghost btn-icon shrink-0" aria-label="Cancelar">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={p.id} data-i={i}
@@ -255,7 +314,18 @@ export const PieceLibraryModal: React.FC<Props> = ({ open, activeId, onClose, on
                     >
                       <Star size={14} className={cn(fav ? 'text-brand fill-current' : 'text-ink-3 opacity-0 group-hover:opacity-100')} />
                     </button>
-                    {(p.source === 'imported' || p.source === 'stems') && (
+                    {propia && (
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); setEditing({ id: p.id, title: p.title, composer: p.composer }); }}
+                        className="shrink-0 p-1 rounded-lg text-ink-3 opacity-0 group-hover:opacity-100 hover:bg-surface-3 hover:text-ink"
+                        aria-label={`Renombrar ${p.title}`}
+                        data-tip="Cambiar el nombre y el autor"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    {propia && (
                       <button
                         type="button"
                         onClick={e => { e.stopPropagation(); void removePiece(p); }}

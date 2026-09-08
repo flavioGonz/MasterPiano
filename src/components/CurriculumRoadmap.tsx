@@ -13,11 +13,11 @@ interface CurriculumRoadmapProps {
 }
 
 const MODULES = [
-  { number: 1, title: 'Fundamentos absolutos', range: '0–14%' },
-  { number: 2, title: 'Escalas e intervalos', range: '14–43%' },
-  { number: 3, title: 'El poder de los acordes', range: '43–57%' },
-  { number: 4, title: 'Inversiones y conducción', range: '57–81%' },
-  { number: 5, title: 'Armonía maestra', range: '81–100%' },
+  { number: 1, title: 'Fundamentos absolutos', range: '0–9%' },
+  { number: 2, title: 'Escalas e intervalos', range: '9–44%' },
+  { number: 3, title: 'El poder de los acordes', range: '44–74%' },
+  { number: 4, title: 'Inversiones y conducción', range: '74–88%' },
+  { number: 5, title: 'Armonía maestra', range: '88–100%' },
 ];
 
 const LEVELS = ['Principiante', 'Intermedio', 'Avanzado'] as const;

@@ -58,16 +58,17 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="hidden lg:inline-flex btn btn-ghost btn-icon text-ink-3 hover:text-ink -ml-2"
               aria-label={sidebarCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
               data-tip={sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'}
+              data-tip-pos="bottom"
             >
               {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
             </button>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 max-w-[340px]">
             <div className="flex items-center gap-2 text-[15px] font-semibold text-ink leading-tight truncate">
               <Icon size={16} className="text-brand hidden lg:block shrink-0" />
               <span className="truncate">{item.label}</span>
             </div>
-            <div className="hidden sm:block text-[11px] text-ink-3 leading-tight">
+            <div className="hidden sm:block text-[11px] text-ink-3 leading-tight truncate">
               {item.hint ?? 'PianoMaster · Conservatorio virtual'}
             </div>
           </div>
@@ -87,7 +88,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             id="btn-header-quick-practice"
             onClick={onQuickPractice}
             className="btn btn-primary btn-sm"
-            title="Práctica rápida de 60 segundos con tus habilidades desbloqueadas"
+            data-tip="Práctica rápida de 60 segundos con tus habilidades desbloqueadas"
+            data-tip-pos="bottom"
           >
             <Zap size={14} className="fill-current" />
             <span className="hidden sm:inline">Práctica rápida</span>
@@ -100,6 +102,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="btn btn-secondary btn-sm lg:hidden"
             aria-label="Consultar al Maestro"
             data-tip="Consultar al Maestro"
+            data-tip-pos="bottom"
           >
             <Bot size={15} className="text-brand" />
           </button>

@@ -60,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => onNavigate(item.id)}
                     aria-current={isActive ? 'page' : undefined}
                     data-tip={collapsed ? item.label : undefined}
+                    data-tip-pos="right"
                     className={cn(
                       'group w-full flex items-center gap-3 rounded-xl px-2.5 py-2 text-[13.5px] font-medium transition-all duration-150',
                       collapsed && 'justify-center px-0',
@@ -87,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             onClick={onOpenMaestro}
             data-tip="Consultar al Maestro Aurelio"
+            data-tip-pos="right"
             className="btn btn-primary btn-icon w-10 h-10"
             aria-label="Consultar al Maestro"
           >
@@ -117,6 +119,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <button
         type="button"
         onClick={onToggleCollapsed}
+        data-tip={collapsed ? 'Expandir menú' : undefined}
+        data-tip-pos="right"
         className="h-10 border-t border-line text-ink-3 hover:text-ink hover:bg-white/5 flex items-center justify-center gap-2 text-xs"
         aria-label={collapsed ? 'Expandir menú' : 'Contraer menú'}
       >

@@ -86,7 +86,35 @@ export function noteNameToMidi(noteName: string): number {
 /**
  * Parse a raw MIDI ArrayBuffer into a WaterfallSong
  */
-export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string): WaterfallSong {
+/** Lo que el archivo declara de sí mismo, antes de que nadie lo edite. */
+export interface MidiMeta {
+  /** Nombre del archivo, ya limpio de extensión y guiones bajos. */
+  fileTitle: string;
+  /** Título que trae el propio MIDI (evento de nombre de la secuencia). */
+  embeddedTitle: string;
+  /** Autor que se deduce del archivo (nombre interno o copyright), si hay. */
+  embeddedComposer: string;
+  trackNames: string[];
+  bpm: number;
+  notesCount: number;
+  duration: number;
+  /** ¿El título interno dice algo o es un "Piano" / "Untitled" del secuenciador? */
+  embeddedIsGeneric: boolean;
+}
+
+/** Sobrescribe lo que el archivo trae: lo elige la persona al importar. */
+export interface MidiNaming {
+  title?: string;
+  composer?: string;
+}
+
+export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string, naming?: MidiNaming): WaterfallSong {
+  return parseMidiFileDetailed(arrayBuffer, fileName, naming).song;
+}
+
+export function parseMidiFileDetailed(
+  arrayBuffer: ArrayBuffer, fileName: string, naming?: MidiNaming,
+): { song: WaterfallSong; meta: MidiMeta } {
   const midi = new Midi(arrayBuffer);
   const parsedNotes: WaterfallNote[] = [];
   let noteCounter = 0;
@@ -142,16 +170,30 @@ export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string): Water
   const fromFile = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
   const fromMidi = (midi.name || '').trim();
   const GENERIC = /^(piano|untitled|new song|midi|track \d*|sin t[íi]tulo)$/i;
-  const title = fromFile && (!fromMidi || GENERIC.test(fromMidi)) ? fromFile : (fromMidi || fromFile || 'Pieza importada');
+  const embeddedIsGeneric = !fromMidi || GENERIC.test(fromMidi);
+  const trackNames = midi.tracks.map(t => (t.name || '').trim()).filter(Boolean);
+  /* Casi ningún .mid trae un campo de autor. Lo más parecido es el nombre
+     interno de la secuencia; los nombres de pista casi siempre son el
+     instrumento ("Grand Piano", "Bass", "Melody") y como autor no sirven. */
+  const INSTRUMENTO = /^(grand |acoustic |electric )?(piano|keyboard|organ|synth|bass|lead|pad|strings?|drums?|percussion|voice|vocals?|melod[íi]a|melody|harmony|acomp|accomp|left|right|izq|der|mano|hand|track|pista|clave|staff)\b/i;
+  const embeddedComposer = !embeddedIsGeneric && fromMidi
+    ? fromMidi
+    : (trackNames.find(n => !GENERIC.test(n) && !INSTRUMENTO.test(n)) ?? '');
+  const autoTitle = fromFile && embeddedIsGeneric ? fromFile : (fromMidi || fromFile || 'Pieza importada');
+  const title = (naming?.title ?? '').trim() || autoTitle;
 
   const bpm = midi.header.tempos.length > 0 
     ? Math.round(midi.header.tempos[0].bpm) 
     : 120;
 
-  return {
-    id: `custom-${Date.now()}`,
+  const autoComposer = embeddedComposer && embeddedComposer !== title ? embeddedComposer : 'MIDI importado';
+
+  const composer = (naming?.composer ?? '').trim() || autoComposer;
+
+  const song: WaterfallSong = {
+    id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     title,
-    composer: fromMidi && fromMidi !== title ? fromMidi : 'MIDI importado',
+    composer,
     difficulty: parsedNotes.length > 300 ? 'Avanzado' : parsedNotes.length > 100 ? 'Intermedio' : 'Fácil',
     bpm,
     duration,
@@ -160,6 +202,19 @@ export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string): Water
     notes: parsedNotes,
     isCustom: true
   };
+
+  const meta: MidiMeta = {
+    fileTitle: fromFile,
+    embeddedTitle: fromMidi,
+    embeddedComposer,
+    trackNames,
+    bpm,
+    notesCount: parsedNotes.length,
+    duration,
+    embeddedIsGeneric,
+  };
+
+  return { song, meta };
 }
 
 /**

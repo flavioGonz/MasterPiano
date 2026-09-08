@@ -146,6 +146,28 @@ export async function saveSong(song: WaterfallSong): Promise<{ ok: boolean; offl
   }
 }
 
+/**
+ * Renombrar una pieza importada (título y/o autor).
+ *
+ * El índice local se actualiza siempre, para que la biblioteca cambie en el
+ * acto aunque la pieza completa no esté en caché. Si está, se guarda entera y
+ * se sube; si no, se la trae del servidor primero: el PUT manda la pieza
+ * completa y mandar una sin notas la dejaría vacía.
+ */
+export async function renameSong(
+  id: string, patch: { title?: string; composer?: string },
+): Promise<{ ok: boolean; offline: boolean }> {
+  const clean: { title?: string; composer?: string } = {};
+  if (patch.title !== undefined) clean.title = patch.title.trim() || 'Sin título';
+  if (patch.composer !== undefined) clean.composer = patch.composer.trim() || 'MIDI importado';
+
+  setLocalIndex(localIndex().map(s => (s.id === id ? { ...s, ...clean } : s)));
+
+  const full = await getSong(id);
+  if (!full) return { ok: false, offline: true };
+  return saveSong({ ...full, ...clean });
+}
+
 export async function deleteSong(id: string): Promise<void> {
   setLocalIndex(localIndex().filter(s => s.id !== id));
   const c = cache(); delete c[id]; writeJson(CACHE_KEY, c);
