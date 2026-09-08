@@ -76,7 +76,7 @@ export interface LessonEvaluation {
 
 /** Enganche opcional de una lección con un gimnasio de práctica. */
 export interface LessonPractice {
-  gym: 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
+  gym: 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'arpeggios' | 'speed' | 'earTraining' | 'chords' | 'sightReading';
   label: string;
   hint: string;
 }
@@ -1174,7 +1174,7 @@ Esto no es adorno: cambiar el agrupamiento rítmico obliga al cerebro a **re-map
 
 Semana 1 paralelo limpio → semana 2 sumá movimiento contrario → semana 3 sumá una variante rítmica → semana 4 terceras, una octava. No las junte todas de una: cada variante tiene que estar cómoda antes de que entre la siguiente.
     `,
-    practice: { gym: 'classicalMethods', label: 'Métodos Clásicos', hint: 'Hanon y Czerny son exactamente esto: la misma figura movida por toda la escala' },
+    practice: { gym: 'speed', label: 'Velocidad y Técnica', hint: 'Las variantes de ritmo y la escalera del metrónomo, sobre la escala que ya te sale' },
     evaluation: {
       theoreticalQuestions: [
         {
@@ -1834,7 +1834,7 @@ Es el que sostiene la mitad de las canciones lentas que conocés. Suena rico por
 1. **Un patrón por sección.** Si cambiás de patrón cada cuatro compases, el tema se desarma. El patrón cambia en el estribillo, no antes.
 2. **La mano derecha no repite la fundamental.** Si la izquierda ya tocó el Do grave, la derecha toca Mi–Sol–Do o Sol–Do–Mi, no otro Do abajo de todo. Duplicar la fundamental en el medio embarra el sonido.
     `,
-    practice: { gym: 'waterfall', label: 'Catarata de Tonos', hint: 'Elegí una pieza fácil y tocá solo la mano izquierda con un patrón sostenido' },
+    practice: { gym: 'arpeggios', label: 'Gimnasio de Arpegios', hint: 'El arpegio quebrado y el bajo de Alberti, que son dos de los cuatro patrones' },
     evaluation: {
       theoreticalQuestions: [
         {

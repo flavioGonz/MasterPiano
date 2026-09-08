@@ -14,6 +14,9 @@ import { AcousticPianoListener } from './AcousticPianoListener';
 import { WaterfallDemoModal } from './WaterfallDemoModal';
 import { buildWaterfallFromScale } from '../lib/midiWaterfall';
 import { pianoPitchDetector } from '../lib/pitchDetector';
+import {
+  MAJOR_FINGERINGS, MINOR_FINGERINGS, MAJOR_KEY_MEMORY, MINOR_KEY_MEMORY, fingerLandmark,
+} from '../lib/practiceLibrary';
 import { maestroVoice } from '../lib/speech';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
@@ -183,14 +186,47 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
   /* Para que el teclado escriba Mi# donde la tonalidad pide Mi# y no F. */
   const spelling = useMemo(() => scaleSpellingMap(rootName, activeScale), [rootName, activeScale]);
 
-  const currentFingering = useMemo(
-    () => (selectedHand === 'right' ? activeScale.fingeringRightHand : (activeScale.fingeringLeftHand || [5, 4, 3, 2, 1, 3, 2, 1])),
-    [selectedHand, activeScale]
-  );
-  const currentThumbPassIndex = useMemo(
-    () => (selectedHand === 'right' ? activeScale.thumbPassStepIndex : (activeScale.thumbPassStepIndexLeftHand ?? 4)),
-    [selectedHand, activeScale]
-  );
+  /* Digitación por tonalidad, no por tipo de escala.
+     Antes se mostraba la de Do en las doce tonalidades, que es justo lo que no
+     se puede hacer: en Si♭ mayor el pulgar no puede arrancar en la tónica
+     porque es negra. La tabla real vive en `practiceLibrary`; para las escalas
+     que no son mayor ni menor natural (pentatónicas, blues, modos) se sigue
+     usando la digitación genérica del tipo. */
+  const keyFingering = useMemo(() => {
+    if (selectedScaleId === 'major') return MAJOR_FINGERINGS[rootName] ?? null;
+    if (selectedScaleId === 'minor_natural') return MINOR_FINGERINGS[rootName] ?? null;
+    return null;
+  }, [selectedScaleId, rootName]);
+
+  const currentFingering = useMemo(() => {
+    if (keyFingering) return selectedHand === 'right' ? keyFingering.right : keyFingering.left;
+    return selectedHand === 'right' ? activeScale.fingeringRightHand : (activeScale.fingeringLeftHand || [5, 4, 3, 2, 1, 3, 2, 1]);
+  }, [keyFingering, selectedHand, activeScale]);
+
+  /* Ficha de memoria de la tonalidad (sólo mayor y menor natural la tienen). */
+  const keyMemory = useMemo(() => {
+    if (selectedScaleId === 'major') return MAJOR_KEY_MEMORY[rootName] ?? null;
+    if (selectedScaleId === 'minor_natural') return MINOR_KEY_MEMORY[rootName] ?? null;
+    return null;
+  }, [selectedScaleId, rootName]);
+
+  /* El faro: dónde cae el 4º dedo. Es el dato que hace memorizable la escala. */
+  const landmark4 = useMemo(() => {
+    if (!keyFingering) return null;
+    const right = fingerLandmark(displayNames, keyFingering.right, 4);
+    const left = fingerLandmark(displayNames, keyFingering.left, 4);
+    return { right, left };
+  }, [keyFingering, displayNames]);
+  const currentThumbPassIndex = useMemo(() => {
+    if (keyFingering) {
+      /* Donde el dedo baja respecto del anterior está el cruce: el pulgar pasa
+         por debajo en la derecha, y el 3 cruza por arriba en la izquierda. */
+      const f = selectedHand === 'right' ? keyFingering.right : keyFingering.left;
+      for (let i = 1; i < f.length; i++) if (f[i] < f[i - 1]) return i - 1;
+      return undefined;
+    }
+    return selectedHand === 'right' ? activeScale.thumbPassStepIndex : (activeScale.thumbPassStepIndexLeftHand ?? 4);
+  }, [keyFingering, selectedHand, activeScale]);
   const scaleFingerGuide = useMemo(() => {
     const guide: Record<string, number> = {};
     scaleNotes.forEach((note, idx) => { if (currentFingering[idx] !== undefined) guide[note] = currentFingering[idx]; });
@@ -406,6 +442,63 @@ export const ScalesGym: React.FC<ScalesGymProps> = ({ onScoreGain, onSwitchToCir
           </div>
         </div>
       </section>
+
+      {/* ---------- Cómo memorizar esta tonalidad ---------- */}
+      {keyMemory && (
+        <section className="card p-4 md:p-5 space-y-3.5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Lightbulb size={15} className="text-brand" />
+              <h3 className="font-serif font-semibold text-[15px] text-ink">Cómo memorizar {keyMemory.es}</h3>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-mono">
+              <span className="badge badge-neutral">{keyMemory.accidentals}</span>
+              <span className="badge badge-neutral">{keyMemory.family}</span>
+              <span className="text-ink-3" data-tip="Orden sugerido de estudio, de la más fácil a la más difícil">#{keyMemory.order} de 12</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            {/* El faro */}
+            {landmark4 && (landmark4.right.length > 0 || landmark4.left.length > 0) && (
+              <div className="rounded-xl border border-brand-line bg-brand-soft p-3 space-y-1.5">
+                <div className="text-[10.5px] uppercase tracking-wider text-brand-2 font-semibold">El faro: el 4º dedo</div>
+                <div className="text-[12.5px] text-ink-2 leading-snug">
+                  {landmark4.right.length > 0 && (
+                    <div>Derecha: cae en <strong className="text-ink font-mono">{landmark4.right.join(' y ')}</strong></div>
+                  )}
+                  {landmark4.left.length > 0 && (
+                    <div>Izquierda: cae en <strong className="text-ink font-mono">{landmark4.left.join(' y ')}</strong></div>
+                  )}
+                </div>
+                <div className="text-[11px] text-ink-3 leading-snug">
+                  El 4 aparece una sola vez por octava. Si sabés dónde cae, sabés la escala entera.
+                </div>
+              </div>
+            )}
+
+            {/* La regla */}
+            <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-1.5">
+              <div className="text-[10.5px] uppercase tracking-wider text-ink-3 font-semibold">La regla que la fija</div>
+              <p className="text-[12.5px] text-ink-2 leading-relaxed">{keyMemory.hook}</p>
+            </div>
+
+            {/* La trampa */}
+            <div className="rounded-xl border border-warn/30 bg-warn-soft p-3 space-y-1.5">
+              <div className="text-[10.5px] uppercase tracking-wider text-warn font-semibold">La trampa</div>
+              <p className="text-[12.5px] text-ink-2 leading-relaxed">{keyMemory.trap}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 text-[11.5px] text-ink-3 leading-snug pt-0.5">
+            <AlertCircle size={12} className="shrink-0 mt-0.5" />
+            <span>
+              Protocolo de 90 segundos, sin tocar: 30 s nombrando las siete notas en voz alta, 30 s cantándolas
+              por grados, 30 s imaginando la mano con el tacto de las teclas. Después tocá. Cambia todo.
+            </span>
+          </div>
+        </section>
+      )}
 
       {/* ---------- Micrófono acústico (plegado por defecto) ---------- */}
       <section className={cn('rounded-[var(--radius-card)] border', micOpen ? 'border-line' : 'border-transparent')}>

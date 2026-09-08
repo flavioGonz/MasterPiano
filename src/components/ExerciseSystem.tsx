@@ -11,6 +11,8 @@ import { ScalesGym } from './ScalesGym';
 import { CircleScaleSequenceGym } from './CircleScaleSequenceGym';
 import { ToneWaterfallGym } from './ToneWaterfallGym';
 import { InversionsGym } from './InversionsGym';
+import { ArpeggiosGym } from './ArpeggiosGym';
+import { SpeedTechniqueGym } from './SpeedTechniqueGym';
 import { EarTrainingGym } from './EarTrainingGym';
 import { StaffVisualizer } from './StaffVisualizer';
 import { ClassicalMethodsGym } from './ClassicalMethodsGym';
@@ -24,7 +26,7 @@ import { cn } from '../lib/utils';
 import * as Tone from 'tone';
 import { Radio } from 'lucide-react';
 
-type GymCategory = 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'earTraining' | 'chords' | 'sightReading';
+type GymCategory = 'scales' | 'classicalMethods' | 'circleSequence' | 'waterfall' | 'inversions' | 'arpeggios' | 'speed' | 'earTraining' | 'chords' | 'sightReading';
 
 interface ExerciseSystemProps {
   initialCategory?: GymCategory;
@@ -127,6 +129,8 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
             { id: 'waterfall', label: 'Catarata de Tonos', badge: 'MIDI & Cascada', Icon: Waves },
             { id: 'circleSequence', label: 'Secuencias Ciclo de Quintas', badge: 'Metrónomo & Claves', Icon: RotateCw },
             { id: 'inversions', label: 'Tríadas e Inversiones', badge: 'Carrusel & Oído', Icon: Shuffle },
+            { id: 'arpeggios', label: 'Arpegios', badge: 'Digitación por tonalidad', Icon: Waves },
+            { id: 'speed', label: 'Velocidad y Técnica', badge: 'Metrónomo & Postura', Icon: Zap },
             { id: 'earTraining', label: 'Oído: Intervalos y Tríadas', badge: 'A Ciegas', Icon: Headphones },
             { id: 'chords', label: 'Desafío de Acordes', badge: 'Reflejos Rápidos', Icon: Zap },
             { id: 'sightReading', label: 'Lectura de Partituras', badge: 'Pentagrama en Vivo', Icon: BookOpen },
@@ -251,6 +255,28 @@ export const ExerciseSystem: React.FC<ExerciseSystemProps> = ({ initialCategory 
             exit={{ opacity: 0, y: -8 }}
           >
             <InversionsGym onScoreGain={handleScoreGain} />
+          </motion.div>
+        )}
+
+        {gymCategory === 'arpeggios' && (
+          <motion.div
+            key="arpeggios"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <ArpeggiosGym onScoreGain={handleScoreGain} />
+          </motion.div>
+        )}
+
+        {gymCategory === 'speed' && (
+          <motion.div
+            key="speed"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <SpeedTechniqueGym onScoreGain={handleScoreGain} />
           </motion.div>
         )}
 

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, RotateCcw, Volume2, Sparkles, CheckCircle2, 
   HelpCircle, Trophy, Lightbulb, ArrowRight, RefreshCw, Eye, Music,
-  RotateCw, Target, ArrowRightLeft, Hand, GraduationCap, AlertCircle
+  RotateCw, Target, ArrowRightLeft, Hand, GraduationCap, AlertCircle,
+  ChevronRight, Layers, Dumbbell
 } from 'lucide-react';
 import { 
   CHROMATIC_NOTES, INVERSIONS_GUIDE, TRIAD_QUALITIES, 
@@ -13,6 +14,7 @@ import { Piano } from './Piano';
 import { AcousticPianoListener } from './AcousticPianoListener';
 import { pianoPitchDetector } from '../lib/pitchDetector';
 import { maestroVoice } from '../lib/speech';
+import { TRIAD_DRILLS, INVERSION_DRILLS, type Drill } from '../lib/practiceLibrary';
 import { cn } from '../lib/utils';
 import * as Tone from 'tone';
 
@@ -684,6 +686,117 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
           </div>
         </div>
       )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* TALLER: los ejercicios de fondo, siempre visibles              */}
+      {/* ------------------------------------------------------------- */}
+      <DrillWorkshop />
     </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  Taller de tríadas e inversiones                                    */
+/* ------------------------------------------------------------------ */
+
+const LEVEL_STYLE: Record<Drill['level'], string> = {
+  Base: 'text-ok', Intermedio: 'text-brand-2', Avanzado: 'text-warn',
+};
+
+/** Cómo se siente cada calidad bajo la mano. Es lo que se usa al tocar. */
+const TOUCH_TABLE: { name: string; shape: string; feel: string }[] = [
+  { name: 'Mayor', shape: '4 + 3', feel: 'abierta abajo' },
+  { name: 'Menor', shape: '3 + 4', feel: 'abierta arriba' },
+  { name: 'Disminuida', shape: '3 + 3', feel: 'la más cerrada' },
+  { name: 'Aumentada', shape: '4 + 4', feel: 'la más abierta y pareja' },
+];
+
+const DrillWorkshop: React.FC = () => {
+  const [side, setSide] = useState<'triadas' | 'inversiones'>('triadas');
+  const [open, setOpen] = useState<string | null>(TRIAD_DRILLS[0].id);
+  const list = side === 'triadas' ? TRIAD_DRILLS : INVERSION_DRILLS;
+
+  return (
+    <section className="space-y-3 pt-2 border-t border-line">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Dumbbell size={16} className="text-brand" />
+          <h3 className="font-serif font-semibold text-[16px] text-ink">Taller</h3>
+          <span className="text-[11.5px] text-ink-3">los ejercicios de fondo, en orden</span>
+        </div>
+        <div className="seg">
+          <button type="button" data-active={side === 'triadas'} onClick={() => { setSide('triadas'); setOpen(TRIAD_DRILLS[0].id); }} className="seg-item">Tríadas</button>
+          <button type="button" data-active={side === 'inversiones'} onClick={() => { setSide('inversiones'); setOpen(INVERSION_DRILLS[0].id); }} className="seg-item">Inversiones</button>
+        </div>
+      </div>
+
+      {side === 'triadas' && (
+        <div className="card p-4 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Hand size={14} className="text-brand" />
+            <h4 className="text-[13.5px] font-medium text-ink">Reconocerlas al tacto</h4>
+            <span className="text-[11.5px] text-ink-3">semitonos entre las notas, de abajo hacia arriba</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {TOUCH_TABLE.map(t => (
+              <div key={t.name} className="rounded-xl border border-line bg-surface-2 px-3 py-2.5">
+                <div className="text-[12.5px] font-medium text-ink">{t.name}</div>
+                <div className="font-mono text-[15px] text-brand-2 leading-tight">{t.shape}</div>
+                <div className="text-[11px] text-ink-3 leading-snug">{t.feel}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11.5px] text-ink-3 leading-snug">
+            Las dos únicas tríadas con las dos terceras iguales son la disminuida y la aumentada. Si la mano se siente
+            simétrica, es una de esas dos: ya descartaste la mitad sin contar nada.
+          </p>
+        </div>
+      )}
+
+      {list.map(d => {
+        const isOpen = open === d.id;
+        return (
+          <div key={d.id} className={cn('card overflow-hidden transition-colors', isOpen && 'border-brand-line')}>
+            <button
+              type="button"
+              onClick={() => setOpen(isOpen ? null : d.id)}
+              aria-expanded={isOpen}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-2 transition-colors"
+            >
+              <ChevronRight size={14} className={cn('text-ink-3 shrink-0 transition-transform', isOpen && 'rotate-90')} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13.5px] font-medium text-ink">{d.title}</div>
+                <div className="text-[11.5px] text-ink-3 truncate">{d.goal}</div>
+              </div>
+              <span className={cn('text-[10.5px] font-mono shrink-0', LEVEL_STYLE[d.level])}>{d.level}</span>
+              <span className="hidden sm:inline text-[10.5px] font-mono text-ink-3 shrink-0">{d.dose}</span>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="overflow-hidden"
+                >
+                  <ol className="px-4 pb-4 pt-1 space-y-1.5 list-decimal list-inside text-[12.5px] text-ink-2 leading-relaxed marker:text-brand marker:font-mono">
+                    {d.steps.map((s, i) => <li key={i}>{s}</li>)}
+                  </ol>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+
+      <div className="flex items-start gap-2 text-[11.5px] text-ink-3 leading-snug px-1">
+        <Layers size={12} className="shrink-0 mt-0.5" />
+        <span>
+          El arpegio es la misma tríada desplegada: cuando estos ejercicios salgan cómodos, seguí en el Gimnasio de
+          Arpegios con las mismas tónicas.
+        </span>
+      </div>
+    </section>
   );
 };
