@@ -200,24 +200,24 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
   return (
     <div className="space-y-8">
       {/* Header & Modes */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-line pb-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-ok">
               Gimnasio Lúdico de Tríadas e Inversiones
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mt-1">
+          <h2 className="text-2xl md:text-3xl font-serif font-bold text-ink mt-1">
             Inversiones y Conexión de Acordes
           </h2>
-          <p className="text-xs text-white/50 font-light max-w-xl mt-0.5">
+          <p className="text-xs text-ink-3 font-light max-w-xl mt-0.5">
             Domina las 3 caras de cada acorde para eliminar los saltos de mano y tocar con soltura profesional.
           </p>
         </div>
 
         {/* Game Mode Selector */}
-        <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
+        <div className="flex flex-wrap items-center gap-2 bg-surface-2 p-1.5 rounded-2xl border border-line">
           {[
             { id: 'carousel', label: 'Carrusel 1-2-3', Icon: RotateCw },
             { id: 'identify', label: '¿Qué Inversión es?', Icon: Eye },
@@ -234,7 +234,7 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
                   gameMode === tab.id
                     ? "bg-amber-400 text-black font-semibold shadow"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
+                    : "text-ink-2 hover:text-ink hover:bg-surface-2"
                 )}
               >
                 <TabIcon size={14} />
@@ -258,8 +258,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
         <div className="space-y-6">
           {/* Root & Quality Selectors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="glass p-4 rounded-2xl border border-white/10 space-y-2">
-              <span className="text-xs font-mono text-white/50">Acorde Raíz:</span>
+            <div className="glass p-4 rounded-2xl border border-line space-y-2">
+              <span className="text-xs font-mono text-ink-3">Acorde Raíz:</span>
               <div className="flex flex-wrap gap-1.5">
                 {COMMON_ROOTS.map(r => (
                   <button
@@ -274,7 +274,7 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                       "flex-1 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border",
                       selectedRoot === r
                         ? "bg-amber-400 text-black border-amber-300 shadow"
-                        : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10"
+                        : "bg-surface-2 text-ink-2 border-line hover:bg-surface-3"
                     )}
                   >
                     {r}
@@ -283,8 +283,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
               </div>
             </div>
 
-            <div className="glass p-4 rounded-2xl border border-white/10 space-y-2">
-              <span className="text-xs font-mono text-white/50">Cualidad:</span>
+            <div className="glass p-4 rounded-2xl border border-line space-y-2">
+              <span className="text-xs font-mono text-ink-3">Cualidad:</span>
               <div className="flex gap-2">
                 {(['Major', 'Minor'] as const).map(q => (
                   <button
@@ -299,7 +299,7 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                       "flex-1 py-2 rounded-xl text-xs font-mono font-bold transition-all border",
                       selectedQuality === q
                         ? "bg-emerald-500 text-black border-emerald-400 shadow"
-                        : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
+                        : "bg-surface-2 text-ink-2 border-line hover:bg-surface-3"
                     )}
                   >
                     {q === 'Major' ? 'Mayor (Alegre)' : 'Menor (Melancólico)'}
@@ -327,21 +327,21 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                   className={cn(
                     "cursor-pointer rounded-2xl p-5 border-2 transition-all space-y-3 font-mono relative overflow-hidden",
                     isActive
-                      ? "bg-amber-400/15 border-amber-400 text-white shadow-[0_0_25px_rgba(245,158,11,0.25)]"
-                      : "bg-white/5 border-white/10 text-white/70 hover:border-white/20"
+                      ? "bg-amber-400/15 border-amber-400 text-ink shadow-[0_0_25px_rgba(245,158,11,0.25)]"
+                      : "bg-surface-2 border-line text-ink-2 hover:border-line-strong"
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className={cn(
                       "text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold",
-                      isActive ? "bg-amber-400 text-black" : "bg-white/10 text-white/50"
+                      isActive ? "bg-amber-400 text-black" : "bg-surface-3 text-ink-3"
                     )}>
                       {stepIdx === 0 ? 'Fundamental' : `${stepIdx}ª Inversión`}
                     </span>
-                    <span className="text-xs text-white/40">{invInfo.figuredBassSymbol}</span>
+                    <span className="text-xs text-ink-3">{invInfo.figuredBassSymbol}</span>
                   </div>
 
-                  <div className="text-xl font-bold font-serif text-white">
+                  <div className="text-xl font-bold font-serif text-ink">
                     {triadData.chordName}
                   </div>
 
@@ -353,8 +353,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                         className={cn(
                           "px-2.5 py-1 rounded-lg text-xs font-bold border",
                           i === 0 
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" 
-                            : "bg-white/10 text-white/90 border-white/10"
+                            ? "bg-emerald-500/20 text-ok border-emerald-500/40" 
+                            : "bg-surface-3 text-ink border-line"
                         )}
                         title={i === 0 ? 'Bajo (Nota más grave)' : 'Voz superior'}
                       >
@@ -363,12 +363,12 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                     ))}
                   </div>
 
-                  <div className="text-[11px] text-white/60 font-light leading-relaxed pt-1">
-                    Bajo en: <strong className="text-emerald-300">{invInfo.bassRole}</strong>
+                  <div className="text-[11px] text-ink-2 font-light leading-relaxed pt-1">
+                    Bajo en: <strong className="text-ok">{invInfo.bassRole}</strong>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[10px] text-white/40 pt-1 border-t border-white/10">
-                    <Hand size={11} className="text-amber-400" />
+                  <div className="flex items-center gap-1 text-[10px] text-ink-3 pt-1 border-t border-line">
+                    <Hand size={11} className="text-brand-2" />
                     <span>Digitación: {invInfo.fingeringRightHand}</span>
                   </div>
                 </motion.div>
@@ -377,21 +377,21 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
           </div>
 
           {/* Dynamic Pedagogical Explanation & Visual Trick */}
-          <div className="glass p-5 rounded-2xl border border-white/10 bg-gradient-to-r from-amber-500/10 via-transparent to-transparent flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="glass p-5 rounded-2xl border border-line bg-gradient-to-r from-amber-500/10 via-transparent to-transparent flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-amber-300 uppercase px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30">
+                <span className="text-xs font-mono font-bold text-brand-2 uppercase px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30">
                   {currentGuide.popularName}
                 </span>
-                <span className="text-xs text-white/60">
-                  Bajo: <strong className="text-emerald-300">{currentTriad.bassNote.replace(/\d/, '')}</strong> ({currentGuide.bassRole})
+                <span className="text-xs text-ink-2">
+                  Bajo: <strong className="text-ok">{currentTriad.bassNote.replace(/\d/, '')}</strong> ({currentGuide.bassRole})
                 </span>
               </div>
-              <p className="text-xs text-white/80 font-light">
+              <p className="text-xs text-ink-2 font-light">
                 {currentGuide.explanation}
               </p>
-              <p className="text-xs text-amber-300/90 font-light italic flex items-center gap-1.5">
-                <Eye size={13} className="text-amber-400 shrink-0" />
+              <p className="text-xs text-brand-2/90 font-light italic flex items-center gap-1.5">
+                <Eye size={13} className="text-brand-2 shrink-0" />
                 <span><strong>Truco visual del Maestro:</strong> {currentGuide.visualTrick}</span>
               </p>
             </div>
@@ -400,26 +400,26 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
               <button
                 type="button"
                 onClick={() => playCurrentChordSound(currentTriad.keys)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-surface-2 hover:bg-surface-3 text-ink-2 border border-line transition-all"
               >
-                <Volume2 size={13} className="text-amber-400" />
+                <Volume2 size={13} className="text-brand-2" />
                 <span>Oír Acorde</span>
               </button>
 
               <button
                 type="button"
                 onClick={speakInversionTip}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono bg-amber-400/10 hover:bg-amber-400/20 text-brand-2 border border-amber-400/30 transition-all"
               >
-                <GraduationCap size={14} className="text-amber-400" />
+                <GraduationCap size={14} className="text-brand-2" />
                 <span>Maestro Aurelio</span>
               </button>
             </div>
           </div>
 
           {/* Piano display */}
-          <div className="glass p-6 rounded-3xl border border-white/10 space-y-4">
-            <div className="flex justify-between items-center text-xs font-mono text-white/50">
+          <div className="glass p-6 rounded-3xl border border-line space-y-4">
+            <div className="flex justify-between items-center text-xs font-mono text-ink-3">
               <span>Notas activas: {currentTriad.keys.join(' - ')}</span>
               <span>Bajo en Verde Esmeralda: {currentTriad.bassNote}</span>
             </div>
@@ -437,17 +437,17 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
       {/* MODE 2: IDENTIFICAR LA INVERSIÓN (TRIVIA AUDITIVA & VISUAL) */}
       {/* ------------------------------------------------------------- */}
       {gameMode === 'identify' && (
-        <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-6">
+        <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-amber-400">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-brand-2">
                 Oído y Agudeza Visual
               </span>
-              <h3 className="text-xl font-serif font-bold text-white">
+              <h3 className="text-xl font-serif font-bold text-ink">
                 ¿En qué inversión está este acorde de {quizQuestion.root} {quizQuestion.quality === 'Major' ? 'Mayor' : 'menor'}?
               </h3>
             </div>
-            <div className="text-sm font-mono font-bold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/30">
+            <div className="text-sm font-mono font-bold text-brand-2 bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/30">
               Puntaje: {quizScore} PTS
             </div>
           </div>
@@ -460,8 +460,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                 className={cn(
                   "w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-mono border-2 shadow-lg",
                   i === 0 
-                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300" 
-                    : "bg-white/10 border-white/20 text-white"
+                    ? "bg-emerald-500/20 border-emerald-400 text-ok" 
+                    : "bg-surface-3 border-line-strong text-ink"
                 )}
               >
                 <span className="text-2xl font-bold">{k.replace(/\d/, '')}</span>
@@ -505,10 +505,10 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                   className={cn(
                     "p-4 rounded-2xl border-2 font-mono text-center transition-all",
                     quizAnswered !== null && isCorrect
-                      ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md"
+                      ? "bg-emerald-500/20 border-emerald-400 text-ok shadow-md"
                       : isSelected && !isCorrect
                       ? "bg-red-500/20 border-red-400 text-red-300"
-                      : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                      : "bg-surface-2 border-line text-ink hover:bg-surface-3"
                   )}
                 >
                   <div className="text-sm font-bold">
@@ -523,9 +523,9 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
           </div>
 
           {quizAnswered !== null && (
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-xs text-white/80 flex items-center gap-1.5">
-                <Lightbulb size={14} className="text-amber-400 shrink-0" />
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-xs text-ink-2 flex items-center gap-1.5">
+                <Lightbulb size={14} className="text-brand-2 shrink-0" />
                 <span><strong>Explicación:</strong> {INVERSIONS_GUIDE[quizQuestion.inversion].visualTrick}</span>
               </div>
               <button
@@ -548,20 +548,20 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
       {/* MODE 3: MISIÓN DEL BAJO (TOCAR LA INVERSIÓN SOLICITADA) */}
       {/* ------------------------------------------------------------- */}
       {gameMode === 'mission' && (
-        <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-6">
+        <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-amber-400">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-brand-2">
                 Misión Práctica en el Piano
               </span>
-              <h3 className="text-2xl font-serif font-bold text-white">
+              <h3 className="text-2xl font-serif font-bold text-ink">
                 Toca: {missionTarget.root} {missionTarget.quality === 'Major' ? 'Mayor' : 'menor'} en {missionTarget.inversion === 0 ? 'Posición Fundamental' : `${missionTarget.inversion}ª Inversión`}
               </h3>
             </div>
             <button
               type="button"
               onClick={generateNewMission}
-              className="flex items-center gap-1.5 text-xs font-mono text-white/50 hover:text-white bg-white/5 px-3 py-1.5 rounded-xl border border-white/10"
+              className="flex items-center gap-1.5 text-xs font-mono text-ink-3 hover:text-ink bg-surface-2 px-3 py-1.5 rounded-xl border border-line"
             >
               <RefreshCw size={12} />
               <span>Cambiar Misión</span>
@@ -571,11 +571,11 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
           {/* Mission Requirement Card */}
           <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-between">
             <div className="space-y-1">
-              <div className="text-xs font-mono text-amber-300 font-bold flex items-center gap-1.5">
-                <AlertCircle size={14} className="text-amber-400 shrink-0" />
+              <div className="text-xs font-mono text-brand-2 font-bold flex items-center gap-1.5">
+                <AlertCircle size={14} className="text-brand-2 shrink-0" />
                 <span>Requisito estricto del Maestro:</span>
               </div>
-              <p className="text-xs text-white/80 font-light">
+              <p className="text-xs text-ink-2 font-light">
                 La nota más grave (el bajo) DEBE ser <strong>{missionTarget.requiredBass}</strong>.
               </p>
             </div>
@@ -594,8 +594,8 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                   className={cn(
                     "w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-mono border-2 transition-all",
                     note
-                      ? "bg-amber-400/20 border-amber-400 text-amber-300"
-                      : "bg-white/5 border-white/10 text-white/20"
+                      ? "bg-amber-400/20 border-amber-400 text-brand-2"
+                      : "bg-surface-2 border-line text-ink/20"
                   )}
                 >
                   <span className="text-xl font-bold">{note ? note.replace(/\d/, '') : '?'}</span>
@@ -610,7 +610,7 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
             <div className={cn(
               "p-3 rounded-2xl text-xs font-mono text-center border",
               missionSuccess
-                ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
+                ? "bg-emerald-500/20 border-emerald-400 text-ok"
                 : "bg-red-500/10 border-red-500/30 text-red-300"
             )}>
               {missionFeedback}
@@ -630,15 +630,15 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
       {/* MODE 4: VOICE LEADING (CONEXIÓN FLUIDA ENTRE ACORDES) */}
       {/* ------------------------------------------------------------- */}
       {gameMode === 'voiceLeading' && (
-        <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-6">
+        <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-6">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400">
+            <span className="text-[10px] uppercase font-mono tracking-widest text-ok">
               Conexión Armónica y Ergonomía
             </span>
-            <h3 className="text-2xl font-serif font-bold text-white">
+            <h3 className="text-2xl font-serif font-bold text-ink">
               Voice Leading: ¿Por qué usamos inversiones?
             </h3>
-            <p className="text-xs text-white/60 font-light max-w-2xl">
+            <p className="text-xs text-ink-2 font-light max-w-2xl">
               Si tocas Do Mayor (C4-E4-G4) y luego saltas toda la mano para tocar Fa Mayor (F4-A4-C5), suena brusco. En cambio, si tocas Fa Mayor en <strong>2ª inversión (C4-F4-A4)</strong>, ¡el Do queda inmóvil y los otros dos dedos apenas se mueven una tecla!
             </p>
           </div>
@@ -660,12 +660,12 @@ export const InversionsGym: React.FC<InversionsGymProps> = ({ onScoreGain }) => 
                 className={cn(
                   "flex-1 min-w-[200px] p-4 rounded-2xl border-2 font-mono text-left transition-all",
                   voiceLeadingChord === item.id
-                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-lg"
-                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-emerald-500/20 border-emerald-400 text-ok shadow-lg"
+                    : "bg-surface-2 border-line text-ink-2 hover:bg-surface-3 hover:text-ink"
                 )}
               >
                 <div className="text-sm font-bold">{item.name}</div>
-                <div className="text-xs text-white/50 mt-1">Notas: {item.notes.join(' - ')}</div>
+                <div className="text-xs text-ink-3 mt-1">Notas: {item.notes.join(' - ')}</div>
               </button>
             ))}
           </div>

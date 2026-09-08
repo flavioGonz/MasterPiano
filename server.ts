@@ -3,6 +3,13 @@ import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI, Modality } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import { registerAudioRoutes } from "./server/audioJobs";
+import { registerProfileRoutes } from "./server/profiles";
+import { registerAuthRoutes } from "./server/auth";
+import { registerSongRoutes } from "./server/songs";
+import { registerVideoRoutes } from "./server/videos";
+import { registerPushRoutes } from "./server/push";
+import { startRetention } from "./server/retention";
 
 dotenv.config();
 
@@ -94,6 +101,16 @@ async function generateTextWithFallback(
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", aiEnabled: Boolean(process.env.GEMINI_API_KEY) });
 });
+
+// Audio: YouTube / archivo → stems (Demucs) → bases para el Kross 2
+// El orden importa: auth primero, que deja req.user para el resto.
+registerAuthRoutes(app);
+registerAudioRoutes(app);
+registerProfileRoutes(app);
+registerSongRoutes(app);
+registerVideoRoutes(app);
+registerPushRoutes(app);
+startRetention();
 
 // Text-to-Speech endpoint for Maestro Aurelio (Uruguayan natural instructor voice)
 app.post("/api/instructor/speak", async (req, res) => {

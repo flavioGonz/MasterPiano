@@ -1,44 +1,707 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* =====================================================================
+   PianoMaster — Design tokens ("Conservatorio refinado")
+   Un solo acento (dorado), superficies en capas, tipografía:
+     - serif  (Playfair Display) → solo títulos
+     - sans   (Plus Jakarta Sans) → todo el texto de UI
+     - mono   (JetBrains Mono)   → datos: BPM, notas, contadores
+   Las fuentes se cargan desde index.html.
+   ===================================================================== */
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", serif;
-  --font-mono: "JetBrains Mono", monospace;
-  
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Superficies (de más profundo a más elevado) */
+  --color-bg: #0b0d12;
+  --color-surface: #12151c;
+  --color-surface-2: #181c25;
+  --color-surface-3: #1f2430;
+
+  /* Bordes */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.14);
+
+  /* Texto */
+  --color-ink: #ece9e2;
+  --color-ink-2: #b8b5ad;
+  --color-ink-3: #7c7a74;
+
+  /* Acento dorado */
+  --color-brand: #e5b53f;
+  --color-brand-2: #f2cc66;
+  --color-brand-ink: #1a1405;
+  --color-brand-soft: rgba(229, 181, 63, 0.12);
+  --color-brand-line: rgba(229, 181, 63, 0.32);
+
+  /* Estados */
+  --color-ok: #34d399;
+  --color-ok-soft: rgba(52, 211, 153, 0.12);
+  --color-warn: #fb923c;
+  --color-danger: #fb7185;
+  --color-danger-soft: rgba(251, 113, 133, 0.12);
+  --color-info: #67e8f9;
+
+  /* Compatibilidad con componentes existentes */
   --color-piano-black: #1a1a1a;
   --color-piano-ivory: #fdfcf0;
-  --color-gold: #d4af37;
+  --color-gold: #e5b53f;
+
+  /* Partitura: la tinta del pentagrama sigue al tema (ver nota en el bloque claro) */
+  --score-ink: #ece9e2;
+  --score-stem: rgba(236, 233, 226, 0.85);
+  --score-line: rgba(236, 233, 226, 0.3);
+  --score-dim: rgba(236, 233, 226, 0.4);
+  --score-soft: rgba(236, 233, 226, 0.15);
+  --score-ledger: rgba(236, 233, 226, 0.2);
+
+  /* La mano de la guía de digitación. Es piel, no una figura del sistema:
+     tiene su propia paleta y en el tema oscuro va apagada para que no brille
+     más que la partitura. */
+  --hand-light: #e6c2a6;
+  --hand-mid: #cf9d80;
+  --hand-shade: #a9755a;
+  --hand-line: #71462f;
+  --hand-nail: #f0d9c8;
+
+  --radius-card: 1.125rem;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px rgba(229, 181, 63, 0.35), 0 10px 30px -10px rgba(229, 181, 63, 0.35);
 }
 
 @layer base {
-  body {
-    @apply bg-[#050505] text-white font-sans antialiased;
+  html {
+    color-scheme: dark;
   }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, .font-serif {
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: rgba(229, 181, 63, 0.35);
+    color: #fff;
+  }
+  button, [role="button"] {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+/* =====================================================================
+   TEMA CLARO — "Conservatorio de día"
+   ---------------------------------------------------------------------
+   El tema vive en el atributo data-theme del <html>. Acá solo se
+   redefinen los tokens: ningún componente sabe en qué tema está.
+
+   Dos decisiones deliberadas:
+
+   1) `--color-white` se redefine a tinta oscura. Buena parte de la app
+      todavía usa utilidades tipo `bg-white/5`, `border-white/10` y
+      `text-white/60` como "veladuras claras sobre fondo oscuro". Al
+      cambiar qué significa "white", esas mil y pico de utilidades se dan
+      vuelta solas y quedan como veladuras oscuras sobre fondo claro, que
+      es exactamente lo que corresponde. Es un token, no un parche.
+
+   2) El teclado y la catarata SIGUEN OSCUROS en el tema claro. No es una
+      omisión: un piano es madera oscura con teclas claras, y un piano
+      roll se lee mucho mejor sobre fondo profundo. La clase `.stage-dark`
+      marca esas zonas y les devuelve los tokens oscuros, incluido el
+      blanco de verdad.
+   ===================================================================== */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Superficies: papel tibio, tarjetas blancas */
+  --color-bg: #f4f1ea;
+  --color-surface: #ffffff;
+  --color-surface-2: #faf8f3;
+  --color-surface-3: #efebe1;
+
+  /* Bordes: tinta con poca opacidad, nunca gris frío */
+  --color-line: rgba(28, 24, 14, 0.11);
+  --color-line-strong: rgba(28, 24, 14, 0.2);
+
+  /* Texto */
+  --color-ink: #1c1a15;
+  --color-ink-2: #55514a;
+  --color-ink-3: #6f6a60;
+
+  /* Dorado: el relleno mantiene el oro con tinta oscura encima (igual que
+     en el tema oscuro); el acento de texto baja a un oro tostado que sí
+     contrasta contra el blanco. */
+  --color-brand: #c69320;
+  --color-brand-2: #7d5a0c;
+  --color-brand-ink: #1a1405;
+  --color-brand-soft: rgba(198, 147, 32, 0.14);
+  --color-brand-line: rgba(198, 147, 32, 0.42);
+
+  /* Estados: oscurecidos hasta pasar 4.5:1 sobre blanco, no solo "más oscuros" */
+  --color-ok: #0a7a56;
+  --color-ok-soft: rgba(10, 122, 86, 0.12);
+  --color-warn: #a63a06;
+  --color-danger: #c02b41;
+  --color-danger-soft: rgba(192, 43, 65, 0.11);
+  --color-info: #0b6a80;
+
+  /* La veladura: acá "blanco" pasa a ser tinta (ver nota 1) */
+  --color-white: #14120c;
+
+
+  /* La partitura se imprime: en el tema claro va tinta oscura sobre el papel,
+     no tinta clara sobre un fondo que ya no existe. */
+  --score-ink: #14120c;
+  --score-stem: rgba(20, 18, 12, 0.85);
+  --score-line: rgba(20, 18, 12, 0.42);
+  --score-dim: rgba(20, 18, 12, 0.5);
+  --score-soft: rgba(20, 18, 12, 0.18);
+  --score-ledger: rgba(20, 18, 12, 0.3);
+
+  --hand-light: #f6dcc6;
+  --hand-mid: #e6b795;
+  --hand-shade: #c79070;
+  --hand-line: #8a5636;
+  --hand-nail: #fbeade;
+
+  --shadow-card: 0 1px 2px rgba(28, 24, 14, 0.04), 0 8px 24px -16px rgba(28, 24, 14, 0.18);
+  --shadow-glow: 0 0 0 1px rgba(198, 147, 32, 0.45), 0 10px 30px -12px rgba(198, 147, 32, 0.45);
+}
+
+/* ---------------------------------------------------------------------
+   Escenarios oscuros dentro del tema claro
+   ---------------------------------------------------------------------
+   Dos formas de entrar acá:
+
+   a) `.stage-dark` a mano, para lo que es escenario a propósito: el
+      teclado, la catarata, el modal de cascada.
+
+   b) Automático: cualquier elemento cuya clase traiga un fondo oscuro
+      escrito a mano (`bg-[#0d1322]`, `bg-black`, gradientes `from-[#141721]`).
+      Son las pantallas que todavía no migraron al sistema de tokens
+      (fase 2). En vez de dejarlas rotas —texto oscuro sobre panel oscuro—
+      esta regla les devuelve la paleta oscura completa, incluido el blanco
+      de verdad. Cuando cada una migre a los tokens, deja de matchear sola
+      y no hay nada que desarmar.
+   --------------------------------------------------------------------- */
+:root[data-theme="light"] .stage-dark,
+:root[data-theme="light"] [class*="bg-[#0"],
+:root[data-theme="light"] [class*="bg-[#1"],
+:root[data-theme="light"] [class*="bg-[#2"],
+:root[data-theme="light"] [class*="bg-[#3"],
+:root[data-theme="light"] [class*="from-[#0"],
+:root[data-theme="light"] [class*="from-[#1"] {
+  --color-white: #ffffff;
+  --color-bg: #0b0d12;
+  --color-surface: #12151c;
+  --color-surface-2: #181c25;
+  --color-surface-3: #1f2430;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.14);
+  --color-ink: #ece9e2;
+  --color-ink-2: #b8b5ad;
+  --color-ink-3: #7c7a74;
+  --color-brand: #e5b53f;
+  --color-brand-2: #f2cc66;
+  --color-brand-soft: rgba(229, 181, 63, 0.12);
+  --color-brand-line: rgba(229, 181, 63, 0.32);
+  --color-ok: #34d399;
+  --color-ok-soft: rgba(52, 211, 153, 0.12);
+  --color-warn: #fb923c;
+  --color-danger: #fb7185;
+  --color-danger-soft: rgba(251, 113, 133, 0.12);
+  --color-info: #67e8f9;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --score-ink: #ece9e2;
+  --score-stem: rgba(236, 233, 226, 0.85);
+  --score-line: rgba(236, 233, 226, 0.3);
+  --score-dim: rgba(236, 233, 226, 0.4);
+  --score-soft: rgba(236, 233, 226, 0.15);
+  --score-ledger: rgba(236, 233, 226, 0.2);
+  --hand-light: #e6c2a6;
+  --hand-mid: #cf9d80;
+  --hand-shade: #a9755a;
+  --hand-line: #71462f;
+  --hand-nail: #f0d9c8;
+  color: var(--color-ink);
+}
+/* El fondo de un modal no es un escenario: no debe volverse un panel oscuro */
+:root[data-theme="light"] .modal-scrim {
+  --color-ink: #1c1a15;
+  color: inherit;
+}
+/* En claro, el escenario oscuro necesita separarse del papel */
+:root[data-theme="light"] .stage-dark {
+  box-shadow: 0 10px 40px -18px rgba(28, 24, 14, 0.55);
+}
+
+/* ---------------------------------------------------------------------
+   Compatibilidad de color para las pantallas sin migrar (fase 2)
+   ---------------------------------------------------------------------
+   Doce componentes todavía escriben el color a mano (`text-amber-400`,
+   `text-emerald-300`…). Sobre papel blanco esos tonos quedan en 2:1 y no
+   se leen. En vez de tocar mil clases, cada familia pasa por una variable
+   que se resuelve según el contexto: en el papel toma la versión oscura,
+   y dentro de un escenario oscuro hereda la clara de más arriba. Cuando
+   un componente migre a los tokens, deja de usar estas clases y la regla
+   se vuelve inerte sola.
+   --------------------------------------------------------------------- */
+:root[data-theme="light"] {
+  --c-amber: #7d5a0c;
+  --c-emerald: #0a7a56;
+  --c-rose: #b5223a;
+  --c-cyan: #0b6a80;
+  --c-indigo: #4338ca;
+  --c-purple: #6d28d9;
+  --c-orange: #a63a06;
+}
+:root[data-theme="light"] .stage-dark,
+:root[data-theme="light"] [class*="bg-[#0"],
+:root[data-theme="light"] [class*="bg-[#1"],
+:root[data-theme="light"] [class*="bg-[#2"],
+:root[data-theme="light"] [class*="bg-[#3"],
+:root[data-theme="light"] [class*="from-[#0"],
+:root[data-theme="light"] [class*="from-[#1"] {
+  --c-amber: #fbbf24;
+  --c-emerald: #34d399;
+  --c-rose: #fb7185;
+  --c-cyan: #67e8f9;
+  --c-indigo: #a5b4fc;
+  --c-purple: #c4b5fd;
+  --c-orange: #fb923c;
+}
+:root[data-theme="light"] .text-amber-200,
+:root[data-theme="light"] .text-amber-300,
+:root[data-theme="light"] .text-amber-400,
+:root[data-theme="light"] .text-yellow-300,
+:root[data-theme="light"] .text-yellow-400 { color: var(--c-amber); }
+:root[data-theme="light"] .text-emerald-200,
+:root[data-theme="light"] .text-emerald-300,
+:root[data-theme="light"] .text-emerald-400,
+:root[data-theme="light"] .text-green-300,
+:root[data-theme="light"] .text-green-400 { color: var(--c-emerald); }
+:root[data-theme="light"] .text-rose-200,
+:root[data-theme="light"] .text-rose-300,
+:root[data-theme="light"] .text-rose-400,
+:root[data-theme="light"] .text-red-300,
+:root[data-theme="light"] .text-red-400 { color: var(--c-rose); }
+:root[data-theme="light"] .text-cyan-300,
+:root[data-theme="light"] .text-cyan-400,
+:root[data-theme="light"] .text-sky-300 { color: var(--c-cyan); }
+:root[data-theme="light"] .text-indigo-200,
+:root[data-theme="light"] .text-indigo-300,
+:root[data-theme="light"] .text-indigo-400 { color: var(--c-indigo); }
+:root[data-theme="light"] .text-purple-300,
+:root[data-theme="light"] .text-purple-400,
+:root[data-theme="light"] .text-violet-300 { color: var(--c-purple); }
+:root[data-theme="light"] .text-orange-300,
+:root[data-theme="light"] .text-orange-400 { color: var(--c-orange); }
+
+/* Veladuras `bg-black/xx`: sobre fondo oscuro oscurecían un panel; sobre
+   papel tienen que hundirlo apenas, no mancharlo de gris. Solo se tocan las
+   que están sobre el papel: dentro de un escenario oscuro siguen intactas.
+   Los fondos de modal a pantalla completa quedan fuera y siguen oscureciendo. */
+:root[data-theme="light"] :is(.bg-black\/20, .bg-black\/30, .bg-black\/40, .bg-black\/50, .bg-black\/60):not(.stage-dark *):not([class*="bg-[#0"] *):not([class*="bg-[#1"] *):not(.fixed.inset-0) {
+  background-color: rgb(28 24 14 / 0.06);
+}
+:root[data-theme="light"] :is(.bg-black\/50, .bg-black\/60):not(.stage-dark *):not([class*="bg-[#0"] *):not([class*="bg-[#1"] *):not(.fixed.inset-0) {
+  background-color: rgb(28 24 14 / 0.10);
+}
+
+:root[data-theme="light"] ::selection {
+  background: rgba(198, 147, 32, 0.32);
+  color: #14120c;
+}
+
+/* Transición al cambiar de tema: solo color, nunca layout */
+:root.theme-anim,
+:root.theme-anim body,
+:root.theme-anim .card,
+:root.theme-anim .card-2,
+:root.theme-anim .btn,
+:root.theme-anim aside,
+:root.theme-anim header,
+:root.theme-anim section {
+  transition: background-color 0.28s ease, border-color 0.28s ease, color 0.28s ease;
+}
+
+/* --------------------------------------------------------------------
+   Switch de tema animado
+   -------------------------------------------------------------------- */
+.theme-tog {
+  position: relative;
+  width: 54px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-surface-2);
+  padding: 0;
+  flex: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.theme-tog:hover { border-color: var(--color-brand-line); }
+.theme-tog .tt-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-brand);
+  color: var(--color-brand-ink);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+  /* el rebote es lo que hace que se sienta un interruptor y no un fade */
+  transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease;
+}
+.theme-tog[data-dark="true"] .tt-knob { transform: translateX(26px); }
+.theme-tog .tt-knob svg { transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease; }
+/* Sol y luna comparten lugar: uno gira y se va mientras el otro entra */
+.theme-tog .tt-ico { position: absolute; }
+.theme-tog[data-dark="true"] .tt-sun { transform: rotate(90deg) scale(0.4); opacity: 0; }
+.theme-tog[data-dark="false"] .tt-moon { transform: rotate(-90deg) scale(0.4); opacity: 0; }
+/* Estrellitas del lado nocturno y rayos del lado diurno, en el riel */
+.theme-tog .tt-rail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 7px;
+  pointer-events: none;
+  color: var(--color-ink-3);
+}
+.theme-tog .tt-rail > * { transition: opacity 0.25s ease; }
+.theme-tog[data-dark="true"] .tt-day { opacity: 0; }
+.theme-tog[data-dark="false"] .tt-night { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-tog .tt-knob,
+  .theme-tog .tt-knob svg,
+  :root.theme-anim,
+  :root.theme-anim * { transition: none !important; }
+}
+
+/* --------------------------------------------------------------------
+   Utilidades de UI compartidas
+   -------------------------------------------------------------------- */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@layer components {
+/* Tarjeta base */
+.card {
+  @apply bg-surface border border-line rounded-[var(--radius-card)];
+  box-shadow: var(--shadow-card);
+}
+.card-2 {
+  @apply bg-surface-2 border border-line rounded-2xl;
+}
+
+/* Etiqueta pequeña en mayúsculas (eyebrow) */
+.eyebrow {
+  /* brand-2 es el dorado pensado para texto: en oscuro aclara, en claro tuesta */
+  @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-2;
+}
+
+/* Botones: usar siempre "btn btn-primary" / "btn btn-secondary" / "btn btn-ghost" */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-150 select-none whitespace-nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  @apply bg-brand text-brand-ink hover:bg-brand-2;
+  box-shadow: 0 6px 18px -8px rgba(229, 181, 63, 0.6);
+}
+.btn-secondary {
+  @apply bg-surface-2 text-ink border border-line hover:bg-surface-3 hover:border-line-strong;
+}
+.btn-ghost {
+  @apply text-ink-2 hover:text-ink hover:bg-white/5;
+}
+.btn-sm { @apply px-2.5 py-1.5 text-xs rounded-lg; }
+.btn-icon { @apply p-2 rounded-lg; }
+
+/* Grupo segmentado (toggle) */
+.seg {
+  @apply inline-flex items-center gap-0.5 p-1 rounded-xl bg-bg border border-line;
+}
+.seg-item {
+  @apply px-3 py-1.5 rounded-lg text-xs font-medium text-ink-2 transition-all duration-150 whitespace-nowrap;
+}
+.seg-item:hover { @apply text-ink bg-white/5; }
+.seg-item[data-active="true"] {
+  @apply bg-brand text-brand-ink font-semibold;
+}
+
+/* Badges: usar "badge badge-brand" etc. */
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border;
+}
+.badge-neutral { @apply bg-white/5 border-line text-ink-2; }
+.badge-brand { @apply bg-brand-soft border-brand-line text-brand-2; }
+.badge-ok { @apply bg-ok-soft border-ok/30 text-ok; }
+.badge-danger { @apply bg-danger-soft border-danger/30 text-danger; }
+
+/* Barra de progreso */
+.progress {
+  @apply h-2 w-full rounded-full bg-white/8 overflow-hidden;
+}
+.progress > span {
+  @apply block h-full rounded-full bg-brand;
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+}
+
+/* Tooltip simple via data-tip */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 6px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-ink);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-line-strong);
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.7);
+  z-index: 60;
+  pointer-events: none;
+}
+
+
+/* --------------------------------------------------------------------
+   Texto de lecciones (react-markdown) — .markdown-body
+   -------------------------------------------------------------------- */
+.markdown-body {
+  color: var(--color-ink-2);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.markdown-body > * + * { margin-top: 0.9em; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.25;
+  margin-top: 1.6em;
+}
+.markdown-body h1 { font-size: 26px; }
+.markdown-body h2 { font-size: 22px; }
+.markdown-body h3 { font-size: 20px; }
+.markdown-body h4 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-top: 1.5em;
+}
+.markdown-body h3:first-child, .markdown-body h4:first-child { margin-top: 0; }
+.markdown-body strong { color: var(--color-ink); font-weight: 600; }
+.markdown-body em { color: var(--color-ink); }
+.markdown-body a { color: var(--color-brand-2); text-decoration: underline; text-underline-offset: 3px; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.4em; }
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body li { margin-top: 0.35em; padding-left: 0.2em; }
+.markdown-body li::marker { color: var(--color-brand); }
+.markdown-body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--color-brand-2);
+  background: var(--color-brand-soft);
+  border: 1px solid var(--color-brand-line);
+  border-radius: 6px;
+  padding: 0.1em 0.4em;
+}
+.markdown-body pre {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+.markdown-body pre code { background: none; border: 0; padding: 0; color: var(--color-ink); }
+.markdown-body blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding: 4px 0 4px 16px;
+  color: var(--color-ink-2);
+  font-style: italic;
+  background: var(--color-brand-soft);
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body hr { border: 0; border-top: 1px solid var(--color-line); margin: 1.6em 0; }
+.markdown-body table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 14px; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--color-line); padding: 8px 10px; text-align: left; }
+.markdown-body th { background: var(--color-surface-2); color: var(--color-ink); font-weight: 600; }
+.markdown-body img { border-radius: 12px; border: 1px solid var(--color-line); }
+
+
+/* --------------------------------------------------------------------
+   Animaciones (StemStudio: ecualizador, splash SVG, pipeline)
+   -------------------------------------------------------------------- */
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.25); }
+  50%      { transform: scaleY(1); }
+}
+@keyframes eq-idle {
+  0%, 100% { transform: scaleY(0.18); }
+  50%      { transform: scaleY(0.32); }
+}
+.eq-bar {
+  flex: 1 1 0;
+  height: 100%;
+  border-radius: 2px;
+  transform-origin: bottom;
+  animation: eq-bounce 1s ease-in-out infinite;
+  opacity: 0.9;
+}
+.eq-bar-idle { animation-name: eq-idle; animation-duration: 2.4s !important; opacity: 0.45; }
+
+@keyframes shimmer-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent) !important;
+  animation: shimmer-slide 1.6s ease-in-out infinite;
+}
+
+@keyframes sa-spin { to { transform: rotate(360deg); } }
+.sa-spin { animation: sa-spin 9s linear infinite; }
+
+@keyframes sa-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+.sa-ring { transform-origin: 160px 100px; animation: sa-ring 3.3s ease-out infinite; }
+
+@keyframes sa-breathe {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.sa-breathe { transform-origin: 160px 100px; animation: sa-breathe 4s ease-in-out infinite; }
+
+@keyframes sa-wave {
+  0%   { stroke-dashoffset: 260; opacity: 0.2; }
+  40%  { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.2; }
+}
+.sa-wave { stroke-dasharray: 260; animation: sa-wave 2.8s ease-in-out infinite; }
+
+@keyframes sa-float {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(-9px); opacity: 1; }
+}
+.sa-float { animation: sa-float 3.6s ease-in-out infinite; }
+
+@keyframes sa-key {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(3px); }
+}
+.sa-key { animation: sa-key 1.8s ease-in-out infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.35s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar, .sa-spin, .sa-ring, .sa-breathe, .sa-wave, .sa-float, .sa-key, .shimmer { animation: none !important; }
+}
+
+/* --------------------------------------------------------------------
+   Compatibilidad: clases que usan los módulos existentes
+   -------------------------------------------------------------------- */
+@layer components {
+.glass {
+  /* 80 % de superficie + desenfoque: funciona en los dos temas porque
+     --color-surface cambia con el tema. */
+  @apply bg-surface/80 backdrop-blur-lg border border-line;
 }
 
 .piano-key-white {
   @apply bg-piano-ivory border border-gray-300 rounded-b-md shadow-md transition-all duration-75;
-  height: 200px;
-  width: 40px;
+  /* El ancho lo fija el escenario según el lugar que haya (ver Piano.tsx);
+     40 px es el de siempre, y es lo que se usa si nadie define la variable. */
+  width: var(--piano-key-w, 40px);
+  height: calc(var(--piano-key-w, 40px) * 5);
 }
-
 .piano-key-white:active, .piano-key-white.active {
   @apply bg-gray-200 shadow-inner translate-y-1;
 }
-
 .piano-key-black {
   @apply bg-piano-black border border-black rounded-b-sm shadow-lg z-10 transition-all duration-75;
-  height: 120px;
-  width: 24px;
-  margin-left: -12px;
-  margin-right: -12px;
+  width: calc(var(--piano-key-w, 40px) * 0.6);
+  height: calc(var(--piano-key-w, 40px) * 3);
+  margin-left: calc(var(--piano-key-w, 40px) * -0.3);
+  margin-right: calc(var(--piano-key-w, 40px) * -0.3);
 }
-
 .piano-key-black:active, .piano-key-black.active {
   @apply bg-gray-800 shadow-inner translate-y-1;
 }
 
-.glass {
-  @apply bg-white/5 backdrop-blur-lg border border-white/10;
+/* --------------------------------------------------------------------
+   Teclado de la catarata: la tecla se hunde cuando la nota llega
+
+   Antes la tecla sólo cambiaba de color y el golpe no se veía: en una
+   escala rápida las teclas parpadeaban todas iguales. Ahora se hunde con
+   un rebote corto, se le prende un brillo interno y sube una luz hacia la
+   línea de impacto. Dura menos de medio segundo a propósito: tiene que
+   acompañar la nota, no taparla.
+   -------------------------------------------------------------------- */
+.wf-key {
+  transform-origin: top center;
+  transition: background-color 75ms linear, transform 110ms cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 140ms ease-out;
+}
+.wf-key--hit {
+  transform: translateY(3px) scaleY(0.985);
+  animation: wf-strike 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+@keyframes wf-strike {
+  0%   { transform: translateY(7px) scaleY(0.955); filter: brightness(1.55); }
+  55%  { transform: translateY(2px) scaleY(0.998); filter: brightness(1.15); }
+  100% { transform: translateY(3px) scaleY(0.985); filter: none; }
+}
+
+/* La luz que sube de la tecla hacia la línea */
+.wf-key--bloom::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 300%;
+  height: 54px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 100%, rgba(249, 115, 22, 0.5), rgba(249, 115, 22, 0) 70%);
+  animation: wf-bloom 400ms ease-out forwards;
+}
+@keyframes wf-bloom {
+  from { opacity: 0.95; transform: translateX(-50%) scaleY(0.55); }
+  to   { opacity: 0;    transform: translateX(-50%) scaleY(1.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-key, .wf-key--hit { transition: background-color 75ms linear; animation: none; transform: none; }
+  .wf-key--bloom::after { display: none; }
+}
 }

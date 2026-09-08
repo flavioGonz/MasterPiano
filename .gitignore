@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+data/
+
+# Artefactos de las sesiones de Claude (staging local, capturas, tarballs)
+_to_delete/
+_sync/
+Claude outputs/

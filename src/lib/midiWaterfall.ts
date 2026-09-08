@@ -8,9 +8,40 @@ export interface WaterfallNote {
   duration: number;      // Duration in seconds
   velocity: number;      // 0 to 1
   hand: 'right' | 'left'; // 'right' (cyan) or 'left' (red)
+  track?: string;        // id de pista (instrumento). Si falta, la pista es la mano.
   finger?: number;       // 1, 2, 3, 4, 5 technical fingering
   played?: boolean;
   missed?: boolean;
+}
+
+/** Pista de una pieza: por defecto las dos manos; para piezas separadas por instrumento, una por stem. */
+export interface WaterfallTrack {
+  id: string;            // 'right' | 'left' | 'piano' | 'guitar' | ...
+  name: string;
+  color: string;         // color base (hex)
+}
+
+export const HAND_TRACKS: WaterfallTrack[] = [
+  { id: 'right', name: 'Mano derecha', color: '#f97316' },
+  { id: 'left',  name: 'Mano izquierda', color: '#a855f7' },
+];
+
+export const INSTRUMENT_TRACKS: Record<string, WaterfallTrack> = {
+  piano:  { id: 'piano',  name: 'Piano',    color: '#f97316' },
+  guitar: { id: 'guitar', name: 'Guitarra', color: '#fbbf24' },
+  bass:   { id: 'bass',   name: 'Bajo',     color: '#d946ef' },
+  vocals: { id: 'vocals', name: 'Voz',      color: '#fb7185' },
+  other:  { id: 'other',  name: 'Otros',    color: '#34d399' },
+  drums:  { id: 'drums',  name: 'Batería',  color: '#38bdf8' },
+};
+
+/** Pistas de una pieza (las declaradas o, si no, las dos manos). */
+export function songTracks(song: { tracks?: WaterfallTrack[] }): WaterfallTrack[] {
+  return song.tracks && song.tracks.length > 0 ? song.tracks : HAND_TRACKS;
+}
+/** Id de pista de una nota (instrumento si lo tiene; si no, la mano). */
+export function noteTrackId(n: { track?: string; hand: 'right' | 'left' }): string {
+  return n.track ?? n.hand;
 }
 
 export interface WaterfallSong {
@@ -24,6 +55,8 @@ export interface WaterfallSong {
   description: string;
   notes: WaterfallNote[];
   isCustom?: boolean;
+  tracks?: WaterfallTrack[];   // pistas por instrumento (opcional)
+  sourceJobId?: string;        // job de audio del que salió (para re-transcribir)
 }
 
 // Convert MIDI pitch number (e.g. 60) to Note Name (e.g. "C4")
@@ -102,9 +135,14 @@ export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string): Water
     ? Math.max(...parsedNotes.map(n => n.time + n.duration))
     : midi.duration || 30;
 
-  const title = midi.name && midi.name.trim().length > 0 
-    ? midi.name 
-    : fileName.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+  /* El nombre del archivo manda sobre el del MIDI. Casi todos los .mid traen
+     algo genérico adentro ("Piano", "Untitled", el nombre del secuenciador),
+     mientras que el archivo suele tener el nombre real de la pieza — que es,
+     además, por lo que uno la va a buscar en la biblioteca. */
+  const fromFile = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
+  const fromMidi = (midi.name || '').trim();
+  const GENERIC = /^(piano|untitled|new song|midi|track \d*|sin t[íi]tulo)$/i;
+  const title = fromFile && (!fromMidi || GENERIC.test(fromMidi)) ? fromFile : (fromMidi || fromFile || 'Pieza importada');
 
   const bpm = midi.header.tempos.length > 0 
     ? Math.round(midi.header.tempos[0].bpm) 
@@ -113,7 +151,7 @@ export function parseMidiFile(arrayBuffer: ArrayBuffer, fileName: string): Water
   return {
     id: `custom-${Date.now()}`,
     title,
-    composer: 'Archivo Subido (.MID)',
+    composer: fromMidi && fromMidi !== title ? fromMidi : 'MIDI importado',
     difficulty: parsedNotes.length > 300 ? 'Avanzado' : parsedNotes.length > 100 ? 'Intermedio' : 'Fácil',
     bpm,
     duration,
@@ -533,7 +571,7 @@ export function buildWaterfallFromScale(
   } else {
     // Call style 2: (root, scaleName, scaleNotes, fingerings, bpm)
     if (Array.isArray(arg3)) {
-      scaleNotes = arg3;
+      scaleNotes = arg3 as string[];
     }
     if (Array.isArray(arg4)) {
       rightFingerings = arg4;

@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { AnimatePresence } from 'motion/react';
 import * as Tone from 'tone';
 import { cn } from '../lib/utils';
-import { 
-  Volume2, Keyboard, Music2, Sparkles, Sliders, Layers, ChevronRight,
-  Hand, Lightbulb, Zap, Piano as PianoIcon, Palette
+import {
+  Keyboard, Music2, Sliders, Hand, Zap, Piano as PianoIcon, Palette,
+  SplitSquareHorizontal, HelpCircle, Cable,
 } from 'lucide-react';
-import { FINGER_NAMES } from '../lib/musicGymTheory';
+import { IconBtn, Popover, Row } from './ui/StageControls';
+import { FINGER_NAMES, prettyAccidentals } from '../lib/musicGymTheory';
+import { midi } from '../lib/midi';
+import { useMidi } from '../lib/useMidi';
+import { midiToNoteName as midiToName, noteNameToMidi as nameToMidi } from '../lib/midiWaterfall';
 import { 
   getIntervalForNote, 
   inferChordRoot, 
@@ -61,6 +66,13 @@ interface PianoProps {
   splitConfig?: SplitKeyboardConfig;
   onSplitConfigChange?: (config: SplitKeyboardConfig) => void;
   showSplitToggle?: boolean;
+  /**
+   * Cómo se escribe cada tecla en el contexto actual: `{'F': 'E#'}`.
+   * El teclado no puede saberlo solo —la misma tecla es Mi# en Fa# mayor y Fa
+   * en Do mayor—, así que lo trae quien conoce la tonalidad
+   * (`scaleSpellingMap` en el gimnasio de escalas).
+   */
+  noteSpelling?: Record<string, string>;
 }
 
 export const Piano: React.FC<PianoProps> = ({
@@ -83,15 +95,25 @@ export const Piano: React.FC<PianoProps> = ({
   splitConfig: controlledSplitConfig,
   onSplitConfigChange,
   showSplitToggle = true,
+  noteSpelling,
 }) => {
   const [pressedNotes, setPressedNotes] = useState<Set<string>>(new Set());
   const [showKeyboardLabels, setShowKeyboardLabels] = useState(false);
   const [showNoteNames, setShowNoteNames] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
   const [internalShowFingerGuide, setInternalShowFingerGuide] = useState(true);
   const [internalShowIntervalColors, setInternalShowIntervalColors] = useState(true);
 
   const isFingerGuideActive = controlledShowFingerGuide !== undefined ? controlledShowFingerGuide : internalShowFingerGuide;
   const isIntervalColorsActive = controlledShowIntervalColors !== undefined ? controlledShowIntervalColors : internalShowIntervalColors;
+  /* Los colores de intervalo se leen siempre respecto de una fundamental, así
+     que dicen algo en un acorde y nada en una escala de ocho notas: ahí el
+     teclado terminaba siendo un arcoíris sin significado. Se aplican sólo
+     cuando lo que suena tiene forma de acorde. */
+  const distinctPitches = new Set(activeNotes.map(n => n.replace(/\d+$/, ''))).size;
+  const hasActiveChordNotes = activeNotes.length > 0 && distinctPitches <= 4;
+  const effectiveChordRoot = chordRoot || (activeNotes[0] ? activeNotes[0].replace(/\d+$/, '') : 'C');
 
   const handleToggleIntervalColors = () => {
     const nextVal = !isIntervalColorsActive;
@@ -237,7 +259,11 @@ export const Piano: React.FC<PianoProps> = ({
     }, 200);
   };
 
-  const playNoteAudio = useCallback((note: string) => {
+  const playNoteAudio = useCallback((note: string, velocity = 0.8) => {
+    /* Si el instrumento tiene que sonar por sus propios parlantes, el
+       navegador se calla: dos motores sonando la misma nota con unos
+       milisegundos de diferencia suena a error, no a piano. */
+    if (midi.canPlayOut()) { midi.playNote(nameToMidi(note), velocity, 0.9); return; }
     if (splitConfig.enabled) {
       const isLeft = isNoteInLeftHand(note, splitConfig.splitNote);
       const targetPreset = isLeft ? splitConfig.leftPreset : splitConfig.rightPreset;
@@ -246,6 +272,11 @@ export const Piano: React.FC<PianoProps> = ({
       soundEngine.playNote(note, activePreset, "1.5n");
     }
   }, [splitConfig, activePreset]);
+  /* Los handlers del MIDI se registran una vez; leen lo último por ref. */
+  const playNoteAudioRef = useRef(playNoteAudio);
+  playNoteAudioRef.current = playNoteAudio;
+  const onNotePlayRef = useRef(onNotePlay);
+  onNotePlayRef.current = onNotePlay;
 
   const handleNoteTrigger = useCallback((note: string) => {
     playNoteAudio(note);
@@ -265,6 +296,30 @@ export const Piano: React.FC<PianoProps> = ({
       });
     }, 250);
   }, [playNoteAudio, onNotePlay]);
+
+  /* ---------------- Teclado MIDI ----------------
+     El instrumento toca en cualquier pantalla que muestre este teclado: las
+     lecciones, los gimnasios y la evaluación. Antes sólo andaba en la
+     catarata, así que en el resto de la app había que tocar con el mouse
+     teniendo el piano al lado. Las notas fuera del rango dibujado igual suenan
+     y se avisan; simplemente no hay tecla que iluminar. */
+  const midiState = useMidi();
+  useEffect(() => {
+    const stopOn = midi.onNoteOn(({ midi: m, velocity }) => {
+      const note = midiToName(m);
+      playNoteAudioRef.current(note, velocity);
+      onNotePlayRef.current?.(note);
+      setPressedNotes(prev => (prev.has(note) ? prev : new Set(prev).add(note)));
+    });
+    const stopOff = midi.onNoteEnd(m => {
+      const note = midiToName(m);
+      setPressedNotes(prev => {
+        if (!prev.has(note)) return prev;
+        const next = new Set(prev); next.delete(note); return next;
+      });
+    });
+    return () => { stopOn(); stopOff(); };
+  }, []);
 
   // Physical computer keyboard handler
   useEffect(() => {
@@ -304,402 +359,278 @@ export const Piano: React.FC<PianoProps> = ({
     return entry ? entry[0].toUpperCase() : null;
   };
 
+  /* El teclado se estira para llenar el escenario, como el de la catarata, en
+     vez de quedar chico en el medio con dos franjas negras a los costados.
+     Abajo del mínimo vuelve el scroll horizontal. */
+  const whiteKeyCount = allKeys.filter(k => !k.includes('#')).length;
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el || compact) return;
+    const apply = () => {
+      const styles = getComputedStyle(el);
+      const usable = el.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+      const w = Math.max(30, Math.min(56, Math.floor(usable / whiteKeyCount)));
+      el.style.setProperty('--piano-key-w', `${w}px`);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [whiteKeyCount, compact]);
+
   const currentPresetInfo = SOUND_PRESETS.find(p => p.id === activePreset) || SOUND_PRESETS[0];
   const leftPresetInfo = SOUND_PRESETS.find(p => p.id === splitConfig.leftPreset) || SOUND_PRESETS[0];
   const rightPresetInfo = SOUND_PRESETS.find(p => p.id === splitConfig.rightPreset) || SOUND_PRESETS[1];
   const selectedSplitOption = SPLIT_POINT_OPTIONS.find(p => p.note === splitConfig.splitNote) || SPLIT_POINT_OPTIONS[0];
 
+  /* La barra desaparece del todo cuando quien nos usa apagó todos los
+     controles: en los gimnasios el teclado es sólo el teclado. */
+  const showTopBar = showSoundSelector || showSplitToggle || showFingerGuideToggle || showIntervalColorToggle || !compact;
+  const showFingerLegend = isFingerGuideActive && hasFingerGuide && !compact;
+  const showIntervalLegend = isIntervalColorsActive && hasActiveChordNotes && !compact;
+
   return (
-    <div className="w-full space-y-3">
-      {/* Piano Control Bar with Sound Selector & Split Mode Toggle */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-2 text-xs text-white/50">
-        
-        {/* Left: Info & Audio Status */}
-        <div className="flex items-center gap-2 font-mono">
-          <Music2 size={14} className="text-amber-400" />
-          <span className="font-semibold text-white/80">Teclado Virtual</span>
-          <span className="text-white/40 hidden sm:inline">(3 Octavas: C3 - B5)</span>
-          {soundReady && (
-            <span className="flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Audio Listo
-            </span>
-          )}
-          {splitConfig.enabled && (
-            <span className="flex items-center gap-1 text-[10px] text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-500/40 font-mono font-bold animate-fadeIn">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
-              Split Activo
-            </span>
-          )}
-          {isFingerGuideActive && hasFingerGuide && (
-            <span className="flex items-center gap-1 text-[10px] text-amber-300 bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-400/30 font-mono font-semibold animate-fadeIn">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-              Digitación 1-5
-            </span>
-          )}
-        </div>
-
-        {/* Right: Sound Preset Selector, Split Mode Toggle & View Toggles */}
-        <div className="flex flex-wrap items-center gap-2">
-          
-          {/* Split Mode Toggle Button */}
-          {showSplitToggle && (
-            <button
-              type="button"
-              id="btn-toggle-split-keyboard"
-              onClick={handleToggleSplit}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-mono transition-all select-none",
-                splitConfig.enabled
-                  ? "bg-indigo-600 border-indigo-400 text-white font-bold shadow-md shadow-indigo-500/30 scale-[1.02]"
-                  : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/10"
-              )}
-              title="Dividir el piano en dos mitades con timbres independientes para mano izquierda y derecha"
-            >
-              <Sliders size={13} className={splitConfig.enabled ? "text-indigo-200" : "text-amber-400"} />
-              <span>Teclado Dividido</span>
-              <span className={cn(
-                "px-1.5 py-0.2 rounded text-[9px] font-extrabold",
-                splitConfig.enabled ? "bg-white/20 text-white" : "bg-black/30 text-white/50"
-              )}>
-                {splitConfig.enabled ? 'ON' : 'OFF'}
+    <div className={cn(
+      'stage-dark w-full rounded-2xl border border-white/8 bg-[#0a0f1a] overflow-hidden select-none',
+      compact && 'rounded-xl'
+    )}>
+      {/* ============ Barra superior ============
+          Antes eran tres franjas apiladas —estado, sonido, y dos leyendas con
+          degradés— que ocupaban más alto que el teclado mismo. Ahora es una
+          sola barra como la de la catarata: lo que se usa está a la vista y lo
+          que se consulta de vez en cuando vive en el panel de ayuda. */}
+      {showTopBar && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-2.5 py-1.5 sm:py-0 sm:h-12 sm:flex-nowrap border-b border-white/8 bg-[#0d1322]">
+          {/* Identidad */}
+          <div className="flex items-center gap-2 min-w-0 shrink">
+            <Keyboard size={14} className="text-ink-3 shrink-0" />
+            <span className="text-[12.5px] font-medium text-ink truncate">Teclado</span>
+            <span className="hidden md:inline font-mono text-[10.5px] text-ink-3">C3–B5</span>
+            <span
+              className={cn('w-1.5 h-1.5 rounded-full shrink-0', soundReady ? 'bg-ok' : 'bg-white/20')}
+              data-tip={soundReady ? 'Audio listo' : 'Tocá una tecla para activar el audio'}
+            />
+            {midiState.inputId && (
+              <span
+                className="hidden sm:inline-flex items-center gap-1 text-[10.5px] text-ok shrink-0"
+                data-tip={`${midi.deviceName()} — tocá en el instrumento`}
+              >
+                <Cable size={11} /> MIDI
               </span>
-            </button>
-          )}
+            )}
+            {midiState.sustain && (
+              <span className="text-[10.5px] text-brand-2 shrink-0" data-tip="Pedal de sustain pisado">ped.</span>
+            )}
+          </div>
 
-          {/* Standard Sound Presets Selector (when Split is OFF) */}
+          {/* Timbre */}
           {showSoundSelector && !splitConfig.enabled && (
-            <div className="flex items-center gap-1 bg-black/50 p-1 rounded-2xl border border-white/10 shadow-inner">
-              <span className="text-[10px] uppercase font-mono text-white/40 px-2 hidden lg:inline">
-                Sonido:
-              </span>
-              {SOUND_PRESETS.map((preset) => {
-                const isSelected = activePreset === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handlePresetChange(preset.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all select-none",
-                      isSelected
-                        ? "bg-amber-400 text-black font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
-                        : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                    title={preset.description}
-                  >
-                    {renderPresetIcon(preset.id)}
-                    <span className="hidden sm:inline">{preset.label}</span>
-                    <span className="sm:hidden">{preset.shortLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Controls: Note Names & Fingering Numbers */}
-          <div className="flex items-center gap-1.5">
-            {/* Recommended Fingering Numbers (1-5) Toggle */}
-            {showFingerGuideToggle && (
-              <button
-                type="button"
-                id="btn-toggle-finger-guide"
-                onClick={handleToggleFingerGuide}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
-                  isFingerGuideActive && hasFingerGuide
-                    ? "bg-amber-400/20 border-amber-400/60 text-amber-300 font-bold shadow-sm shadow-amber-400/20 scale-[1.02]"
-                    : isFingerGuideActive
-                    ? "bg-white/10 border-white/20 text-white/80"
-                    : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
-                )}
-                title={
-                  hasFingerGuide
-                    ? `Digitación recomendada (1-5): ${isFingerGuideActive ? 'ACTIVADA' : 'DESACTIVADA'}. (1=Pulgar, 2=Índice, 3=Medio, 4=Anular, 5=Meñique)`
-                    : "Digitación recomendada (1-5): activa la guía de números sobre las teclas durante escalas y ejercicios de técnica"
-                }
-              >
-                <Hand size={13} className="text-amber-400" />
-                <span className="hidden sm:inline">Digitación 1-5</span>
-                <span className="sm:hidden">1-5</span>
-                <span className={cn(
-                  "px-1.5 py-0.2 rounded text-[9px] font-extrabold font-mono",
-                  isFingerGuideActive && hasFingerGuide
-                    ? "bg-amber-400 text-black"
-                    : isFingerGuideActive
-                    ? "bg-white/20 text-white"
-                    : "bg-black/30 text-white/40"
-                )}>
-                  {isFingerGuideActive ? 'ON' : 'OFF'}
-                </span>
-              </button>
-            )}
-
-            {/* Interval Visual Colors Toggle */}
-            {showIntervalColorToggle && (
-              <button
-                type="button"
-                id="btn-toggle-interval-colors"
-                onClick={handleToggleIntervalColors}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
-                  isIntervalColorsActive && hasActiveChordNotes
-                    ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300 font-bold shadow-sm shadow-emerald-400/20 scale-[1.02]"
-                    : isIntervalColorsActive
-                    ? "bg-white/10 border-white/20 text-white/80"
-                    : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
-                )}
-                title="Codificación visual de colores por intervalo (Verde=Fundamental, Azul=Tercera, Púrpura=Quinta, Naranja=Séptima)"
-              >
-                <Palette size={13} className="text-emerald-400" />
-                <span className="hidden sm:inline">Color Intervalos</span>
-                <span className="sm:hidden">Intervalos</span>
-                <span className={cn(
-                  "px-1.5 py-0.2 rounded text-[9px] font-extrabold font-mono",
-                  isIntervalColorsActive && hasActiveChordNotes
-                    ? "bg-emerald-400 text-black"
-                    : isIntervalColorsActive
-                    ? "bg-white/20 text-white"
-                    : "bg-black/30 text-white/40"
-                )}>
-                  {isIntervalColorsActive ? 'ON' : 'OFF'}
-                </span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setShowNoteNames(prev => !prev)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all",
-                showNoteNames
-                  ? "bg-amber-400/10 border-amber-400/40 text-amber-300"
-                  : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
-              )}
-              title="Mostrar u ocultar nombres de notas (Do, Re, Mi...)"
-            >
-              <Music2 size={13} />
-              <span>Notas ({showNoteNames ? 'ON' : 'OFF'})</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Recommended Fingering Legend Strip (Active when fingerGuide is available and ON) */}
-      {isFingerGuideActive && hasFingerGuide && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-amber-900/20 to-black/40 border border-amber-500/30 text-[11px] font-mono text-amber-200/90 shadow-sm animate-fadeIn">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold flex items-center gap-1.5 text-amber-400">
-              <Hand size={14} className="text-amber-400" />
-              <span>Digitación Recomendada:</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-2 text-[10px]">
-              <span className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[9px]">1</span> 
-                <span>Pulgar</span>
-              </span>
-              <span className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[9px]">2</span> 
-                <span>Índice</span>
-              </span>
-              <span className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[9px]">3</span> 
-                <span>Medio</span>
-              </span>
-              <span className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[9px]">4</span> 
-                <span>Anular</span>
-              </span>
-              <span className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[9px]">5</span> 
-                <span>Meñique</span>
-              </span>
-            </div>
-          </div>
-          <span className="text-[10px] text-amber-300/80 italic hidden lg:inline flex items-center gap-1">
-            <Lightbulb size={12} className="text-amber-400 inline" />
-            <span>Técnica: dedos curvados y peso fluido de brazo en el pasaje de pulgar</span>
-          </span>
-        </div>
-      )}
-
-      {/* Interval Colors Legend Strip (Active when interval colors mode is ON and chord notes are present) */}
-      {isIntervalColorsActive && hasActiveChordNotes && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-emerald-950/50 via-blue-950/40 to-purple-950/50 border border-emerald-500/30 text-[11px] font-mono text-emerald-200/90 shadow-sm animate-fadeIn">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold flex items-center gap-1.5 text-emerald-400">
-              <Palette size={14} className="text-emerald-400" />
-              <span>Colores de Intervalos ({effectiveChordRoot}):</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-2 text-[10px]">
-              {INTERVAL_LEGEND_ITEMS.map((item, idx) => (
-                <span key={idx} className="flex items-center gap-1.5 bg-black/60 border border-white/10 px-2 py-0.5 rounded-lg shadow-sm">
-                  <span className={cn("w-2.5 h-2.5 rounded-full shadow", item.bg)}></span>
-                  <span className="font-bold text-white/95">{item.label}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-          <span className="text-[10px] text-emerald-300/80 italic hidden lg:inline flex items-center gap-1">
-            <Sparkles size={12} className="text-emerald-400 inline" />
-            <span>Identificación visual instantánea: Fundamental (Verde) • 3ª (Azul) • 5ª (Púrpura)</span>
-          </span>
-        </div>
-      )}
-
-      {/* SPLIT KEYBOARD CONTROL PANEL (Active when Split Mode is ON) */}
-      {splitConfig.enabled && (
-        <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/50 via-slate-900/60 to-amber-950/50 border border-indigo-500/30 space-y-3 shadow-lg">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            
-            {/* Left Hand Zone: Acompañamiento / Bajos */}
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/40 flex-1">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0">
-                <Hand size={16} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1 mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono font-bold text-indigo-300">Mano Izquierda (Acompañamiento)</span>
-                    <span className="text-[10px] text-indigo-400 bg-indigo-900/70 px-1.5 py-0.5 rounded font-mono">
-                      {selectedSplitOption.leftRange}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-indigo-300/60 font-mono hidden sm:inline">
-                    {leftPresetInfo.character}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {SOUND_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleLeftPresetChange(preset.id)}
-                      className={cn(
-                        "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono transition-all",
-                        splitConfig.leftPreset === preset.id
-                          ? "bg-indigo-500 text-white font-bold shadow-md shadow-indigo-500/30 scale-[1.02]"
-                          : "text-white/60 hover:text-white hover:bg-white/5"
-                      )}
-                      title={`Asignar ${preset.label} a la mano izquierda`}
-                    >
-                      {renderPresetIcon(preset.id)}
-                      <span>{preset.shortLabel}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Split Point Selector */}
-            <div className="flex flex-col items-center justify-center px-2 py-1 bg-black/40 rounded-xl border border-white/10 shrink-0">
-              <span className="text-[10px] font-mono text-white/50 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Sliders size={11} className="text-amber-400" />
-                Punto de Corte:
-              </span>
-              <select
-                value={splitConfig.splitNote}
-                onChange={(e) => handleSplitNoteChange(e.target.value)}
-                className="bg-slate-900 border border-white/20 text-white text-xs font-mono rounded-lg px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                {SPLIT_POINT_OPTIONS.map((opt) => (
-                  <option key={opt.note} value={opt.note} className="bg-slate-900 text-white">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Right Hand Zone: Melodía / Solos */}
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/40 flex-1">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
-                <Hand size={16} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1 mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono font-bold text-amber-300">Mano Derecha (Melodía)</span>
-                    <span className="text-[10px] text-amber-400 bg-amber-900/70 px-1.5 py-0.5 rounded font-mono">
-                      {selectedSplitOption.rightRange}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-amber-300/60 font-mono hidden sm:inline">
-                    {rightPresetInfo.character}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {SOUND_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleRightPresetChange(preset.id)}
-                      className={cn(
-                        "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono transition-all",
-                        splitConfig.rightPreset === preset.id
-                          ? "bg-amber-400 text-black font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
-                          : "text-white/60 hover:text-white hover:bg-white/5"
-                      )}
-                      title={`Asignar ${preset.label} a la mano derecha`}
-                    >
-                      {renderPresetIcon(preset.id)}
-                      <span>{preset.shortLabel}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Preset Combinations & Range Guide */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-white/10 text-[11px] font-mono">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-white/50">Combinaciones sugeridas:</span>
-              {SPLIT_PRESET_COMBINATIONS.map((comb) => (
+            <div className="seg bg-[#141b2b] border-white/8 shrink-0 mx-auto max-sm:hidden">
+              {SOUND_PRESETS.map(preset => (
                 <button
-                  key={comb.name}
+                  key={preset.id}
                   type="button"
-                  onClick={() => applyPresetCombination(comb)}
-                  className={cn(
-                    "px-2 py-0.5 rounded-lg border text-[10px] transition-all",
-                    splitConfig.leftPreset === comb.left && splitConfig.rightPreset === comb.right
-                      ? "bg-white/20 border-white/40 text-white font-bold"
-                      : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10"
-                  )}
-                  title={comb.description}
+                  data-active={activePreset === preset.id}
+                  onClick={() => handlePresetChange(preset.id)}
+                  className="seg-item flex items-center gap-1.5"
+                  data-tip={preset.description}
                 >
-                  {comb.name}
+                  {renderPresetIcon(preset.id)}
+                  <span className="hidden lg:inline">{preset.label}</span>
+                  <span className="lg:hidden">{preset.shortLabel}</span>
                 </button>
               ))}
             </div>
+          )}
 
-            <div className="text-[10px] text-indigo-300/90 bg-black/40 px-2.5 py-1 rounded-lg border border-white/5 flex items-center gap-1.5">
-              <Lightbulb size={12} className="text-indigo-400" />
-              <span>Zona Izquierda: Bajos y Acompañamiento • Zona Derecha: Melodía y Acordes</span>
+          {/* Herramientas */}
+          <div className="flex items-center justify-end gap-1.5 ml-auto shrink-0">
+            {showFingerGuideToggle && (
+              <IconBtn
+                label={hasFingerGuide ? 'Números de digitación sobre las teclas' : 'Digitación (esta lección no trae)'}
+                active={isFingerGuideActive && hasFingerGuide}
+                onClick={handleToggleFingerGuide}
+                className={cn(!hasFingerGuide && 'opacity-50')}
+              >
+                <Hand size={15} /><span className="hidden xl:inline">Dedos</span>
+              </IconBtn>
+            )}
+            {showIntervalColorToggle && (
+              <IconBtn
+                label={
+                  activeNotes.length && !hasActiveChordNotes
+                    ? 'Los colores de intervalo son para acordes, no para escalas'
+                    : 'Colorear las notas según el intervalo'
+                }
+                active={isIntervalColorsActive && hasActiveChordNotes}
+                onClick={handleToggleIntervalColors}
+                className={cn(!!activeNotes.length && !hasActiveChordNotes && 'opacity-50')}
+              >
+                <Palette size={15} /><span className="hidden xl:inline">Color</span>
+              </IconBtn>
+            )}
+            <IconBtn label="Nombres de nota en las teclas" active={showNoteNames} onClick={() => setShowNoteNames(v => !v)}>
+              <Music2 size={15} /><span className="hidden xl:inline">Notas</span>
+            </IconBtn>
+            {showSplitToggle && (
+              <IconBtn label="Partir el teclado en dos timbres" active={splitConfig.enabled} onClick={handleToggleSplit}>
+                <SplitSquareHorizontal size={15} /><span className="hidden xl:inline">Dividir</span>
+              </IconBtn>
+            )}
+            <div className="relative">
+              <IconBtn label="Referencia del teclado" active={helpOpen} onClick={() => setHelpOpen(v => !v)}>
+                <HelpCircle size={15} />
+              </IconBtn>
+              <AnimatePresence>
+                {helpOpen && (
+                  <Popover title="Referencia" onClose={() => setHelpOpen(false)} width="w-[320px]">
+                    <Row label="Digitación">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                        {[1, 2, 3, 4, 5].map(n => (
+                          <div key={n} className="flex items-center gap-1.5 text-[12px] text-ink-2">
+                            <span className="w-4.5 h-4.5 rounded-full bg-brand text-brand-ink font-mono text-[10px] font-bold flex items-center justify-center shrink-0">{n}</span>
+                            {FINGER_NAMES[n].name}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-ink-3 mt-2">Dedos curvados y peso de brazo al pasar el pulgar.</p>
+                    </Row>
+                    <Row label="Colores de intervalo">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                        {INTERVAL_LEGEND_ITEMS.map(item => (
+                          <div key={item.label} className="flex items-center gap-1.5 text-[12px] text-ink-2">
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: item.hex }} />
+                            {item.label}
+                          </div>
+                        ))}
+                      </div>
+                    </Row>
+                    {showSoundSelector && !splitConfig.enabled && (
+                      <Row label="Timbre">
+                        <div className="seg w-full">
+                          {SOUND_PRESETS.map(preset => (
+                            <button key={preset.id} type="button" data-active={activePreset === preset.id}
+                                    onClick={() => handlePresetChange(preset.id)} className="seg-item flex-1">
+                              {preset.shortLabel}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-ink-3 mt-1.5">{currentPresetInfo.character}</p>
+                      </Row>
+                    )}
+                    <Row label="Desde la computadora">
+                      <p className="text-[12px] text-ink-2 leading-relaxed">
+                        <span className="font-mono">Z S X D C…</span> octava baja · <span className="font-mono">Q 2 W 3 E…</span> central · <span className="font-mono">I 9 O 0 P…</span> alta.
+                      </p>
+                    </Row>
+                  </Popover>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
       )}
 
-      {/* Active Instrument Characteristic Bar (when Split is OFF) */}
-      {showSoundSelector && !splitConfig.enabled && (
-        <div className="flex items-center justify-between px-3 py-1 text-[11px] font-mono text-white/50 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <span className="text-amber-400 font-bold flex items-center gap-1">
-              <span>{currentPresetInfo.icon}</span>
-              <span>{currentPresetInfo.label}</span>
+      {/* ============ Leyenda contextual ============
+          Una sola línea, y sólo cuando hay algo que leer. */}
+      {(showFingerLegend || showIntervalLegend) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5 border-b border-white/8 bg-[#0b1120] text-[11px] text-ink-3">
+          {showFingerLegend && (
+            <span className="flex items-center gap-1.5">
+              {[1, 2, 3, 4, 5].map(n => (
+                <span key={n} className="flex items-center gap-1">
+                  <span className="w-4 h-4 rounded-full bg-brand/85 text-brand-ink font-mono text-[9px] font-bold flex items-center justify-center">{n}</span>
+                  <span className="hidden sm:inline">{FINGER_NAMES[n].name.toLowerCase()}</span>
+                </span>
+              ))}
             </span>
-            <span className="text-white/30">•</span>
-            <span className="text-white/60">{currentPresetInfo.character}</span>
-          </div>
-          <span className="text-[10px] text-white/40 hidden md:inline">
-            {currentPresetInfo.description}
-          </span>
+          )}
+          {showFingerLegend && showIntervalLegend && <span className="hidden sm:inline text-ink-3/50">·</span>}
+          {showIntervalLegend && (
+            <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <span className="text-ink-2">Intervalos desde {effectiveChordRoot}:</span>
+              {INTERVAL_LEGEND_ITEMS.map(item => (
+                <span key={item.label} className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full" style={{ background: item.hex }} />
+                  {item.label.replace(/\s*\(.*\)$/, '')}
+                </span>
+              ))}
+            </span>
+          )}
         </div>
       )}
 
-      {/* Piano Keys Stage */}
-      <div className="relative p-4 md:p-6 bg-gradient-to-b from-[#141721] to-[#0a0c12] rounded-3xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-x-auto select-none">
+      {/* ============ Teclado dividido ============
+          Era un panel con tres degradés y seis bordes de color. Es la misma
+          información en una línea, con los mismos controles. */}
+      {splitConfig.enabled && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 border-b border-white/8 bg-[#0b1120]">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[11px] text-ink-3 shrink-0">
+              Izquierda <span className="font-mono text-ink-2">{selectedSplitOption.leftRange}</span>
+            </span>
+            <div className="seg bg-[#141b2b] border-white/8">
+              {SOUND_PRESETS.map(preset => (
+                <button key={preset.id} type="button" data-active={splitConfig.leftPreset === preset.id}
+                        onClick={() => handleLeftPresetChange(preset.id)} className="seg-item text-[11px]"
+                        data-tip={`${preset.label} para la mano izquierda`}>
+                  {preset.shortLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <label className="flex items-center gap-1.5 text-[11px] text-ink-3">
+            Corte
+            <select
+              value={splitConfig.splitNote}
+              onChange={e => handleSplitNoteChange(e.target.value)}
+              className="h-8 rounded-lg border border-white/8 bg-[#141b2b] text-ink text-[11.5px] font-mono px-2 focus:outline-none focus:border-brand-line"
+            >
+              {SPLIT_POINT_OPTIONS.map(opt => (
+                <option key={opt.note} value={opt.note}>{opt.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[11px] text-ink-3 shrink-0">
+              Derecha <span className="font-mono text-ink-2">{selectedSplitOption.rightRange}</span>
+            </span>
+            <div className="seg bg-[#141b2b] border-white/8">
+              {SOUND_PRESETS.map(preset => (
+                <button key={preset.id} type="button" data-active={splitConfig.rightPreset === preset.id}
+                        onClick={() => handleRightPresetChange(preset.id)} className="seg-item text-[11px]"
+                        data-tip={`${preset.label} para la mano derecha`}>
+                  {preset.shortLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 xl:ml-auto">
+            {SPLIT_PRESET_COMBINATIONS.map(comb => (
+              <button
+                key={comb.name}
+                type="button"
+                onClick={() => applyPresetCombination(comb)}
+                data-tip={comb.description}
+                className={cn(
+                  'h-7 px-2 rounded-lg border text-[11px] transition-colors',
+                  splitConfig.leftPreset === comb.left && splitConfig.rightPreset === comb.right
+                    ? 'bg-brand-soft border-brand-line text-brand-2'
+                    : 'bg-[#141b2b] border-white/8 text-ink-3 hover:text-ink-2'
+                )}
+              >
+                {comb.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ============ Escenario de teclas ============ */}
+      <div ref={stageRef} className="relative overflow-x-auto select-none px-3 sm:px-5 pt-4 pb-3 bg-gradient-to-b from-[#111827] to-[#0a0f1a]">
         <div className="flex justify-center min-w-max mx-auto relative pt-4 pb-2">
           {allKeys.map((noteKey) => {
             const isBlack = noteKey.includes('#');
@@ -711,7 +642,7 @@ export const Piano: React.FC<PianoProps> = ({
             const pcKey = getPcKeyForNote(noteKey);
 
             // Interval Visual Color Coding
-            const isIntervalActive = isIntervalColorsActive && isActive && !isPressed;
+            const isIntervalActive = isIntervalColorsActive && hasActiveChordNotes && isActive && !isPressed;
             const intervalInfo = isIntervalActive ? getIntervalForNote(effectiveChordRoot, noteKey) : null;
             const intervalTooltip = intervalInfo ? ` • Intervalo: ${intervalInfo.fullName} (${intervalInfo.colorName})` : '';
 
@@ -722,6 +653,9 @@ export const Piano: React.FC<PianoProps> = ({
             // Pitch note base name (e.g. C, D, C#)
             const noteBase = noteKey.replace(/\d/, '');
             const octave = noteKey.slice(-1);
+            /* En Fa# mayor la tecla F es Mi#: si quien nos usa sabe la
+               tonalidad, la tecla lleva el nombre que le toca. */
+            const spelled = noteSpelling?.[noteBase];
 
             const fingerInfo = displayedFinger ? FINGER_NAMES[displayedFinger] : null;
             const fingerTooltip = displayedFinger ? ` • Dedo ${displayedFinger} (${fingerInfo?.name || 'Digitación'})` : '';
@@ -757,7 +691,7 @@ export const Piano: React.FC<PianoProps> = ({
                     // Split mode resting accent
                     splitConfig.enabled && isLeftHand && "border-b-2 border-indigo-400/60"
                   )}
-                  title={`${noteKey}${intervalTooltip}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
+                  title={`${spelled ? `${prettyAccidentals(spelled)}${octave} (tecla ${noteKey})` : noteKey}${intervalTooltip}${fingerTooltip}${splitConfig.enabled ? ` - ${isLeftHand ? 'Mano Izquierda' : 'Mano Derecha'}` : ''}`}
                 >
                   {/* Finger number badge or Interval badge */}
                   {displayedFinger ? (
@@ -853,28 +787,22 @@ export const Piano: React.FC<PianoProps> = ({
                       <span className={cn("text-[8px] font-mono font-extrabold px-1 rounded uppercase tracking-tighter shadow-sm", intervalInfo.badgeClass)}>
                         {intervalInfo.shortLabel}
                       </span>
-                    ) : isActive && (
-                      <span className="text-[8px] font-mono font-extrabold text-amber-800 bg-amber-200/90 px-1 rounded uppercase tracking-tighter shadow-sm">
-                        D{displayedFinger}
-                      </span>
-                    )}
+                    ) : null}
                   </div>
                 ) : intervalInfo ? (
-                  <div className="flex flex-col items-center gap-0.5 scale-105">
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-extrabold font-mono shadow-sm", intervalInfo.badgeClass)}>
-                      {intervalInfo.pillLabel}
-                    </span>
-                    <span className="text-[8px] font-mono text-gray-500 font-bold uppercase tracking-tight">
-                      {intervalInfo.colorName.split(' ')[0]}
-                    </span>
-                  </div>
+                  /* La etiqueta larga y el nombre del color no entraban en una
+                     tecla: se cortaban. El grado alcanza, y la leyenda de
+                     arriba dice qué significa cada color. */
+                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-extrabold font-mono shadow-sm', intervalInfo.badgeClass)}>
+                    {intervalInfo.shortLabel}
+                  </span>
                 ) : isSplitBoundary ? (
                   <span className="text-[8px] font-mono font-bold text-indigo-700 bg-indigo-100 px-1 py-0.5 rounded shadow-sm border border-indigo-300">
                     ⫿ Split
                   </span>
                 ) : noteKey === 'C4' ? (
-                  <span className="text-[9px] font-mono font-bold text-amber-600 bg-amber-400/20 px-1 rounded">
-                    Do Central
+                  <span className="text-[8px] font-mono font-bold text-amber-600 bg-amber-400/20 px-1 rounded whitespace-nowrap leading-none py-0.5">
+                    Do central
                   </span>
                 ) : (
                   <span />
@@ -893,8 +821,9 @@ export const Piano: React.FC<PianoProps> = ({
                     </span>
                   )}
                   {showNoteNames && (
-                    <span className="text-[11px] font-mono font-semibold text-gray-700">
-                      {noteBase}<span className="text-[9px] text-gray-400">{octave}</span>
+                    <span className={cn('text-[11px] font-mono font-semibold', spelled ? 'text-amber-700' : 'text-gray-700')}>
+                      {spelled ? prettyAccidentals(spelled) : noteBase}
+                      <span className={cn('text-[9px]', spelled ? 'text-amber-600/70' : 'text-gray-400')}>{octave}</span>
                     </span>
                   )}
                 </div>

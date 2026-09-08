@@ -3,6 +3,19 @@ import { motion } from 'motion/react';
 import * as Tone from 'tone';
 import { Volume2, Award, Sparkles } from 'lucide-react';
 import { ROOTS, CHORD_TYPES, getChordKeys } from '../types';
+import { spellChordNotes, prettyAccidentals, preferredRootName, parseNoteName } from '../lib/musicGymTheory';
+
+/**
+ * Cómo se llama cada tónica en la práctica.
+ *
+ * `ROOTS` son nombres de tecla, y con ellos Re# mayor daba D# F𝄪 A#: teoría
+ * impecable que nadie escribe, porque ese acorde se llama Mib mayor. Se
+ * muestra —y se escribe el acorde con— la tonalidad de menos alteraciones.
+ */
+const rootLabel = (root: string): string => {
+  const pc = parseNoteName(root)?.pc;
+  return pc === undefined ? root : preferredRootName(pc, 'major');
+};
 import { cn } from '../lib/utils';
 import { soundEngine, getSavedSoundPreset } from '../lib/soundPresets';
 
@@ -32,10 +45,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
     const keys = getChordKeys(selectedRoot, type, selectedInversion);
     const invLabel = selectedInversion === 0 ? '' : selectedInversion === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
     onChordSelect(keys, {
-      root: selectedRoot,
+      root: rootLabel(selectedRoot),
       type,
       inversion: selectedInversion,
-      name: `${selectedRoot} ${type}${invLabel}`
+      name: `${rootLabel(selectedRoot)} ${type}${invLabel}`
     });
     playChordAudio(keys);
   };
@@ -54,10 +67,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
                 const keys = getChordKeys(root, lastSelectedType, selectedInversion);
                 const invLabel = selectedInversion === 0 ? '' : selectedInversion === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
                 onChordSelect(keys, {
-                  root,
+                  root: rootLabel(root),
                   type: lastSelectedType,
                   inversion: selectedInversion,
-                  name: `${root} ${lastSelectedType}${invLabel}`
+                  name: `${rootLabel(root)} ${lastSelectedType}${invLabel}`
                 });
                 playChordAudio(keys);
               }}
@@ -65,17 +78,17 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
                 "w-10 h-10 md:w-11 md:h-11 rounded-2xl text-xs md:text-sm font-mono font-bold transition-all shadow",
                 selectedRoot === root 
                   ? "bg-amber-400 text-black scale-110 shadow-[0_0_20px_rgba(245,158,11,0.5)]" 
-                  : "bg-white/5 hover:bg-white/10 text-white/70 border border-white/10"
+                  : "bg-surface-2 hover:bg-surface-3 text-ink-2 border border-line"
               )}
             >
-              {root}
+              {prettyAccidentals(rootLabel(root))}
             </button>
           ))}
         </div>
 
         {/* Inversion Selector and Scale Map Shortcut */}
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <div className="flex gap-2 p-1.5 glass rounded-2xl border border-white/10">
+          <div className="flex gap-2 p-1.5 glass rounded-2xl border border-line">
             {[0, 1, 2].map(inv => (
               <button
                 key={inv}
@@ -85,10 +98,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
                   const keys = getChordKeys(selectedRoot, lastSelectedType, inv);
                   const invLabel = inv === 0 ? '' : inv === 1 ? ' (1ª Inv)' : ' (2ª Inv)';
                   onChordSelect(keys, {
-                    root: selectedRoot,
+                    root: rootLabel(selectedRoot),
                     type: lastSelectedType,
                     inversion: inv,
-                    name: `${selectedRoot} ${lastSelectedType}${invLabel}`
+                    name: `${rootLabel(selectedRoot)} ${lastSelectedType}${invLabel}`
                   });
                   playChordAudio(keys);
                 }}
@@ -96,7 +109,7 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
                   "px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-mono transition-all",
                   selectedInversion === inv 
                     ? "bg-amber-400 text-black font-bold shadow" 
-                    : "text-white/40 hover:text-white/70"
+                    : "text-ink-3 hover:text-ink-2"
                 )}
               >
                 {inv === 0 ? 'Posición Fundamental' : inv === 1 ? '1ª Inversión' : '2ª Inversión'}
@@ -108,10 +121,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
             <button
               type="button"
               onClick={onOpenScaleMap}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-mono font-bold transition-all shadow hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-brand-2 border border-amber-400/30 text-xs font-mono font-bold transition-all shadow hover:scale-105"
               title="Abrir el panel Mapa de Escalas (Mayores, Menores Armónicas y Melódicas)"
             >
-              <Award size={14} className="text-amber-400" />
+              <Award size={14} className="text-brand-2" />
               <span>Ver Mapa de Escalas</span>
             </button>
           )}
@@ -135,24 +148,26 @@ export const ChordChart: React.FC<ChordChartProps> = ({ onChordSelect, onOpenSca
                 "p-4 rounded-2xl text-left border transition-all group relative overflow-hidden",
                 isSelected
                   ? "bg-amber-400/10 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-                  : "glass border-white/10 hover:border-amber-400/40"
+                  : "glass border-line hover:border-amber-400/40"
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-amber-400 font-mono uppercase tracking-wider">
-                  {selectedRoot} {selectedInversion > 0 && `(Inv ${selectedInversion})`}
+                <span className="text-[10px] text-brand-2 font-mono uppercase tracking-wider">
+                  {prettyAccidentals(rootLabel(selectedRoot))} {selectedInversion > 0 && `(Inv ${selectedInversion})`}
                 </span>
-                <Volume2 size={12} className="text-white/30 group-hover:text-amber-300 transition-colors" />
+                <Volume2 size={12} className="text-ink-3 group-hover:text-brand-2 transition-colors" />
               </div>
 
-              <div className="text-base font-serif font-bold text-white group-hover:text-amber-300 transition-colors mt-1">
+              <div className="text-base font-serif font-bold text-ink group-hover:text-brand-2 transition-colors mt-1">
                 {type}
               </div>
 
               <div className="mt-3 flex gap-1 flex-wrap">
-                {keys.map(k => (
-                  <span key={k} className="text-[9px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-white/60">
-                    {k.replace(/\d/, '')}
+                {/* Escrito como se escribe el acorde, no como se llaman las
+                    teclas: Do# mayor es C# E# G#, no C# F G#. */}
+                {spellChordNotes(rootLabel(selectedRoot), keys).map((k, i) => (
+                  <span key={`${k}-${i}`} className="text-[9px] font-mono bg-surface-3 px-1.5 py-0.5 rounded text-ink-2">
+                    {prettyAccidentals(k.replace(/\d/, ''))}
                   </span>
                 ))}
               </div>

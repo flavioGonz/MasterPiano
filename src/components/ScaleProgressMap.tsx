@@ -270,36 +270,36 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-brand-2 font-bold flex items-center gap-1.5">
                 <Trophy size={14} />
                 <span>Dominio Total</span>
               </span>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/30 font-bold">
                 {stats.masteredPercentage}%
               </span>
             </div>
 
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-serif font-black text-white">
+              <span className="text-3xl sm:text-4xl font-serif font-black text-ink">
                 {stats.masteredCount}
               </span>
-              <span className="text-sm font-mono text-white/50">/ {stats.totalCount} Escalas</span>
+              <span className="text-sm font-mono text-ink-3">/ {stats.totalCount} Escalas</span>
             </div>
 
-            <p className="text-xs font-light text-white/60 leading-relaxed">
+            <p className="text-xs font-light text-ink-2 leading-relaxed">
               Progreso integral en tonalidades mayores y menores del piano.
             </p>
           </div>
 
           {/* Mastered Progress Bar */}
           <div className="pt-4 space-y-1.5">
-            <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div className="w-full h-2.5 bg-surface-3 rounded-full overflow-hidden p-0.5 border border-line">
               <div 
                 className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full transition-all duration-500 shadow-sm"
                 style={{ width: `${stats.masteredPercentage}%` }}
               />
             </div>
-            <div className="flex justify-between text-[10px] font-mono text-white/40">
+            <div className="flex justify-between text-[10px] font-mono text-ink-3">
               <span>{stats.inProgressCount} en práctica</span>
               <span>{stats.pendingCount} por iniciar</span>
             </div>
@@ -320,8 +320,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               className={cn(
                 "p-5 rounded-3xl border transition-all text-left flex flex-col justify-between group relative overflow-hidden",
                 isSelectedFilter
-                  ? "bg-white/10 border-amber-400 ring-2 ring-amber-400/30 shadow-lg"
-                  : "bg-black/40 border-white/10 hover:border-white/20 hover:bg-white/[0.03]"
+                  ? "bg-surface-3 border-amber-400 ring-2 ring-amber-400/30 shadow-lg"
+                  : "bg-black/40 border-line hover:border-line-strong hover:bg-white/[0.03]"
               )}
             >
               <div className="space-y-1.5">
@@ -337,18 +337,18 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                   </span>
                 </div>
 
-                <div className="text-xl sm:text-2xl font-serif font-bold text-white group-hover:text-amber-300 transition-colors">
-                  {catStat.percentage}% <span className="text-xs font-mono text-white/50 font-normal">dominadas</span>
+                <div className="text-xl sm:text-2xl font-serif font-bold text-ink group-hover:text-brand-2 transition-colors">
+                  {catStat.percentage}% <span className="text-xs font-mono text-ink-3 font-normal">dominadas</span>
                 </div>
 
-                <p className="text-[11px] font-light text-white/60 line-clamp-2">
+                <p className="text-[11px] font-light text-ink-2 line-clamp-2">
                   {cfg.formula} • {cfg.description}
                 </p>
               </div>
 
               {/* Progress bar per category */}
               <div className="pt-4 space-y-1 w-full">
-                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden">
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
@@ -357,9 +357,9 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                     style={{ width: `${catStat.percentage}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] font-mono text-white/40">
+                <div className="flex justify-between text-[10px] font-mono text-ink-3">
                   <span>{catStat.inProgress} en práctica</span>
-                  <span className="text-amber-400 group-hover:underline">
+                  <span className="text-brand-2 group-hover:underline">
                     {isSelectedFilter ? 'Filtro activo' : 'Filtrar'}
                   </span>
                 </div>
@@ -370,7 +370,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
       </div>
 
       {/* CONTROLS BAR: CATEGORY TABS, STATUS FILTER, SEARCH & SORT */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-black/40 border border-line backdrop-blur-xl">
         {/* Category Pills */}
         <div className="flex flex-wrap items-center gap-1.5">
           <button
@@ -380,7 +380,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               "px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all",
               selectedCategoryFilter === 'all'
                 ? "bg-amber-400 text-black shadow"
-                : "bg-white/5 text-white/60 hover:text-white"
+                : "bg-surface-2 text-ink-2 hover:text-ink"
             )}
           >
             Todas ({stats.totalCount})
@@ -392,7 +392,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               "px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5",
               selectedCategoryFilter === 'major'
                 ? "bg-amber-400 text-black shadow"
-                : "bg-white/5 text-amber-300 hover:text-white"
+                : "bg-surface-2 text-brand-2 hover:text-ink"
             )}
           >
             <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -404,8 +404,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
             className={cn(
               "px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5",
               selectedCategoryFilter === 'minor_harmonic'
-                ? "bg-rose-500 text-white shadow"
-                : "bg-white/5 text-rose-300 hover:text-white"
+                ? "bg-rose-500 text-ink shadow"
+                : "bg-surface-2 text-danger hover:text-ink"
             )}
           >
             <span className="w-2 h-2 rounded-full bg-rose-400" />
@@ -418,7 +418,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               "px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5",
               selectedCategoryFilter === 'minor_melodic'
                 ? "bg-cyan-500 text-black font-bold shadow"
-                : "bg-white/5 text-cyan-300 hover:text-white"
+                : "bg-surface-2 text-info hover:text-ink"
             )}
           >
             <span className="w-2 h-2 rounded-full bg-cyan-400" />
@@ -432,7 +432,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="bg-black/60 border border-white/15 text-white/80 rounded-xl px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-amber-400 cursor-pointer"
+            className="bg-black/60 border border-line-strong text-ink-2 rounded-xl px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-amber-400 cursor-pointer"
           >
             <option value="all">Todos los estados</option>
             <option value="mastered">⭐ Solo Dominadas ({stats.masteredCount})</option>
@@ -442,19 +442,19 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
 
           {/* Search input */}
           <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
             <input
               type="text"
               placeholder="Buscar tonalidad..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-black/60 border border-white/15 text-white rounded-xl pl-8 pr-3 py-1.5 text-xs font-mono focus:outline-none focus:border-amber-400 w-36 sm:w-44"
+              className="bg-black/60 border border-line-strong text-ink rounded-xl pl-8 pr-3 py-1.5 text-xs font-mono focus:outline-none focus:border-amber-400 w-36 sm:w-44"
             />
             {searchQuery && (
               <button 
                 type="button" 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink"
               >
                 <X size={12} />
               </button>
@@ -465,7 +465,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
           <button
             type="button"
             onClick={handleReset}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-white/40 hover:text-rose-300 border border-white/10 transition-colors"
+            className="p-1.5 rounded-xl bg-surface-2 hover:bg-rose-500/20 text-ink-3 hover:text-danger border border-line transition-colors"
             title="Reiniciar progreso"
           >
             <RotateCcw size={14} />
@@ -477,14 +477,14 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT COLUMN: TONAL PROGRESS GRID (8 COLS) */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center justify-between text-xs font-mono text-white/50 px-1">
+          <div className="flex items-center justify-between text-xs font-mono text-ink-3 px-1">
             <span>Mostrando {filteredScalesList.length} tonalidades configuradas:</span>
             <div className="flex items-center gap-2">
               <span>Ordenar por:</span>
               <button
                 type="button"
                 onClick={() => setSortOrder(p => p === 'circle' ? 'chromatic' : 'circle')}
-                className="text-amber-400 hover:underline font-bold"
+                className="text-brand-2 hover:underline font-bold"
               >
                 {sortOrder === 'circle' ? 'Círculo de Quintas' : 'Cromático'}
               </button>
@@ -492,16 +492,16 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
           </div>
 
           {filteredScalesList.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-black/40 border border-white/10 space-y-3">
-              <Info size={28} className="mx-auto text-amber-400" />
-              <h4 className="text-base font-serif font-bold text-white">No se encontraron escalas</h4>
-              <p className="text-xs font-mono text-white/50">
+            <div className="p-12 text-center rounded-3xl bg-black/40 border border-line space-y-3">
+              <Info size={28} className="mx-auto text-brand-2" />
+              <h4 className="text-base font-serif font-bold text-ink">No se encontraron escalas</h4>
+              <p className="text-xs font-mono text-ink-3">
                 Prueba ajustando los filtros de categoría, estado o búsqueda.
               </p>
               <button
                 type="button"
                 onClick={() => { setSelectedCategoryFilter('all'); setStatusFilter('all'); setSearchQuery(''); }}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono text-white"
+                className="px-4 py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-xs font-mono text-ink"
               >
                 Limpiar Filtros
               </button>
@@ -529,7 +529,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                           ? "bg-gradient-to-br from-emerald-500/10 via-black/50 to-black/60 border-emerald-500/30 hover:border-emerald-400/60"
                           : isInProgress
                             ? "bg-gradient-to-br from-cyan-500/10 via-black/50 to-black/60 border-cyan-500/30 hover:border-cyan-400/60"
-                            : "bg-black/40 border-white/10 hover:border-white/25"
+                            : "bg-black/40 border-line hover:border-white/25"
                     )}
                   >
                     {/* Top Row: Tonality Badge + Status */}
@@ -541,20 +541,20 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                             ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/30"
                             : isInProgress
                               ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/30"
-                              : "bg-white/10 text-white"
+                              : "bg-surface-3 text-ink"
                         )}>
                           {tonality.root}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-serif font-bold text-white text-base">
+                            <span className="font-serif font-bold text-ink text-base">
                               {tonality.rootEs}
                             </span>
                             <span className={cn("text-[10px] font-mono px-1.5 py-0.2 rounded", config.badgeBg)}>
                               {config.shortName}
                             </span>
                           </div>
-                          <div className="text-[10px] font-mono text-white/50 truncate max-w-[130px]">
+                          <div className="text-[10px] font-mono text-ink-3 truncate max-w-[130px]">
                             {tonality.accidentals}
                           </div>
                         </div>
@@ -563,17 +563,17 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                       {/* Status indicator Pill */}
                       <div className="shrink-0">
                         {isMastered ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-ok border border-emerald-500/40">
                             <CheckCircle2 size={11} />
                             <span>Dominada</span>
                           </span>
                         ) : isInProgress ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-info border border-cyan-500/40">
                             <Clock size={11} />
                             <span>En Práctica</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-white/40 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-ink-3 px-2 py-0.5 rounded-full bg-surface-2 border border-line">
                             <span>Pendiente</span>
                           </span>
                         )}
@@ -588,8 +588,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                           className={cn(
                             "text-[9px] font-mono px-1.5 py-0.5 rounded",
                             isMastered 
-                              ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
-                              : "bg-white/5 text-white/60"
+                              ? "bg-emerald-500/10 text-ok border border-emerald-500/20"
+                              : "bg-surface-2 text-ink-2"
                           )}
                         >
                           {n.replace(/\d/, '')}
@@ -598,14 +598,14 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                     </div>
 
                     {/* Bottom Row: Metronome BPM / Mastery info & Quick actions */}
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                      <div className="text-[10px] text-white/40">
+                    <div className="pt-2 border-t border-line flex items-center justify-between text-xs font-mono">
+                      <div className="text-[10px] text-ink-3">
                         {isMastered ? (
-                          <span className="text-emerald-400 font-bold">
+                          <span className="text-ok font-bold">
                             {entry.bpm} BPM • 100% Precisión
                           </span>
                         ) : isInProgress ? (
-                          <span className="text-cyan-400">
+                          <span className="text-info">
                             Meta: {entry.bpm || 80} BPM
                           </span>
                         ) : (
@@ -628,10 +628,10 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                         className={cn(
                           "px-2 py-0.5 rounded-lg text-[10px] font-mono transition-colors",
                           isMastered 
-                            ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                            ? "bg-emerald-500/20 text-ok hover:bg-emerald-500/30"
                             : isInProgress
-                              ? "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30"
-                              : "bg-white/10 text-white/60 hover:text-white"
+                              ? "bg-cyan-500/20 text-info hover:bg-cyan-500/30"
+                              : "bg-surface-3 text-ink-2 hover:text-ink"
                         )}
                         title="Cambiar estado de dominio"
                       >
@@ -647,7 +647,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
 
         {/* RIGHT COLUMN: DETAILED SCALE INSPECTOR DRAWER (4 COLS) */}
         <div className="lg:col-span-4 sticky top-24 space-y-5">
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0c101b] to-[#080b12] border border-amber-400/30 shadow-2xl space-y-6 text-white">
+          <div className="p-6 rounded-3xl bg-surface border border-brand-line shadow-2xl space-y-6 text-ink">
             {/* Header with Tonality & Category */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -657,25 +657,25 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                 <span className={cn(
                   "text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold",
                   activeEntry.status === 'mastered' 
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    ? "bg-emerald-500/20 text-ok border-emerald-500/40"
                     : activeEntry.status === 'in_progress'
-                      ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-                      : "bg-white/10 text-white/40 border-white/10"
+                      ? "bg-cyan-500/20 text-info border-cyan-500/40"
+                      : "bg-surface-3 text-ink-3 border-line"
                 )}>
                   {activeEntry.status === 'mastered' ? '⭐ Dominada' : activeEntry.status === 'in_progress' ? '⏳ En Práctica' : '🔒 Pendiente'}
                 </span>
               </div>
 
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-3xl font-serif font-black text-white">
+                <h3 className="text-3xl font-serif font-black text-ink">
                   {activeTonality.rootEs} {activeCatConfig.shortName}
                 </h3>
-                <span className="text-xl font-mono text-amber-400 font-bold">
+                <span className="text-xl font-mono text-brand-2 font-bold">
                   {activeTonality.root}
                 </span>
               </div>
 
-              <p className="text-xs font-light text-white/60 leading-relaxed">
+              <p className="text-xs font-light text-ink-2 leading-relaxed">
                 {activeTonality.accidentals}. {activeCatConfig.description}
               </p>
             </div>
@@ -688,7 +688,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                 className={cn(
                   "flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-mono font-bold transition-all shadow-md",
                   isPlayingAudio
-                    ? "bg-rose-500 text-white animate-pulse"
+                    ? "bg-rose-500 text-ink animate-pulse"
                     : "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-400/20"
                 )}
               >
@@ -699,10 +699,10 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               <button
                 type="button"
                 onClick={() => handlePreviewOnPiano(activeEntry.root, activeEntry.category)}
-                className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl text-xs font-mono font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors"
+                className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl text-xs font-mono font-bold bg-surface-3 hover:bg-surface-3 text-ink border border-line-strong transition-colors"
                 title="Mostrar notas en el teclado virtual y pentagrama"
               >
-                <Music size={14} className="text-amber-400" />
+                <Music size={14} className="text-brand-2" />
                 <span>Ver en Teclado</span>
               </button>
 
@@ -726,8 +726,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
             </div>
 
             {/* Scale Notes Analysis Breakdown */}
-            <div className="space-y-2 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs font-mono text-white/50">
+            <div className="space-y-2 pt-2 border-t border-line">
+              <div className="flex items-center justify-between text-xs font-mono text-ink-3">
                 <span>Notas de la Escala:</span>
                 <span>{activeNotes.length} tonos</span>
               </div>
@@ -738,12 +738,12 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                   return (
                     <div 
                       key={idx}
-                      className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 border border-white/10 text-center"
+                      className="flex flex-col items-center justify-center p-2 rounded-xl bg-surface-2 border border-line text-center"
                     >
-                      <span className="text-[10px] font-mono text-amber-400/70">
+                      <span className="text-[10px] font-mono text-brand-2/70">
                         {idx + 1}º
                       </span>
-                      <span className="text-sm font-serif font-bold text-white">
+                      <span className="text-sm font-serif font-bold text-ink">
                         {pureNote}
                       </span>
                     </div>
@@ -753,16 +753,16 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
             </div>
 
             {/* Fingering Patterns for Both Hands */}
-            <div className="space-y-3 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs font-mono text-white/50">
+            <div className="space-y-3 pt-2 border-t border-line">
+              <div className="flex items-center justify-between text-xs font-mono text-ink-3">
                 <span>Digitación Recomendada:</span>
-                <span className="text-[10px] text-amber-400">1: Pulgar ... 5: Meñique</span>
+                <span className="text-[10px] text-brand-2">1: Pulgar ... 5: Meñique</span>
               </div>
 
               <div className="space-y-2 text-xs font-mono">
                 {/* Right Hand */}
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between gap-2">
-                  <span className="text-white/60 font-semibold w-24">M. Derecha:</span>
+                <div className="p-2.5 rounded-xl bg-black/40 border border-line flex items-center justify-between gap-2">
+                  <span className="text-ink-2 font-semibold w-24">M. Derecha:</span>
                   <div className="flex items-center gap-1.5">
                     {activeFingering.rightHand.map((f, i) => (
                       <span 
@@ -771,7 +771,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                           "w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold",
                           i === activeFingering.thumbPassRight
                             ? "bg-amber-400 text-black ring-1 ring-amber-300"
-                            : "bg-white/10 text-white/80"
+                            : "bg-surface-3 text-ink-2"
                         )}
                         title={i === activeFingering.thumbPassRight ? "Paso de pulgar por debajo" : undefined}
                       >
@@ -782,8 +782,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                 </div>
 
                 {/* Left Hand */}
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between gap-2">
-                  <span className="text-white/60 font-semibold w-24">M. Izquierda:</span>
+                <div className="p-2.5 rounded-xl bg-black/40 border border-line flex items-center justify-between gap-2">
+                  <span className="text-ink-2 font-semibold w-24">M. Izquierda:</span>
                   <div className="flex items-center gap-1.5">
                     {activeFingering.leftHand.map((f, i) => (
                       <span 
@@ -792,7 +792,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                           "w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold",
                           i === activeFingering.thumbPassLeft
                             ? "bg-amber-400 text-black ring-1 ring-amber-300"
-                            : "bg-white/10 text-white/80"
+                            : "bg-surface-3 text-ink-2"
                         )}
                         title={i === activeFingering.thumbPassLeft ? "Paso de dedo por encima" : undefined}
                       >
@@ -805,9 +805,9 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
             </div>
 
             {/* Mastery Controller Box */}
-            <div className="p-4 rounded-2xl bg-black/60 border border-white/15 space-y-4">
-              <div className="flex items-center justify-between text-xs font-mono font-bold text-white">
-                <span className="flex items-center gap-1.5 text-amber-400">
+            <div className="p-4 rounded-2xl bg-black/60 border border-line-strong space-y-4">
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-ink">
+                <span className="flex items-center gap-1.5 text-brand-2">
                   <Award size={14} />
                   <span>Control de Dominio Tonal</span>
                 </span>
@@ -822,7 +822,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                     "py-2 px-1 rounded-xl text-center border font-bold transition-all",
                     activeEntry.status === 'mastered'
                       ? "bg-emerald-500 text-black border-emerald-400 shadow-md shadow-emerald-500/20"
-                      : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                      : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                   )}
                 >
                   ⭐ Dominada
@@ -834,7 +834,7 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                     "py-2 px-1 rounded-xl text-center border font-bold transition-all",
                     activeEntry.status === 'in_progress'
                       ? "bg-cyan-500 text-black border-cyan-400 shadow-md shadow-cyan-500/20"
-                      : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                      : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                   )}
                 >
                   ⏳ En Práctica
@@ -845,8 +845,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                   className={cn(
                     "py-2 px-1 rounded-xl text-center border transition-all",
                     activeEntry.status === 'pending'
-                      ? "bg-white/20 text-white border-white/30"
-                      : "bg-white/5 border-white/10 text-white/40 hover:text-white/60"
+                      ? "bg-surface-3 text-ink border-white/30"
+                      : "bg-surface-2 border-line text-ink-3 hover:text-ink-2"
                   )}
                 >
                   🔒 Pendiente
@@ -856,8 +856,8 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
               {/* BPM achieved input */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-white/60">Tempo Alcanzado (BPM):</span>
-                  <span className="text-amber-400 font-bold">{bpmInput} BPM</span>
+                  <span className="text-ink-2">Tempo Alcanzado (BPM):</span>
+                  <span className="text-brand-2 font-bold">{bpmInput} BPM</span>
                 </div>
                 <input
                   type="range"
@@ -872,12 +872,12 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                       handleUpdateStatus(activeEntry.scaleId, activeEntry.status, { bpm: val, handsTogether: handsTogetherInput });
                     }
                   }}
-                  className="w-full accent-amber-400 cursor-pointer h-1.5 bg-white/10 rounded-lg"
+                  className="w-full accent-amber-400 cursor-pointer h-1.5 bg-surface-3 rounded-lg"
                 />
               </div>
 
               {/* Hands Together Checkbox */}
-              <label className="flex items-center gap-2.5 text-xs font-mono text-white/70 cursor-pointer pt-1">
+              <label className="flex items-center gap-2.5 text-xs font-mono text-ink-2 cursor-pointer pt-1">
                 <input
                   type="checkbox"
                   checked={handsTogetherInput}
@@ -888,13 +888,13 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
                       handleUpdateStatus(activeEntry.scaleId, activeEntry.status, { bpm: bpmInput, handsTogether: checked });
                     }
                   }}
-                  className="rounded border-white/20 text-amber-400 focus:ring-amber-400 h-4 w-4 bg-black/40"
+                  className="rounded border-line-strong text-brand-2 focus:ring-amber-400 h-4 w-4 bg-black/40"
                 />
                 <span>Ambas manos juntas coordinadas</span>
               </label>
 
               {activeEntry.masteredAt && (
-                <div className="text-[10px] font-mono text-emerald-400/80 pt-1 border-t border-white/10">
+                <div className="text-[10px] font-mono text-ok/80 pt-1 border-t border-line">
                   Dominada el: {activeEntry.masteredAt}
                 </div>
               )}
@@ -902,11 +902,11 @@ export const ScaleProgressMap: React.FC<ScaleProgressMapProps> = ({
 
             {/* Pedagogical Tip */}
             <div className="p-3.5 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-xs font-mono space-y-1">
-              <div className="flex items-center gap-1.5 text-amber-300 font-bold text-[11px] uppercase">
+              <div className="flex items-center gap-1.5 text-brand-2 font-bold text-[11px] uppercase">
                 <Sparkles size={12} />
                 <span>Consejo Técnico</span>
               </div>
-              <p className="text-white/70 text-[11px] leading-relaxed">
+              <p className="text-ink-2 text-[11px] leading-relaxed">
                 {activeEntry.category === 'major'
                   ? 'Mantén la muñeca relajada y flexible en el paso del pulgar. No levantes el codo innecesariamente.'
                   : activeEntry.category === 'minor_harmonic'

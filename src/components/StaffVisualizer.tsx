@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Volume2, Eye, EyeOff, BookOpen, Layers, 
@@ -8,6 +8,9 @@ import {
 import * as Tone from 'tone';
 import { cn } from '../lib/utils';
 import { ROOTS, CHORD_TYPES, getChordKeys } from '../types';
+import { spellChordNotes } from '../lib/musicGymTheory';
+
+const ACCIDENTAL_GLYPH: Record<string, string> = { '#': '♯', b: '♭', '##': '𝄪', bb: '𝄫' };
 import { soundEngine, getSavedSoundPreset } from '../lib/soundPresets';
 
 export interface StaffVisualizerProps {
@@ -79,6 +82,16 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
 
   // Display notes (either from props or from active drill)
   const currentNotes = isDrillActive && drillTarget ? drillTarget.notes : notes;
+  /* El pentagrama recibe nombres de tecla (siempre sostenidos) porque es lo
+     que entiende el motor de sonido, y así Reb mayor salía dibujado C# F G#:
+     tres notas escritas mal, con la tercera sobre la línea equivocada. Acá se
+     escriben como corresponde al acorde —una letra por grado— y el sonido
+     sigue usando los nombres de tecla de siempre. */
+  const displayRoot = isDrillActive && drillTarget ? drillTarget.root : root;
+  const spelledNotes = useMemo(
+    () => spellChordNotes(displayRoot, currentNotes),
+    [displayRoot, currentNotes]
+  );
   const currentTitle = isDrillActive 
     ? (drillFeedback === 'idle' ? '¿Qué acorde es este?' : drillTarget?.name || '')
     : chordName;
@@ -196,7 +209,8 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
 
   // Calculate note position
   const getNoteLayout = (noteStr: string) => {
-    const match = noteStr.match(/^([A-G])(#|b)?(\d)$/);
+    // También dobles alteraciones: una escritura correcta puede pedir Fx o Bbb
+    const match = noteStr.match(/^([A-G])(##|bb|#|b)?(\d)$/);
     if (!match) return null;
 
     const letter = match[1];
@@ -283,7 +297,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
   };
 
   // Process all notes and handle collisions (adjacent notes offset in X)
-  const parsedNotes = currentNotes
+  const parsedNotes = spelledNotes
     .map(getNoteLayout)
     .filter((n): n is NonNullable<typeof n> => n !== null)
     .sort((a, b) => a.diatonicPos - b.diatonicPos);
@@ -316,24 +330,24 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#0a0d16] border border-amber-400/30 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6 text-white overflow-hidden relative">
+    <div className="w-full bg-surface border border-amber-400/30 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6 text-ink overflow-hidden relative">
       
       {/* Visual Header / Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-line pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 font-bold shadow-md shadow-amber-400/10">
+          <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-brand-2 font-bold shadow-md shadow-amber-400/10">
             <Music size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-lg md:text-xl font-serif font-bold text-white tracking-wide">
+              <h3 className="text-lg md:text-xl font-serif font-bold text-ink tracking-wide">
                 Visualizador de Partituras en Tiempo Real
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/30 font-bold">
                 Notación Viva
               </span>
             </div>
-            <p className="text-xs text-white/50 font-mono">
+            <p className="text-xs text-ink-3 font-mono">
               Traduce acordes e inversiones a notación tradicional para entrenar lectura a primera vista
             </p>
           </div>
@@ -358,8 +372,8 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
             className={cn(
               "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border",
               isPlayingArpeggio 
-                ? "bg-amber-400/20 border-amber-400/60 text-amber-300 animate-pulse"
-                : "bg-white/5 hover:bg-white/10 border-white/10 text-white/80"
+                ? "bg-amber-400/20 border-amber-400/60 text-brand-2 animate-pulse"
+                : "bg-surface-2 hover:bg-surface-3 border-line text-ink-2"
             )}
             title="Escuchar arpegio ascendente"
           >
@@ -374,7 +388,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
             className={cn(
               "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border",
               isDrillActive
-                ? "bg-rose-500/20 border-rose-500 text-rose-300 hover:bg-rose-500/30"
+                ? "bg-rose-500/20 border-rose-500 text-danger hover:bg-rose-500/30"
                 : "bg-purple-500/20 border-purple-500/40 text-purple-300 hover:bg-purple-500/30"
             )}
           >
@@ -400,11 +414,11 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-amber-300">
+              <div className="flex items-center gap-1 text-brand-2">
                 <Trophy size={14} />
                 <span>{drillScore} PTS</span>
               </div>
-              <div className="flex items-center gap-1 text-rose-400">
+              <div className="flex items-center gap-1 text-danger">
                 <Flame size={14} />
                 <span>Racha: {drillStreak}</span>
               </div>
@@ -414,11 +428,11 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
       </AnimatePresence>
 
       {/* Clef & Annotation Config Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono bg-black/40 p-2.5 rounded-2xl border border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono bg-black/40 p-2.5 rounded-2xl border border-line">
         
         {/* Clef Selector */}
         <div className="flex items-center gap-1.5">
-          <span className="text-white/40 hidden md:inline">Clave:</span>
+          <span className="text-ink-3 hidden md:inline">Clave:</span>
           {(['grand', 'treble', 'bass'] as ClefMode[]).map(mode => (
             <button
               key={mode}
@@ -428,7 +442,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                 "px-2.5 py-1 rounded-lg transition-all",
                 clefMode === mode 
                   ? "bg-amber-400 text-black font-bold shadow" 
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  : "text-ink-2 hover:text-ink hover:bg-surface-2"
               )}
             >
               {mode === 'grand' ? 'Gran Pentagrama' : mode === 'treble' ? 'Clave de Sol' : 'Clave de Fa'}
@@ -438,7 +452,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
 
         {/* Note Labels Toggle */}
         <div className="flex items-center gap-1.5">
-          <span className="text-white/40 hidden md:inline">Guías:</span>
+          <span className="text-ink-3 hidden md:inline">Guías:</span>
           {(['none', 'notes', 'solfege', 'intervals'] as LabelMode[]).map(m => (
             <button
               key={m}
@@ -447,8 +461,8 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
               className={cn(
                 "px-2 py-1 rounded-lg transition-all",
                 labelMode === m 
-                  ? "bg-white/20 text-white font-bold" 
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-surface-3 text-ink font-bold" 
+                  : "text-ink-3 hover:text-ink-2"
               )}
             >
               {m === 'none' ? 'Sin Nombres' : m === 'notes' ? 'C - E - G' : m === 'solfege' ? 'Do-Mi-Sol' : 'Intervalos'}
@@ -461,8 +475,8 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
             className={cn(
               "px-2 py-1 rounded-lg border text-[11px] transition-all ml-1",
               showHelperGuides 
-                ? "border-amber-400/60 bg-amber-400/10 text-amber-300 font-bold" 
-                : "border-white/10 text-white/40 hover:text-white/70"
+                ? "border-amber-400/60 bg-amber-400/10 text-brand-2 font-bold" 
+                : "border-line text-ink-3 hover:text-ink-2"
             )}
             title="Mostrar nombres mnemotécnicos en las líneas"
           >
@@ -472,22 +486,22 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
       </div>
 
       {/* NOTATION CANVAS / SVG SHEET MUSIC STAGE */}
-      <div className="w-full bg-[#05070e] border border-white/10 rounded-2xl p-2 sm:p-4 overflow-x-auto shadow-inner flex flex-col items-center">
+      <div className="w-full bg-surface border border-line rounded-2xl p-2 sm:p-4 overflow-x-auto shadow-inner flex flex-col items-center">
         
         {/* Title above sheet music */}
-        <div className="w-full flex items-center justify-between px-3 pt-1 pb-3 text-xs font-mono text-white/50 border-b border-white/5">
+        <div className="w-full flex items-center justify-between px-3 pt-1 pb-3 text-xs font-mono text-ink-3 border-b border-line">
           <div className="flex items-center gap-2">
-            <span className="text-amber-400 font-bold text-sm">
+            <span className="text-brand-2 font-bold text-sm">
               {currentTitle}
             </span>
             {inversion > 0 && !isDrillActive && (
-              <span className="px-2 py-0.5 rounded bg-white/10 text-white/70 text-[10px]">
+              <span className="px-2 py-0.5 rounded bg-surface-3 text-ink-2 text-[10px]">
                 {inversion === 1 ? '1ª Inversión' : '2ª Inversión'}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-white/40">Compás: 4/4 (Redonda)</span>
+            <span className="text-[11px] text-ink-3">Compás: 4/4 (Redonda)</span>
           </div>
         </div>
 
@@ -587,7 +601,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                   fontFamily="serif"
                   fill="#f8fafc"
                   className="select-none"
-                  style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}
+                  style={{ textShadow: '0 0 10px var(--score-ledger)' }}
                 >
                   𝄞
                 </text>
@@ -664,7 +678,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                   fontFamily="serif"
                   fill="#f8fafc"
                   className="select-none"
-                  style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}
+                  style={{ textShadow: '0 0 10px var(--score-ledger)' }}
                 >
                   𝄢
                 </text>
@@ -729,7 +743,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
               if (labelMode === 'notes') {
                 labelText = n.noteStr.replace(/\d/, '');
               } else if (labelMode === 'solfege') {
-                labelText = `${SOLFEGE_MAP[n.letter] || n.letter}${n.accidental ? (n.accidental === '#' ? '♯' : '♭') : ''}`;
+                labelText = `${SOLFEGE_MAP[n.letter] || n.letter}${ACCIDENTAL_GLYPH[n.accidental] ?? ''}`;
               } else if (labelMode === 'intervals') {
                 labelText = getIntervalTag(n.noteStr);
               }
@@ -764,7 +778,7 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
                       fill={isGlowing ? '#fbbf24' : '#f8fafc'}
                       className="select-none"
                     >
-                      {n.accidental === '#' ? '♯' : '♭'}
+                      {ACCIDENTAL_GLYPH[n.accidental] ?? ''}
                     </text>
                   )}
 
@@ -826,24 +840,24 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
 
         {/* Sight Reading Multiple Choice Drill Answers */}
         {isDrillActive && drillTarget && (
-          <div className="w-full max-w-xl py-3 border-t border-white/10 space-y-3">
-            <div className="text-center text-xs font-mono text-white/60">
+          <div className="w-full max-w-xl py-3 border-t border-line space-y-3">
+            <div className="text-center text-xs font-mono text-ink-2">
               Selecciona el nombre del acorde escrito arriba:
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               {drillOptions.map((opt, oIdx) => {
                 const isCorrect = opt === drillTarget.name;
-                let btnStyle = "bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-amber-400/40";
+                let btnStyle = "bg-surface-2 border-line text-ink hover:bg-surface-3 hover:border-amber-400/40";
 
                 if (drillFeedback === 'correct') {
                   if (isCorrect) {
-                    btnStyle = "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                    btnStyle = "bg-emerald-500/20 border-emerald-400 text-ok shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                   } else {
-                    btnStyle = "opacity-30 bg-white/5 border-white/5";
+                    btnStyle = "opacity-30 bg-surface-2 border-line";
                   }
                 } else if (drillFeedback === 'wrong') {
-                  btnStyle = "bg-white/5 border-white/10 text-white";
+                  btnStyle = "bg-surface-2 border-line text-ink";
                 }
 
                 return (
@@ -868,17 +882,17 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
 
       {/* Real-time Theoretical & Harmonic Breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-        <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-          <div className="text-white/40 uppercase text-[10px]">Estructura de Notas</div>
+        <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1">
+          <div className="text-ink-3 uppercase text-[10px]">Estructura de Notas</div>
           <div className="flex flex-wrap gap-1.5 pt-1">
-            {currentNotes.map(note => (
+            {spelledNotes.map(note => (
               <span 
                 key={note} 
                 className={cn(
                   "px-2 py-0.5 rounded-lg border font-bold text-xs transition-all",
                   highlightedNote === note 
                     ? "bg-amber-400 text-black border-amber-400 shadow" 
-                    : "bg-white/10 border-white/10 text-white/80"
+                    : "bg-surface-3 border-line text-ink-2"
                 )}
               >
                 {note}
@@ -887,9 +901,9 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-          <div className="text-white/40 uppercase text-[10px]">Lectura Visual en Pentagrama</div>
-          <div className="text-white/80 font-light text-[11px] leading-snug">
+        <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1">
+          <div className="text-ink-3 uppercase text-[10px]">Lectura Visual en Pentagrama</div>
+          <div className="text-ink-2 font-light text-[11px] leading-snug">
             {parsedNotes.length > 0 ? (
               <span>
                 {parsedNotes.some(n => n.targetClef === 'bass') && 'Mano Izquierda (Bajos)'}
@@ -902,9 +916,9 @@ export const StaffVisualizer: React.FC<StaffVisualizerProps> = ({
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-          <div className="text-white/40 uppercase text-[10px]">Regla Nemotécnica</div>
-          <div className="text-amber-300 font-light text-[11px] leading-snug">
+        <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1">
+          <div className="text-ink-3 uppercase text-[10px]">Regla Nemotécnica</div>
+          <div className="text-brand-2 font-light text-[11px] leading-snug">
             {clefMode === 'treble' 
               ? 'Líneas: Mi-Sol-Si-Re-Fa | Espacios: Fa-La-Do-Mi (FACE)'
               : clefMode === 'bass'

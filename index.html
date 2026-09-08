@@ -2,16 +2,42 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>PianoMaster - Instructor Virtual de Piano de 0 a 100</title>
     <meta name="description" content="Instructor virtual inteligente de piano de 0 a 100 con lecciones teóricas y prácticas dictadas paso a paso y evaluaciones constantes para avanzar." />
     <meta property="og:title" content="PianoMaster - Instructor Virtual de Piano de 0 a 100" />
     <meta property="og:description" content="Instructor virtual inteligente de piano de 0 a 100 con lecciones teóricas y prácticas dictadas paso a paso y evaluaciones constantes para avanzar." />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PianoMaster" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0b0d12" />
+    <!-- El tema se decide ANTES del primer pintado: si no, se ve un destello
+         del tema equivocado en cada recarga. Sin preferencia guardada, manda
+         el sistema operativo. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('pianomaster_theme');
+          var t = saved === 'light' || saved === 'dark'
+            ? saved
+            : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme', t);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', t === 'light' ? '#f4f1ea' : '#0b0d12');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
-  <body class="bg-[#07090e] text-[#e2e8f0] antialiased selection:bg-amber-400 selection:text-black">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

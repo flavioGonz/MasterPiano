@@ -43,13 +43,13 @@ export const LessonCelebrationModal: React.FC<LessonCelebrationModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', duration: 0.5, bounce: 0.25 }}
-          className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-[#0d111d] border border-amber-400/40 p-6 md:p-8 shadow-[0_0_50px_rgba(245,158,11,0.25)] text-center space-y-6"
+          className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-surface border border-amber-400/40 p-6 md:p-8 shadow-[0_0_50px_rgba(245,158,11,0.25)] text-center space-y-6"
         >
           {/* Close button */}
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full bg-surface-2 hover:bg-surface-3 text-ink-3 hover:text-ink transition-colors"
           >
             <X size={18} />
           </button>
@@ -67,7 +67,7 @@ export const LessonCelebrationModal: React.FC<LessonCelebrationModalProps> = ({
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
-              className="absolute -top-1 -right-1 text-amber-300"
+              className="absolute -top-1 -right-1 text-brand-2"
             >
               <Sparkles size={20} />
             </motion.div>
@@ -75,26 +75,26 @@ export const LessonCelebrationModal: React.FC<LessonCelebrationModalProps> = ({
 
           {/* Title & Congratulations */}
           <div className="space-y-1.5">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400 font-bold px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 inline-block">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-brand-2 font-bold px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 inline-block">
               ¡Lección Aprobada!
             </span>
-            <h3 className="text-2xl md:text-3xl font-serif font-bold text-white">
+            <h3 className="text-2xl md:text-3xl font-serif font-bold text-ink">
               {lesson.title}
             </h3>
-            <p className="text-xs text-white/60 font-light">
+            <p className="text-xs text-ink-2 font-light">
               Módulo {lesson.moduleNumber}: {lesson.description}
             </p>
           </div>
 
           {/* Gamification Stats: XP & Score */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-[10px] font-mono text-white/40 uppercase">Puntuación</div>
-              <div className="text-xl font-mono font-bold text-emerald-400">{score} / 100 PTS</div>
+            <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-[10px] font-mono text-ink-3 uppercase">Puntuación</div>
+              <div className="text-xl font-mono font-bold text-ok">{score} / 100 PTS</div>
             </div>
             <div className="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/20">
-              <div className="text-[10px] font-mono text-amber-300/60 uppercase">Recompensa</div>
-              <div className="text-xl font-mono font-bold text-amber-300">+150 XP</div>
+              <div className="text-[10px] font-mono text-brand-2/60 uppercase">Recompensa</div>
+              <div className="text-xl font-mono font-bold text-brand-2">+150 XP</div>
             </div>
           </div>
 
@@ -109,17 +109,17 @@ export const LessonCelebrationModal: React.FC<LessonCelebrationModalProps> = ({
           {nextLesson && (
             <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-left text-xs">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+                <CheckCircle2 size={18} className="text-ok shrink-0" />
                 <div>
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-300 font-bold">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-ok font-bold">
                     Desbloqueo Siguiente
                   </div>
-                  <div className="font-bold text-white truncate max-w-[240px]">
+                  <div className="font-bold text-ink truncate max-w-[240px]">
                     Lección {nextLesson.number}: {nextLesson.title}
                   </div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-400/20 text-ok border border-emerald-400/30">
                 Lista
               </span>
             </div>
@@ -130,10 +130,10 @@ export const LessonCelebrationModal: React.FC<LessonCelebrationModalProps> = ({
             <button
               type="button"
               onClick={() => triggerCurriculumConfetti('grand')}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 hover:text-white text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-white/10"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-ink-2 hover:text-ink text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-line"
               title="Lanzar más confeti de celebración"
             >
-              <PartyPopper size={15} className="text-amber-400" />
+              <PartyPopper size={15} className="text-brand-2" />
               <span>Lanzar Confeti</span>
             </button>
 

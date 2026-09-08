@@ -46,6 +46,162 @@ export const COMMON_SCALE_ROOTS = [
   { note: 'E', label: 'Mi (E)', difficulty: '4 alteraciones' },
 ];
 
+/* ==================================================================
+   ORTOGRAFÍA MUSICAL (armadura)
+   ------------------------------------------------------------------
+   El motor de sonido trabaja con nombres "de tecla" (siempre sostenidos:
+   C, C#, D, D#…) porque así se comparan las teclas del piano, se disparan
+   las notas en Tone.js y se arman los MIDI. Pero la NOTACIÓN correcta
+   depende de la tonalidad: en Do# mayor la cuarta nota se llama Fa#, y la
+   tercera se llama Mi# — no Fa. Estas funciones producen esos nombres solo
+   para mostrar, sin tocar lo que suena.
+   ================================================================== */
+
+const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+/** Pitch class de cada letra natural. */
+const LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
+
+export interface ParsedNote { letter: number; alter: number; pc: number; }
+
+/** "Eb" → { letter: 2 (E), alter: -1, pc: 3 }. Acepta b, bb, #, ##/x. */
+export function parseNoteName(name: string): ParsedNote | null {
+  const m = /^([A-Ga-g])(bb|b|##|#|x)?$/.exec(name.trim());
+  if (!m) return null;
+  const letter = LETTERS.indexOf(m[1].toUpperCase());
+  const alter = m[2] === 'bb' ? -2 : m[2] === 'b' ? -1 : m[2] === '#' ? 1 : (m[2] === '##' || m[2] === 'x') ? 2 : 0;
+  return { letter, alter, pc: ((LETTER_PC[letter] + alter) % 12 + 12) % 12 };
+}
+
+const ALTER_SUFFIX: Record<number, string> = { [-2]: 'bb', [-1]: 'b', 0: '', 1: '#', 2: '##' };
+export function formatNote(letter: number, alter: number): string {
+  return LETTERS[((letter % 7) + 7) % 7] + (ALTER_SUFFIX[alter] ?? '');
+}
+
+/** Nombre "de tecla" (sostenidos) de un pitch class: el que entiende el piano. */
+export function keyName(pc: number): string {
+  return CHROMATIC_NOTES[((pc % 12) + 12) % 12];
+}
+
+/** ¿La escala es de tipo menor? Define la ortografía preferida de la tónica. */
+function isMinorScale(scaleId: string): boolean {
+  return scaleId.startsWith('minor') || scaleId === 'blues';
+}
+
+/**
+ * Ortografía habitual de la tónica según el modo, eligiendo la tonalidad con
+ * menos alteraciones: Mib mayor (3 bemoles) en vez de Re# mayor (9 sostenidos),
+ * pero Do# menor (4 sostenidos) en vez de Reb menor (8 bemoles).
+ */
+export function preferredRootName(pc: number, scaleId: string): string {
+  const minor = isMinorScale(scaleId);
+  const table: Record<number, [string, string]> = {
+    //  pc      mayor  menor
+    1:  ['Db', 'C#'],
+    3:  ['Eb', 'Eb'],
+    6:  ['F#', 'F#'],
+    8:  ['Ab', 'G#'],
+    10: ['Bb', 'Bb'],
+  };
+  const pair = table[((pc % 12) + 12) % 12];
+  if (!pair) return CHROMATIC_NOTES[((pc % 12) + 12) % 12];
+  return minor ? pair[1] : pair[0];
+}
+
+/** ¿La tonalidad se escribe con bemoles? */
+function prefersFlats(rootName: string, scaleId: string): boolean {
+  if (rootName.includes('b')) return true;
+  if (rootName.includes('#')) return false;
+  // Tónicas naturales: depende del modo (círculo de quintas)
+  return isMinorScale(scaleId) ? ['D', 'G', 'C', 'F'].includes(rootName) : rootName === 'F';
+}
+
+/**
+ * Nombres correctos (sin octava) de los grados de la escala.
+ *
+ * En escalas de 7 grados usa una letra por grado — la regla que hace que
+ * Do# mayor sea C# D# E# F# G# A# B# y no C# D# F F# G# A# C. En las de
+ * menos grados (pentatónicas, blues) no existe esa regla, así que se sigue
+ * la preferencia de sostenidos o bemoles de la tonalidad.
+ * Si una nota necesitara más de un doble sostenido/bemol, cae en el nombre
+ * de tecla para no inventar notación impracticable.
+ */
+export function spellScaleNotes(rootName: string, scale: ScaleInfo): string[] {
+  const root = parseNoteName(rootName);
+  if (!root) return scale.intervals.map(i => keyName(i));
+  const heptatonic = scale.intervals.length === 8; // 7 grados + octava
+  const flats = prefersFlats(rootName, scale.id);
+
+  return scale.intervals.map((semis, idx) => {
+    const pc = (root.pc + semis) % 12;
+    if (heptatonic) {
+      const letter = (root.letter + idx) % 7;
+      // Alteración necesaria para que esa letra suene en ese pitch class
+      let alter = pc - LETTER_PC[letter];
+      if (alter > 6) alter -= 12;
+      if (alter < -6) alter += 12;
+      if (Math.abs(alter) <= 2) return formatNote(letter, alter);
+    }
+    // Pentatónicas, blues o casos impracticables: nombre simple de la tonalidad
+    const sharpName = CHROMATIC_NOTES[pc];
+    if (!flats || !sharpName.includes('#')) return sharpName;
+    return ENHARMONIC_MAP[sharpName] ?? sharpName;
+  });
+}
+
+/**
+ * Armadura de la tonalidad.
+ *
+ * En escalas de 7 grados se cuenta directamente sobre los grados. Las
+ * pentatónicas y el blues no tienen armadura propia — se leen dentro de su
+ * tonalidad madre —, así que se informa la de la mayor o menor natural
+ * correspondiente: Do# pentatónica menor vive en Do# menor, 4 sostenidos,
+ * aunque en las cinco notas solo aparezcan tres.
+ */
+export function keySignatureLabel(rootName: string, scale: ScaleInfo): string {
+  let spelled: string[];
+  if (scale.intervals.length === 8) {
+    spelled = spellScaleNotes(rootName, scale).slice(0, -1); // sin la octava repetida
+  } else {
+    const parentId = isMinorScale(scale.id) ? 'minor_natural' : 'major';
+    const parent = SCALES_DATABASE.find(s => s.id === parentId);
+    if (!parent) return '—';
+    spelled = spellScaleNotes(rootName, parent).slice(0, -1);
+  }
+
+  let sharps = 0, flats = 0, doubles = 0;
+  for (const n of spelled) {
+    if (n.includes('##')) { doubles++; sharps++; }
+    else if (n.includes('bb')) { doubles++; flats++; }
+    else if (n.includes('#')) sharps++;
+    else if (n.includes('b')) flats++;
+  }
+  if (sharps === 0 && flats === 0) return 'sin alteraciones';
+  const parts: string[] = [];
+  if (sharps) parts.push(`${sharps} ${sharps === 1 ? 'sostenido' : 'sostenidos'}`);
+  if (flats) parts.push(`${flats} ${flats === 1 ? 'bemol' : 'bemoles'}`);
+  if (doubles) parts.push(`${doubles} doble${doubles === 1 ? '' : 's'}`);
+  return parts.join(' · ');
+}
+
+/** Las 12 tónicas cromáticas para el selector de escalas. */
+export const ALL_SCALE_ROOTS: {
+  pc: number; sharp: string; flat: string; solfege: string; isBlack: boolean;
+  difficulty: 'Fácil' | 'Media' | 'Avanzada';
+}[] = [
+  { pc: 0,  sharp: 'C',  flat: 'C',  solfege: 'Do',  isBlack: false, difficulty: 'Fácil' },
+  { pc: 1,  sharp: 'C#', flat: 'Db', solfege: 'Do#', isBlack: true,  difficulty: 'Avanzada' },
+  { pc: 2,  sharp: 'D',  flat: 'D',  solfege: 'Re',  isBlack: false, difficulty: 'Fácil' },
+  { pc: 3,  sharp: 'D#', flat: 'Eb', solfege: 'Mi♭', isBlack: true,  difficulty: 'Media' },
+  { pc: 4,  sharp: 'E',  flat: 'E',  solfege: 'Mi',  isBlack: false, difficulty: 'Media' },
+  { pc: 5,  sharp: 'F',  flat: 'F',  solfege: 'Fa',  isBlack: false, difficulty: 'Fácil' },
+  { pc: 6,  sharp: 'F#', flat: 'Gb', solfege: 'Fa#', isBlack: true,  difficulty: 'Avanzada' },
+  { pc: 7,  sharp: 'G',  flat: 'G',  solfege: 'Sol', isBlack: false, difficulty: 'Fácil' },
+  { pc: 8,  sharp: 'G#', flat: 'Ab', solfege: 'La♭', isBlack: true,  difficulty: 'Media' },
+  { pc: 9,  sharp: 'A',  flat: 'A',  solfege: 'La',  isBlack: false, difficulty: 'Media' },
+  { pc: 10, sharp: 'A#', flat: 'Bb', solfege: 'Si♭', isBlack: true,  difficulty: 'Media' },
+  { pc: 11, sharp: 'B',  flat: 'B',  solfege: 'Si',  isBlack: false, difficulty: 'Avanzada' },
+];
+
 export const SCALES_DATABASE: ScaleInfo[] = [
   {
     id: 'major',
@@ -611,4 +767,105 @@ export function generateRandomTriadChallenge(difficulty: 'Principiante' | 'Inter
     notes,
     qualityInfo
   };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Ortografía fuera del gimnasio de escalas                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Cuántas letras sube cada intervalo dentro de un acorde.
+ *
+ * Un acorde no se escribe por semitonos sino por grados: la tercera ocupa la
+ * letra de la tercera aunque sea menor, y por eso Reb mayor es Db F Ab y no
+ * C# F G#. Dos intervalos son ambiguos y se resuelven mirando el acorde
+ * entero: el tritono es 4ª aumentada si la quinta justa está presente (#11) y
+ * 5ª disminuida si no; y 8 semitonos es 6ª menor (b13) con quinta presente, o
+ * 5ª aumentada si no.
+ */
+function chordLetterSteps(semis: number, hasPerfectFifth: boolean): number {
+  const table: Record<number, number> = { 0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 7: 4, 9: 5, 10: 6, 11: 6 };
+  if (semis === 6) return hasPerfectFifth ? 3 : 4;
+  if (semis === 8) return hasPerfectFifth ? 5 : 4;
+  return table[semis] ?? 0;
+}
+
+/**
+ * Nombres correctos de las notas de un acorde, conservando la octava.
+ *
+ * Entra lo que entiende el motor de sonido (nombres de tecla, siempre
+ * sostenidos: `['C#4','F4','G#4']`) y sale lo que se escribe en el pentagrama
+ * (`['Db4','F4','Ab4']`). Si un grado necesitara una alteración impracticable
+ * se devuelve el nombre de tecla, que es feo pero no es falso.
+ */
+export function spellChordNotes(rootName: string, keys: string[]): string[] {
+  const root = parseNoteName(rootName.replace(/\d+$/, ''));
+  if (!root) return keys;
+  const pcs = keys.map(k => {
+    const m = /^([A-Ga-g][b#]?)(-?\d+)?$/.exec(k.trim());
+    return m ? parseNoteName(m[1])?.pc ?? null : null;
+  });
+  const rels = pcs.map(pc => (pc === null ? null : ((pc - root.pc) % 12 + 12) % 12));
+  const hasFifth = rels.includes(7);
+
+  return keys.map((k, i) => {
+    const rel = rels[i];
+    if (rel === null) return k;
+    const octave = /(-?\d+)$/.exec(k)?.[1] ?? '';
+    const letter = root.letter + chordLetterSteps(rel, hasFifth);
+    const natural = LETTER_PC[((letter % 7) + 7) % 7];
+    const target = (root.pc + rel) % 12;
+    let alter = target - natural;
+    if (alter > 6) alter -= 12;
+    if (alter < -6) alter += 12;
+    if (Math.abs(alter) > 2) return k;
+    return formatNote(letter, alter) + octave;
+  });
+}
+
+/**
+ * Cómo se escribe cada tecla dentro de una escala: `{'F': 'E#', 'C': 'B#'}`.
+ *
+ * Sirve para que el teclado y las etiquetas muestren la nota que corresponde a
+ * la tonalidad y no el nombre de la tecla: en Fa# mayor la tecla F es Mi#.
+ * Sólo aparecen las teclas cuya escritura difiere del nombre de tecla.
+ */
+export function scaleSpellingMap(rootName: string, scale: ScaleInfo): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const name of spellScaleNotes(rootName, scale)) {
+    const p = parseNoteName(name);
+    if (!p) continue;
+    const key = keyName(p.pc);
+    if (key !== name) map[key] = name;
+  }
+  return map;
+}
+
+/** `C#` → `Do♯` para mostrar: el signo tipográfico, no el numeral. */
+export function prettyAccidentals(name: string): string {
+  return name.replace(/bb/g, '𝄫').replace(/##/g, '𝄪').replace(/#/g, '♯').replace(/b/g, '♭');
+}
+
+/**
+ * Cómo se escribe cada una de las 12 teclas dentro de una tonalidad.
+ *
+ * A diferencia de `scaleSpellingMap`, que sólo cubre los grados de la escala,
+ * acá entran también las notas de paso: en una tonalidad de bemoles se
+ * escriben con bemoles (Mib, no Re#) y en una de sostenidos, con sostenidos.
+ * Es lo que necesita la catarata, donde una pieza tiene alteraciones que no
+ * son de la escala.
+ */
+export function fullSpellingMap(rootName: string, scale: ScaleInfo): Record<string, string> {
+  const flats = /b/.test(rootName) || prefersFlats(rootName, scale.id);
+  const FLAT_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const map: Record<string, string> = {};
+  if (flats) {
+    for (let pc = 0; pc < 12; pc++) {
+      const key = keyName(pc);
+      if (key !== FLAT_NAMES[pc]) map[key] = FLAT_NAMES[pc];
+    }
+  }
+  // Los grados de la escala mandan sobre la preferencia general: en Fa# mayor
+  // la tecla F es Mi# aunque la tonalidad sea de sostenidos.
+  return { ...map, ...scaleSpellingMap(rootName, scale) };
 }

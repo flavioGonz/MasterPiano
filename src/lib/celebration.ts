@@ -1,11 +1,12 @@
-import confetti from 'canvas-confetti';
-import * as Tone from 'tone';
 
 /**
  * Fires a high-end celebratory confetti sequence designed for conservatory achievements.
  * Includes center burst and side cannons in elegant gold, emerald, and cyan palettes.
  */
-export function triggerCurriculumConfetti(intensity: 'standard' | 'grand' = 'grand') {
+export async function triggerCurriculumConfetti(intensity: 'standard' | 'grand' = 'grand') {
+  // El confeti sólo hace falta cuando hay algo que festejar: la librería se
+  // trae en ese momento y no en la primera carga.
+  const confetti = (await import('canvas-confetti')).default;
   // Center fountain
   confetti({
     particleCount: intensity === 'grand' ? 90 : 50,
@@ -56,9 +57,13 @@ export function triggerCurriculumConfetti(intensity: 'standard' | 'grand' = 'gra
     }, 450);
   }
 
-  // Play a brief uplifting celebratory piano fanfare
-  try {
-    if (Tone.context.state === 'running') {
+  // La fanfarria: Tone.js pesa ~200 kB y el confeti tiene que salir igual sin
+  // él, así que se trae recién acá. Si el contexto de audio está suspendido
+  // (no hubo gesto del usuario todavía), se celebra en silencio.
+  void (async () => {
+    try {
+      const Tone = await import('tone');
+      if (Tone.context.state !== 'running') return;
       const synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
         envelope: { attack: 0.02, decay: 0.3, sustain: 0.2, release: 1.2 },
@@ -70,12 +75,9 @@ export function triggerCurriculumConfetti(intensity: 'standard' | 'grand' = 'gra
       synth.triggerAttackRelease('E4', '0.2n', now + 0.1);
       synth.triggerAttackRelease('G4', '0.2n', now + 0.2);
       synth.triggerAttackRelease('C5', '0.6n', now + 0.3);
-
-      setTimeout(() => {
-        synth.dispose();
-      }, 2000);
+      setTimeout(() => synth.dispose(), 2000);
+    } catch {
+      /* sin audio, el confeti alcanza */
     }
-  } catch {
-    // Tone audio context may be suspended; silence is acceptable
-  }
+  })();
 }

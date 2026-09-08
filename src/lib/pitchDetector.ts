@@ -415,3 +415,14 @@ export class PianoPitchDetector {
 
 // Singleton instance for cross-component listening
 export const pianoPitchDetector = new PianoPitchDetector();
+
+
+/** "C#4" → 61. Devuelve null si el nombre no es válido. */
+export function noteNameToMidiSafe(note: string): number | null {
+  const m = /^([A-G])(#|b)?(-?\d)$/.exec(note.trim());
+  if (!m) return null;
+  let idx = NOTE_NAMES.indexOf(m[1] + (m[2] === '#' ? '#' : ''));
+  if (m[2] === 'b') idx = (NOTE_NAMES.indexOf(m[1]) + 11) % 12;
+  if (idx < 0) return null;
+  return (parseInt(m[3], 10) + 1) * 12 + idx;
+}

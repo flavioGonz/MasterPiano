@@ -479,26 +479,26 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-3xl bg-[#0b0e17] border border-amber-400/30 rounded-3xl shadow-2xl overflow-hidden text-white flex flex-col my-auto relative"
+        className="w-full max-w-3xl bg-surface border border-amber-400/30 rounded-3xl shadow-2xl overflow-hidden text-ink flex flex-col my-auto relative"
       >
         {/* Top Header Bar */}
-        <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent">
+        <div className="p-4 md:p-5 border-b border-line flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-amber-400 text-black flex items-center justify-center font-bold shadow-md shadow-amber-400/30">
               <Zap size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-serif font-bold text-base md:text-lg text-white">
+                <h3 className="font-serif font-bold text-base md:text-lg text-ink">
                   Práctica Rápida
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/30">
                   {totalPoolSize}+ Ejercicios
                 </span>
               </div>
-              <div className="text-[11px] text-white/50 font-mono flex items-center gap-1.5">
+              <div className="text-[11px] text-ink-3 font-mono flex items-center gap-1.5">
                 <span>Enfoque:</span>
-                <strong className="text-amber-300">
+                <strong className="text-brand-2">
                   {CATEGORY_TABS.find(t => t.id === selectedCategory)?.label}
                 </strong>
               </div>
@@ -508,14 +508,14 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-ink-3 hover:text-ink transition-colors"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Category Filter Pills (Always visible for quick switching) */}
-        <div className="px-4 md:px-6 pt-3 pb-1 border-b border-white/5 bg-[#090b12] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="px-4 md:px-6 pt-3 pb-1 border-b border-line bg-surface flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map(tab => {
             const isSelected = selectedCategory === tab.id;
             const TabIcon = tab.Icon;
@@ -533,14 +533,14 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono whitespace-nowrap transition-all shrink-0 border",
                   isSelected
                     ? "bg-amber-400 text-black border-amber-300 font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
-                    : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10"
+                    : "bg-surface-2 border-line text-ink-2 hover:text-ink hover:bg-surface-3"
                 )}
               >
                 <TabIcon size={14} />
                 <span>{tab.label}</span>
                 <span className={cn(
                   "text-[9px] px-1.5 py-0.2 rounded-full",
-                  isSelected ? "bg-black/20 text-black font-extrabold" : "bg-white/10 text-white/40"
+                  isSelected ? "bg-black/20 text-black font-extrabold" : "bg-surface-3 text-ink-3"
                 )}>
                   {tab.countBadge}
                 </span>
@@ -555,23 +555,23 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
           {/* INTRO SCREEN */}
           {gameState === 'intro' && (
             <div className="text-center space-y-6 py-2 max-w-xl mx-auto">
-              <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-amber-400 shadow-md">
+              <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 mx-auto flex items-center justify-center text-brand-2 shadow-md">
                 <Zap size={32} />
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-2xl md:text-3xl font-serif font-bold text-white">
+                <h4 className="text-2xl md:text-3xl font-serif font-bold text-ink">
                   Entrenamiento de Reflejos y Memoria
                 </h4>
-                <p className="text-xs md:text-sm text-white/70 font-light leading-relaxed">
+                <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed">
                   Consolida tu técnica pianística con cientos de desafíos específicos: escalas con digitación recomendada, tríadas en todas sus inversiones con identificación de bajos, armonías diatónicas y reconocimiento de oído.
                 </p>
               </div>
 
               {/* Session Duration Selector */}
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-left space-y-2">
-                <div className="text-xs font-mono text-white/50 flex items-center gap-1.5">
-                  <Timer size={14} className="text-amber-400" />
+              <div className="p-4 rounded-2xl bg-surface-2 border border-line text-left space-y-2">
+                <div className="text-xs font-mono text-ink-3 flex items-center gap-1.5">
+                  <Timer size={14} className="text-brand-2" />
                   <span>Selecciona el Modo de Práctica:</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 pt-1">
@@ -587,12 +587,12 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                       className={cn(
                         "p-2.5 rounded-xl border text-center font-mono transition-all",
                         sessionDuration === mode.sec
-                          ? "bg-amber-400/20 border-amber-400 text-amber-300 font-bold shadow-md shadow-amber-400/10"
-                          : "bg-white/5 border-white/5 text-white/60 hover:text-white hover:bg-white/10"
+                          ? "bg-amber-400/20 border-amber-400 text-brand-2 font-bold shadow-md shadow-amber-400/10"
+                          : "bg-surface-2 border-line text-ink-2 hover:text-ink hover:bg-surface-3"
                       )}
                     >
                       <div className="text-xs font-bold">{mode.label}</div>
-                      <div className="text-[10px] text-white/40">{mode.desc}</div>
+                      <div className="text-[10px] text-ink-3">{mode.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -600,9 +600,9 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
 
               {/* Best Score Banner */}
               {bestScore > 0 && (
-                <div className="flex items-center justify-center gap-2 text-xs font-mono text-white/50">
-                  <Trophy size={14} className="text-amber-400" />
-                  <span>Récord Personal: <strong className="text-amber-300">{bestScore} PTS</strong></span>
+                <div className="flex items-center justify-center gap-2 text-xs font-mono text-ink-3">
+                  <Trophy size={14} className="text-brand-2" />
+                  <span>Récord Personal: <strong className="text-brand-2">{bestScore} PTS</strong></span>
                 </div>
               )}
 
@@ -633,48 +633,48 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                 <div className={cn(
                   "p-3 rounded-2xl border text-center transition-all",
                   isTimeCritical 
-                    ? "bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse" 
-                    : "bg-white/5 border-white/10 text-white"
+                    ? "bg-rose-500/20 border-rose-500 text-danger animate-pulse" 
+                    : "bg-surface-2 border-line text-ink"
                 )}>
-                  <div className="text-[10px] font-mono uppercase text-white/40 flex items-center justify-center gap-1">
+                  <div className="text-[10px] font-mono uppercase text-ink-3 flex items-center justify-center gap-1">
                     <Timer size={11} />
                     <span>{sessionDuration === 0 ? 'Modo' : 'Tiempo'}</span>
                   </div>
                   <div className={cn(
                     "text-2xl font-mono font-bold",
-                    isTimeCritical ? "text-rose-400" : "text-amber-400"
+                    isTimeCritical ? "text-danger" : "text-brand-2"
                   )}>
                     {sessionDuration === 0 ? 'Libre ∞' : `${timeLeft}s`}
                   </div>
                 </div>
 
                 {/* Score */}
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-center">
-                  <div className="text-[10px] font-mono uppercase text-white/40 flex items-center justify-center gap-1">
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line text-center">
+                  <div className="text-[10px] font-mono uppercase text-ink-3 flex items-center justify-center gap-1">
                     <Trophy size={11} />
                     <span>Puntaje</span>
                   </div>
-                  <div className="text-2xl font-mono font-bold text-white">
-                    {score} <span className="text-[10px] text-amber-400 font-normal">PTS</span>
+                  <div className="text-2xl font-mono font-bold text-ink">
+                    {score} <span className="text-[10px] text-brand-2 font-normal">PTS</span>
                   </div>
                 </div>
 
                 {/* Streak */}
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-center">
-                  <div className="text-[10px] font-mono uppercase text-white/40 flex items-center justify-center gap-1">
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line text-center">
+                  <div className="text-[10px] font-mono uppercase text-ink-3 flex items-center justify-center gap-1">
                     <Flame size={11} />
                     <span>Racha</span>
                   </div>
-                  <div className="text-2xl font-mono font-bold text-rose-400 flex items-center justify-center gap-1.5">
+                  <div className="text-2xl font-mono font-bold text-danger flex items-center justify-center gap-1.5">
                     <span>{streak}</span>
-                    <Flame size={20} className="text-rose-400" />
+                    <Flame size={20} className="text-danger" />
                   </div>
                 </div>
               </div>
 
               {/* Progress bar countdown (if timed) */}
               {sessionDuration > 0 && (
-                <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
+                <div className="w-full bg-surface-2 h-2 rounded-full overflow-hidden border border-line">
                   <div 
                     className={cn(
                       "h-full transition-all duration-1000",
@@ -686,15 +686,15 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
               )}
 
               {/* CURRENT EXERCISE CARD */}
-              <div className="p-5 md:p-6 rounded-3xl bg-black/40 border border-white/10 text-center space-y-4 relative overflow-hidden">
+              <div className="p-5 md:p-6 rounded-3xl bg-black/40 border border-line text-center space-y-4 relative overflow-hidden">
                 
                 {/* Meta header of question */}
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-white/50">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-ink-3">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-300 border border-amber-400/20 text-[10px] uppercase font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-400/10 text-brand-2 border border-amber-400/20 text-[10px] uppercase font-bold">
                       {currentExercise.moduleTitle}
                     </span>
-                    <span className="text-white/60 text-[11px]">
+                    <span className="text-ink-2 text-[11px]">
                       {currentExercise.lessonTitle}
                     </span>
                   </div>
@@ -704,18 +704,18 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                         Bajo: {currentExercise.requiredBassNote}
                       </span>
                     )}
-                    <span>Aciertos: <strong className="text-emerald-400">{solvedCount}</strong></span>
+                    <span>Aciertos: <strong className="text-ok">{solvedCount}</strong></span>
                   </div>
                 </div>
 
                 {/* Question Prompt */}
                 <div className="space-y-1.5">
-                  <h3 className="text-lg md:text-2xl font-serif font-bold text-white leading-snug">
+                  <h3 className="text-lg md:text-2xl font-serif font-bold text-ink leading-snug">
                     {currentExercise.question}
                   </h3>
                   {currentExercise.hint && (
-                    <p className="text-xs text-amber-300/80 font-mono flex items-center justify-center gap-1.5">
-                      <Lightbulb size={13} className="text-amber-400 shrink-0" />
+                    <p className="text-xs text-brand-2/80 font-mono flex items-center justify-center gap-1.5">
+                      <Lightbulb size={13} className="text-brand-2 shrink-0" />
                       <span>{currentExercise.hint}</span>
                     </p>
                   )}
@@ -724,8 +724,8 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                 {/* Maestro Aurelio Pedagogical Tip */}
                 {currentExercise.aurelioTip && (
                   <div className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/20 text-left flex items-center gap-2.5 text-xs">
-                    <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={15} className="text-amber-300" /></div>
-                    <p className="text-amber-200/90 font-mono text-[11px]">
+                    <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={15} className="text-brand-2" /></div>
+                    <p className="text-brand-2/90 font-mono text-[11px]">
                       <strong>Tip del Maestro:</strong> {currentExercise.aurelioTip}
                     </p>
                   </div>
@@ -737,7 +737,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     <button
                       type="button"
                       onClick={() => playEarChallengeSound(currentExercise.audioKeys!, currentExercise.audioStyle)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 text-xs font-mono transition-all shadow hover:scale-105"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400/20 hover:bg-amber-400/30 text-brand-2 border border-amber-400/40 text-xs font-mono transition-all shadow hover:scale-105"
                     >
                       <Volume2 size={16} />
                       <span>Volver a Escuchar Sonido</span>
@@ -759,13 +759,13 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                             className={cn(
                               "px-2.5 py-1.5 rounded-xl flex flex-col items-center justify-center text-xs font-mono font-bold border transition-all",
                               hit 
-                                ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
-                                : "bg-white/5 border-white/10 text-white/40"
+                                ? "bg-emerald-500/20 border-emerald-400 text-ok shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
+                                : "bg-surface-2 border-line text-ink-3"
                             )}
                           >
                             <span className="text-sm">{target.replace(/\d/, '')}</span>
                             {finger && (
-                              <span className="text-[9px] text-amber-300/80 font-normal">
+                              <span className="text-[9px] text-brand-2/80 font-normal">
                                 d.{finger}
                               </span>
                             )}
@@ -793,15 +793,15 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     {currentExercise.options?.map((opt, index) => {
                       const isSelected = selectedOption === index;
                       const isCorrect = index === currentExercise.correctIndex;
-                      let btnStyle = "bg-white/5 border-white/10 hover:bg-white/10 text-white";
+                      let btnStyle = "bg-surface-2 border-line hover:bg-surface-3 text-ink";
 
                       if (feedback !== 'idle') {
                         if (isCorrect) {
-                          btnStyle = "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                          btnStyle = "bg-emerald-500/20 border-emerald-400 text-ok shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                         } else if (isSelected && !isCorrect) {
-                          btnStyle = "bg-rose-500/20 border-rose-400 text-rose-300";
+                          btnStyle = "bg-rose-500/20 border-rose-400 text-danger";
                         } else {
-                          btnStyle = "opacity-30 bg-white/5 border-white/5";
+                          btnStyle = "opacity-30 bg-surface-2 border-line";
                         }
                       }
 
@@ -817,7 +817,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                           )}
                         >
                           <span className="font-semibold">{opt}</span>
-                          <span className="w-5 h-5 rounded-md bg-white/10 text-[10px] flex items-center justify-center shrink-0">
+                          <span className="w-5 h-5 rounded-md bg-surface-3 text-[10px] flex items-center justify-center shrink-0">
                             {index + 1}
                           </span>
                         </button>
@@ -827,14 +827,14 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                 )}
 
                 {/* Bottom Actions: Skip or End Free Session */}
-                <div className="pt-3 flex items-center justify-between border-t border-white/5 text-xs font-mono text-white/40">
+                <div className="pt-3 flex items-center justify-between border-t border-line text-xs font-mono text-ink-3">
                   <span>Presiona teclas o haz clic para responder</span>
                   <div className="flex items-center gap-3">
                     {sessionDuration === 0 && (
                       <button
                         type="button"
                         onClick={handleFinishSession}
-                        className="text-amber-400 hover:text-amber-300 transition-colors font-bold"
+                        className="text-brand-2 hover:text-brand-2 transition-colors font-bold"
                       >
                         Finalizar Práctica Libre
                       </button>
@@ -842,7 +842,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="hover:text-amber-300 transition-colors underline"
+                      className="hover:text-brand-2 transition-colors underline"
                     >
                       Saltar ejercicio →
                     </button>
@@ -859,9 +859,9 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                       className="absolute inset-0 bg-emerald-950/85 backdrop-blur-xs flex items-center justify-center z-30 pointer-events-none"
                     >
                       <div className="text-center space-y-1">
-                        <div className="flex justify-center"><Sparkles size={36} className="text-emerald-400" /></div>
-                        <div className="text-xl font-serif font-bold text-emerald-300">¡Correcto, che!</div>
-                        <div className="text-emerald-400 font-mono text-xs flex items-center justify-center gap-1"><span>+100 PTS • Racha {streak + 1}</span><Flame size={12} className="text-rose-400" /></div>
+                        <div className="flex justify-center"><Sparkles size={36} className="text-ok" /></div>
+                        <div className="text-xl font-serif font-bold text-ok">¡Correcto, che!</div>
+                        <div className="text-ok font-mono text-xs flex items-center justify-center gap-1"><span>+100 PTS • Racha {streak + 1}</span><Flame size={12} className="text-danger" /></div>
                       </div>
                     </motion.div>
                   )}
@@ -873,11 +873,11 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                       className="absolute inset-0 bg-rose-950/85 backdrop-blur-xs flex items-center justify-center z-30 pointer-events-none p-4"
                     >
                       <div className="text-center space-y-1">
-                        <div className="flex justify-center"><AlertCircle size={36} className="text-rose-400" /></div>
-                        <div className="text-xl font-serif font-bold text-rose-300">
+                        <div className="flex justify-center"><AlertCircle size={36} className="text-danger" /></div>
+                        <div className="text-xl font-serif font-bold text-danger">
                           {feedbackNotice || '¡Casi! Revisá las notas'}
                         </div>
-                        <div className="text-rose-400 font-mono text-xs">Racha reiniciada • ¡Vamos de vuelta!</div>
+                        <div className="text-danger font-mono text-xs">Racha reiniciada • ¡Vamos de vuelta!</div>
                       </div>
                     </motion.div>
                   )}
@@ -890,53 +890,53 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
           {/* FINISHED / RESULTS SCREEN */}
           {gameState === 'finished' && (
             <div className="text-center space-y-6 py-4 max-w-lg mx-auto">
-              <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 shadow-md">
+              <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 mx-auto flex items-center justify-center text-ok shadow-md">
                 <Trophy size={32} />
               </div>
 
               <div className="space-y-1">
-                <div className="text-xs font-mono uppercase tracking-widest text-amber-400">
+                <div className="text-xs font-mono uppercase tracking-widest text-brand-2">
                   ¡Sesión Blitz Completada!
                 </div>
-                <h4 className="text-3xl font-serif font-bold text-white">
+                <h4 className="text-3xl font-serif font-bold text-ink">
                   {score >= 600 ? '¡Rendimiento Virtuoso!' : '¡Excelente Práctica Rápida!'}
                 </h4>
-                <p className="text-xs text-white/60 font-light">
+                <p className="text-xs text-ink-2 font-light">
                   Enfoque en <strong>{CATEGORY_TABS.find(t => t.id === selectedCategory)?.label}</strong>.
                 </p>
               </div>
 
               {/* Stats Summary Bento Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono">
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/40 uppercase">Puntos</div>
-                  <div className="text-lg font-bold text-amber-400">+{score}</div>
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+                  <div className="text-[10px] text-ink-3 uppercase">Puntos</div>
+                  <div className="text-lg font-bold text-brand-2">+{score}</div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/40 uppercase">Aciertos</div>
-                  <div className="text-lg font-bold text-emerald-400">{solvedCount}</div>
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+                  <div className="text-[10px] text-ink-3 uppercase">Aciertos</div>
+                  <div className="text-lg font-bold text-ok">{solvedCount}</div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/40 uppercase">Racha Máx.</div>
-                  <div className="text-lg font-bold text-rose-400 flex items-center justify-center gap-1"><span>{maxStreak}</span><Flame size={14} className="text-rose-400" /></div>
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+                  <div className="text-[10px] text-ink-3 uppercase">Racha Máx.</div>
+                  <div className="text-lg font-bold text-danger flex items-center justify-center gap-1"><span>{maxStreak}</span><Flame size={14} className="text-danger" /></div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/40 uppercase">Precisión</div>
+                <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+                  <div className="text-[10px] text-ink-3 uppercase">Precisión</div>
                   <div className="text-lg font-bold text-purple-300">{accuracy}%</div>
                 </div>
               </div>
 
               {/* Maestro Aurelio quote */}
               <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-left flex items-start gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={18} className="text-amber-300" /></div>
+                <div className="w-9 h-9 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0"><GraduationCap size={18} className="text-brand-2" /></div>
                 <div className="space-y-1 text-xs">
-                  <div className="font-mono font-bold text-amber-300 uppercase">
+                  <div className="font-mono font-bold text-brand-2 uppercase">
                     Devolución del Maestro Aurelio:
                   </div>
-                  <p className="text-white/80 font-light">
+                  <p className="text-ink-2 font-light">
                     {score >= 800
                       ? '¡Impecable che! Reflejos de concertista. Dominar escalas e inversiones con esta velocidad te va a dar una libertad tremenda para tocar cualquier tema.'
                       : score >= 400
@@ -960,7 +960,7 @@ export const QuickPracticeModal: React.FC<QuickPracticeModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition-colors"
+                  className="px-6 py-3.5 rounded-2xl bg-surface-3 hover:bg-surface-3 text-ink font-mono text-xs transition-colors"
                 >
                   Cerrar
                 </button>

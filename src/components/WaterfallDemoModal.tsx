@@ -347,24 +347,24 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-5xl bg-[#0d1017] border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+          className="stage-dark relative w-full max-w-5xl bg-surface border border-line-strong rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/[0.02]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-line bg-white/[0.02]">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-400/20 shrink-0">
                 <Flame size={20} className="fill-black" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-bold text-white truncate font-serif">
+                  <h3 className="text-base sm:text-lg font-bold text-ink truncate font-serif">
                     {title}
                   </h3>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-widest shrink-0 hidden sm:inline">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/30 uppercase tracking-widest shrink-0 hidden sm:inline">
                     Demo Catarata
                   </span>
                 </div>
-                <p className="text-xs text-white/50 truncate font-mono">
+                <p className="text-xs text-ink-3 truncate font-mono">
                   {composer ? `${composer} • ` : ''}{subtitle}
                 </p>
               </div>
@@ -373,7 +373,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-ink-2 hover:text-ink hover:bg-surface-3 transition-colors"
               title="Cerrar demostración"
             >
               <X size={20} />
@@ -381,7 +381,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
           </div>
 
           {/* Canvas Falling Notes Area */}
-          <div className="relative w-full h-[320px] sm:h-[380px] bg-[#07090e] overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-[320px] sm:h-[380px] bg-surface overflow-hidden flex items-center justify-center">
             <canvas
               ref={canvasRef}
               width={960}
@@ -391,18 +391,18 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
 
             {/* Hand Legend Overlays */}
             <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none text-[11px] font-mono">
-              <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 flex items-center gap-1.5 shadow">
+              <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-400/40 text-info flex items-center gap-1.5 shadow">
                 <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
                 <span>Mano Derecha (D1-D5)</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-rose-950/80 border border-rose-400/40 text-rose-300 flex items-center gap-1.5 shadow">
+              <span className="px-2.5 py-1 rounded-lg bg-rose-950/80 border border-rose-400/40 text-danger flex items-center gap-1.5 shadow">
                 <span className="w-2 h-2 rounded-full bg-rose-400"></span>
                 <span>Mano Izquierda (D1-D5)</span>
               </span>
             </div>
 
             {/* Progress bar inside canvas bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-3">
               <div 
                 className="h-full bg-gradient-to-r from-cyan-400 via-amber-400 to-rose-400 transition-all"
                 style={{ width: `${Math.min(100, (currentTime / totalDuration) * 100)}%` }}
@@ -411,7 +411,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
           </div>
 
           {/* Interactive Keyboard Visualizer under the hit line */}
-          <div className="bg-[#0a0c12] p-3 border-t border-white/10 overflow-x-auto select-none">
+          <div className="bg-surface p-3 border-t border-line overflow-x-auto select-none">
             <div className="flex justify-center min-w-max mx-auto relative pb-1">
               {allKeys.map(midi => {
                 const isBlack = [1, 3, 6, 8, 10].includes(midi % 12);
@@ -449,7 +449,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
                     )}
                   >
                     {noteItem?.finger ? (
-                      <span className="text-[10px] font-mono font-extrabold text-white bg-black/80 rounded-full w-4 h-4 flex items-center justify-center shadow-md mb-1">
+                      <span className="text-[10px] font-mono font-extrabold text-ink bg-black/80 rounded-full w-4 h-4 flex items-center justify-center shadow-md mb-1">
                         {noteItem.finger}
                       </span>
                     ) : (
@@ -464,7 +464,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
           </div>
 
           {/* Bottom Controls Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-black/60 border-t border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-black/60 border-t border-line">
             {/* Play/Pause & Reset */}
             <div className="flex items-center gap-2">
               <button
@@ -482,7 +482,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
                   setCurrentTime(0);
                   setIsPlaying(true);
                 }}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-all"
+                className="p-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-all"
                 title="Reiniciar desde el inicio"
               >
                 <RotateCcw size={15} />
@@ -490,8 +490,8 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
             </div>
 
             {/* Hand selector */}
-            <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/10 text-xs font-mono">
-              <span className="text-white/40 px-2 hidden md:inline">Mano:</span>
+            <div className="flex items-center gap-1 p-1 bg-surface-2 rounded-xl border border-line text-xs font-mono">
+              <span className="text-ink-3 px-2 hidden md:inline">Mano:</span>
               {[
                 { id: 'both', label: 'Ambas' },
                 { id: 'right', label: 'Mano Der (Cyan)' },
@@ -505,7 +505,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
                     "px-2.5 py-1 rounded-lg transition-all",
                     activeHandFilter === h.id
                       ? "bg-amber-400 text-black font-bold shadow"
-                      : "text-white/60 hover:text-white"
+                      : "text-ink-2 hover:text-ink"
                   )}
                 >
                   {h.label}
@@ -514,8 +514,8 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
             </div>
 
             {/* Speed Selector */}
-            <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/10 text-xs font-mono">
-              <span className="text-white/40 px-2 hidden sm:inline">Velocidad:</span>
+            <div className="flex items-center gap-1.5 p-1 bg-surface-2 rounded-xl border border-line text-xs font-mono">
+              <span className="text-ink-3 px-2 hidden sm:inline">Velocidad:</span>
               {[0.5, 0.75, 1.0, 1.25].map(s => (
                 <button
                   key={s}
@@ -524,8 +524,8 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
                   className={cn(
                     "px-2 py-1 rounded-lg transition-all",
                     playbackSpeed === s
-                      ? "bg-white/20 text-white font-bold"
-                      : "text-white/50 hover:text-white"
+                      ? "bg-surface-3 text-ink font-bold"
+                      : "text-ink-3 hover:text-ink"
                   )}
                 >
                   {s}x
@@ -541,8 +541,8 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
                 className={cn(
                   "p-2 rounded-xl border transition-all",
                   isMuted 
-                    ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
-                    : "bg-white/5 border-white/10 text-white/70 hover:text-white"
+                    ? "bg-rose-500/20 border-rose-500/40 text-danger"
+                    : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                 )}
                 title={isMuted ? "Activar audio" : "Silenciar audio"}
               >
@@ -552,7 +552,7 @@ export const WaterfallDemoModal: React.FC<WaterfallDemoModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-bold transition-all"
+                className="px-4 py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-ink text-xs font-mono font-bold transition-all"
               >
                 Cerrar Demo
               </button>

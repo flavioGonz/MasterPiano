@@ -9,6 +9,9 @@ import * as Tone from 'tone';
 import { Piano } from './Piano';
 import { soundEngine, SoundPreset, SOUND_PRESETS, getSavedSoundPreset } from '../lib/soundPresets';
 import { cn } from '../lib/utils';
+import { AudioTranscribePanel } from './AudioTranscribePanel';
+import { StemStudio } from './StemStudio';
+import { WaterfallSong } from '../lib/midiWaterfall';
 
 export interface BuiltInTrack {
   id: string;
@@ -202,7 +205,12 @@ class ProceduralJamEngine {
 
 const proceduralEngine = new ProceduralJamEngine();
 
-export const WavBackingStudio: React.FC = () => {
+interface WavBackingStudioProps {
+  /** Manda una transcripción del audio subido a la Catarata de Tonos. */
+  onExportToWaterfall?: (song: WaterfallSong) => void;
+}
+
+export const WavBackingStudio: React.FC<WavBackingStudioProps> = ({ onExportToWaterfall }) => {
   // Builtin selection or custom file
   const [selectedBuiltin, setSelectedBuiltin] = useState<BuiltInTrack>(BUILTIN_TRACKS[0]);
   const [uploadedFile, setUploadedFile] = useState<{ file: File; url: string; name: string } | null>(null);
@@ -488,21 +496,24 @@ export const WavBackingStudio: React.FC = () => {
         className="hidden"
       />
 
+      {/* Desde YouTube / archivo → stems separados → base para el Kross 2 */}
+      <StemStudio onExportToWaterfall={onExportToWaterfall} />
+
       {/* TOP EXPLANATION BANNER: What can you do with .wav bases? */}
-      <div className="glass p-6 md:p-8 rounded-3xl border border-amber-400/20 bg-gradient-to-r from-[#0d121f] via-[#090b14] to-[#160e12] space-y-4">
+      <div className="p-6 md:p-8 rounded-3xl border border-brand-line bg-surface space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-mono uppercase tracking-widest font-bold">
+            <div className="flex items-center gap-2 text-brand-2 text-xs font-mono uppercase tracking-widest font-bold">
               <FileAudio size={15} />
               <span>¿Qué puedes hacer con Bases .WAV?</span>
-              <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/30 text-[10px]">
                 Audio & Play-Along
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-ink">
               Estudio de Acompañamiento y Bases .WAV
             </h2>
-            <p className="text-xs md:text-sm text-white/60 font-light max-w-4xl leading-relaxed">
+            <p className="text-xs md:text-sm text-ink-2 font-light max-w-4xl leading-relaxed">
               Las bases en formato <strong>.WAV</strong> (y pistas de audio sin comprimir) son el estándar de la industria musical para practicar piano con sonido de banda real. Aquí tienes todo lo que puedes realizar:
             </p>
           </div>
@@ -528,42 +539,42 @@ export const WavBackingStudio: React.FC = () => {
 
         {/* 4 Pillars of .WAV Backing capabilities */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
+            <div className="flex items-center gap-2 text-info font-mono text-xs font-bold">
               <Disc size={14} />
               <span>1. Tocar Arriba (Jamming)</span>
             </div>
-            <p className="text-[11px] text-white/50 leading-normal font-light">
+            <p className="text-[11px] text-ink-3 leading-normal font-light">
               Toca el piano sobre baterías acústicas, bajo y guitarras reales con tempo estricto, aprendiendo a mantener el pulso exacto sin perderte.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
+            <div className="flex items-center gap-2 text-ok font-mono text-xs font-bold">
               <Activity size={14} />
               <span>2. Visualización de Onda</span>
             </div>
-            <p className="text-[11px] text-white/50 leading-normal font-light">
+            <p className="text-[11px] text-ink-3 leading-normal font-light">
               El osciloscopio y analizador de frecuencias Web Audio te muestra los golpes de percusión y la dinámica de la pista en tiempo real.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="flex items-center gap-2 text-rose-400 font-mono text-xs font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
+            <div className="flex items-center gap-2 text-danger font-mono text-xs font-bold">
               <Gauge size={14} />
               <span>3. Control de Velocidad</span>
             </div>
-            <p className="text-[11px] text-white/50 leading-normal font-light">
+            <p className="text-[11px] text-ink-3 leading-normal font-light">
               Desacelera cualquier base a 0.75x o 0.9x para aprender solos difíciles o voicings complejos paso a paso antes de tocar a velocidad real.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
+            <div className="flex items-center gap-2 text-brand-2 font-mono text-xs font-bold">
               <Sliders size={14} />
               <span>4. Mezcla Dual (Mixer)</span>
             </div>
-            <p className="text-[11px] text-white/50 leading-normal font-light">
+            <p className="text-[11px] text-ink-3 leading-normal font-light">
               Balancea el volumen de la base frente al del piano virtual para que tu instrumento resalte con claridad durante la sesión de práctica.
             </p>
           </div>
@@ -575,16 +586,16 @@ export const WavBackingStudio: React.FC = () => {
         
         {/* LEFT COLUMN: TRACK PICKER & HARMONIC ROADMAP (4 cols on lg) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="glass p-5 rounded-3xl border border-white/10 space-y-4">
+          <div className="glass p-5 rounded-3xl border border-line space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-widest text-white/50">
+              <span className="text-xs font-mono uppercase tracking-widest text-ink-3">
                 Pistas Disponibles
               </span>
               {uploadedFile && (
                 <button
                   type="button"
                   onClick={handleClearUploadedFile}
-                  className="text-[10px] text-rose-400 hover:text-rose-300 font-mono underline"
+                  className="text-[10px] text-danger hover:text-danger font-mono underline"
                 >
                   Volver a pistas internas
                 </button>
@@ -594,18 +605,24 @@ export const WavBackingStudio: React.FC = () => {
             {/* If custom file uploaded */}
             {uploadedFile ? (
               <div className="p-4 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 space-y-2">
-                <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs font-mono">
+                <div className="flex items-center gap-2 text-info font-bold text-xs font-mono">
                   <FileAudio size={16} />
                   <span>Base Personal Cargada:</span>
                 </div>
-                <div className="text-sm font-semibold text-white truncate">
+                <div className="text-sm font-semibold text-ink truncate">
                   {uploadedFile.name}
                 </div>
-                <div className="text-[11px] text-white/50 font-mono">
+                <div className="text-[11px] text-ink-3 font-mono">
                   Audio decodificado por Web Audio API con osciloscopio en vivo.
                 </div>
               </div>
-            ) : (
+            ) : null}
+
+            {uploadedFile && onExportToWaterfall && (
+              <AudioTranscribePanel file={uploadedFile.file} onImport={onExportToWaterfall} />
+            )}
+
+            {uploadedFile ? null : (
               /* Built-in groove selector */
               <div className="space-y-2">
                 {BUILTIN_TRACKS.map(t => {
@@ -622,17 +639,17 @@ export const WavBackingStudio: React.FC = () => {
                       className={cn(
                         "w-full text-left p-3 rounded-2xl border transition-all flex flex-col gap-1",
                         isSelected
-                          ? "bg-amber-400/15 border-amber-400/40 text-white shadow-md shadow-amber-400/10"
-                          : "bg-white/5 border-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                          ? "bg-amber-400/15 border-amber-400/40 text-ink shadow-md shadow-amber-400/10"
+                          : "bg-surface-2 border-line text-ink-2 hover:bg-surface-3 hover:text-ink"
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-xs">{t.name}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-black/40 text-amber-300">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-black/40 text-brand-2">
                           {t.bpm} BPM
                         </span>
                       </div>
-                      <div className="text-[11px] text-white/40 flex items-center gap-2">
+                      <div className="text-[11px] text-ink-3 flex items-center gap-2">
                         <span>{t.genre}</span>
                         <span>•</span>
                         <span>Tonalidad: {t.key}</span>
@@ -645,8 +662,8 @@ export const WavBackingStudio: React.FC = () => {
 
             {/* Chord Progression Visual Sequence for selected track */}
             {!uploadedFile && (
-              <div className="pt-3 border-t border-white/10 space-y-2">
-                <span className="text-[11px] font-mono text-white/50 block">
+              <div className="pt-3 border-t border-line space-y-2">
+                <span className="text-[11px] font-mono text-ink-3 block">
                   Secuencia de Acordes (Compás Activo):
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -659,7 +676,7 @@ export const WavBackingStudio: React.FC = () => {
                           "px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-all text-center",
                           isCurrent
                             ? "bg-amber-400 text-black border-amber-300 scale-110 shadow-lg shadow-amber-400/40 animate-pulse"
-                            : "bg-black/40 border-white/10 text-white/60"
+                            : "bg-black/40 border-line text-ink-2"
                         )}
                       >
                         {chord}
@@ -668,13 +685,13 @@ export const WavBackingStudio: React.FC = () => {
                   })}
                 </div>
 
-                <div className="p-3 rounded-xl bg-black/30 border border-white/5 text-[11px] text-white/60 space-y-1">
-                  <div className="text-amber-300 font-bold font-mono text-[10px] uppercase">
+                <div className="p-3 rounded-xl bg-black/30 border border-line text-[11px] text-ink-2 space-y-1">
+                  <div className="text-brand-2 font-bold font-mono text-[10px] uppercase">
                     Notas sugeridas para solear / improvisar:
                   </div>
-                  <div className="font-mono text-white/80 flex flex-wrap gap-1.5">
+                  <div className="font-mono text-ink-2 flex flex-wrap gap-1.5">
                     {selectedBuiltin.scaleNotes.map(n => (
-                      <span key={n} className="px-1.5 py-0.5 rounded bg-white/10 text-cyan-300 text-[10px]">
+                      <span key={n} className="px-1.5 py-0.5 rounded bg-surface-3 text-info text-[10px]">
                         {n.replace(/\d/, '')}
                       </span>
                     ))}
@@ -687,10 +704,10 @@ export const WavBackingStudio: React.FC = () => {
 
         {/* RIGHT COLUMN: REALTIME WAVEFORM OSCILLOSCOPE & PLAYBACK CONTROLS (8 cols on lg) */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="glass p-6 rounded-3xl border border-white/10 space-y-5">
+          <div className="glass p-6 rounded-3xl border border-line space-y-5">
             
             {/* Real-time Waveform Canvas */}
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#06080e] shadow-2xl">
+            <div className="relative rounded-2xl overflow-hidden border border-line bg-surface shadow-2xl">
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -704,15 +721,15 @@ export const WavBackingStudio: React.FC = () => {
                   "w-2.5 h-2.5 rounded-full",
                   isPlaying ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" : "bg-white/30"
                 )} />
-                <span className="text-white/70">
+                <span className="text-ink-2">
                   {isPlaying ? 'EN REPRODUCCIÓN (PLAY-ALONG)' : 'PAUSADO'}
                 </span>
               </div>
 
               {/* Big active chord indicator floating on top right */}
-              <div className="absolute top-3 right-4 bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 text-right">
-                <span className="text-[10px] font-mono text-white/40 block">ACORDE ACTUAL</span>
-                <span className="text-xl font-bold font-mono text-amber-400">
+              <div className="absolute top-3 right-4 bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-line text-right">
+                <span className="text-[10px] font-mono text-ink-3 block">ACORDE ACTUAL</span>
+                <span className="text-xl font-bold font-mono text-brand-2">
                   {activeChord}
                 </span>
               </div>
@@ -736,26 +753,26 @@ export const WavBackingStudio: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-all"
+                  className="p-3 rounded-2xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-all"
                   title="Reiniciar base al compás 1"
                 >
                   <RotateCcw size={18} />
                 </button>
 
                 <div>
-                  <div className="text-sm font-bold text-white font-serif">
+                  <div className="text-sm font-bold text-ink font-serif">
                     {uploadedFile ? uploadedFile.name : selectedBuiltin.name}
                   </div>
-                  <div className="text-xs text-white/40 font-mono">
+                  <div className="text-xs text-ink-3 font-mono">
                     {uploadedFile ? 'Archivo .WAV personalizado' : `${selectedBuiltin.genre} • ${tempo} BPM`}
                   </div>
                 </div>
               </div>
 
               {/* Speed Multiplier Pill */}
-              <div className="flex items-center bg-black/50 p-1.5 rounded-2xl border border-white/10 text-xs font-mono">
-                <span className="text-[10px] text-white/40 px-2 flex items-center gap-1">
-                  <Gauge size={12} className="text-amber-400" />
+              <div className="flex items-center bg-black/50 p-1.5 rounded-2xl border border-line text-xs font-mono">
+                <span className="text-[10px] text-ink-3 px-2 flex items-center gap-1">
+                  <Gauge size={12} className="text-brand-2" />
                   <span>Velocidad:</span>
                 </span>
                 {[0.75, 0.9, 1.0, 1.1, 1.25].map(rate => (
@@ -772,7 +789,7 @@ export const WavBackingStudio: React.FC = () => {
                       "px-2.5 py-1 rounded-xl transition-all",
                       playbackRate === rate
                         ? "bg-amber-400 text-black font-bold shadow"
-                        : "text-white/50 hover:text-white"
+                        : "text-ink-3 hover:text-ink"
                     )}
                   >
                     {rate}x
@@ -782,16 +799,16 @@ export const WavBackingStudio: React.FC = () => {
             </div>
 
             {/* Mixer Controls (Dual Volume) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-white/10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-line">
               
               {/* Backing track volume */}
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-1.5">
+              <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-white/60 flex items-center gap-1.5">
-                    <Volume2 size={13} className="text-amber-400" />
+                  <span className="text-ink-2 flex items-center gap-1.5">
+                    <Volume2 size={13} className="text-brand-2" />
                     <span>Volumen de la Base .WAV</span>
                   </span>
-                  <span className="text-amber-300 font-bold">{backingVolume}%</span>
+                  <span className="text-brand-2 font-bold">{backingVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -804,13 +821,13 @@ export const WavBackingStudio: React.FC = () => {
               </div>
 
               {/* Virtual Piano volume */}
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-1.5">
+              <div className="p-3.5 rounded-2xl bg-surface-2 border border-line space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-white/60 flex items-center gap-1.5">
-                    <Music size={13} className="text-cyan-400" />
+                  <span className="text-ink-2 flex items-center gap-1.5">
+                    <Music size={13} className="text-info" />
                     <span>Volumen de tu Piano</span>
                   </span>
-                  <span className="text-cyan-300 font-bold">{pianoVolume}%</span>
+                  <span className="text-info font-bold">{pianoVolume}%</span>
                 </div>
                 <input
                   type="range"
@@ -831,23 +848,23 @@ export const WavBackingStudio: React.FC = () => {
       </div>
 
       {/* INTEGRATED ACOUSTIC PIANO (Toca directamente sobre la base!) */}
-      <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-4 shadow-2xl">
+      <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-4 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="text-amber-400 text-xs font-mono uppercase tracking-widest font-bold">
+            <span className="text-brand-2 text-xs font-mono uppercase tracking-widest font-bold">
               Teclado de Ensayo en Vivo
             </span>
-            <h3 className="text-lg md:text-xl font-serif font-bold text-white">
+            <h3 className="text-lg md:text-xl font-serif font-bold text-ink">
               Toca tu Piano por Encima de la Base
             </h3>
-            <p className="text-xs text-white/50 font-light">
+            <p className="text-xs text-ink-3 font-light">
               Puedes tocar con el teclado de tu computadora (A, W, S, E, D, F...), haciendo clic con el ratón o conectando un teclado USB/MIDI.
             </p>
           </div>
 
           {/* Sound Timbre Selector for Piano */}
-          <div className="flex items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 text-xs font-mono">
-            <span className="text-[10px] text-white/40 px-2">Timbre:</span>
+          <div className="flex items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-line text-xs font-mono">
+            <span className="text-[10px] text-ink-3 px-2">Timbre:</span>
             {SOUND_PRESETS.map(preset => (
               <button
                 key={preset.id}
@@ -857,7 +874,7 @@ export const WavBackingStudio: React.FC = () => {
                   "flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all",
                   soundPreset === preset.id
                     ? "bg-amber-400 text-black font-bold shadow"
-                    : "text-white/60 hover:text-white"
+                    : "text-ink-2 hover:text-ink"
                 )}
               >
                 <span>{preset.icon}</span>

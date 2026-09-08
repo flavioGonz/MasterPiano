@@ -296,7 +296,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
   return (
     <div className="space-y-8" id="ear-training-gym-container">
       {/* Sub-header Navigation: Mode selector & Level */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.03] border border-line backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -306,7 +306,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               "flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-mono transition-all",
               earMode === 'intervals'
                 ? "bg-amber-400 text-black font-bold shadow-lg shadow-amber-400/20"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                : "text-ink-2 hover:text-ink hover:bg-surface-2"
             )}
           >
             <Music size={15} />
@@ -321,7 +321,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               "flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-mono transition-all",
               earMode === 'triads'
                 ? "bg-amber-400 text-black font-bold shadow-lg shadow-amber-400/20"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                : "text-ink-2 hover:text-ink hover:bg-surface-2"
             )}
           >
             <Layers size={15} />
@@ -331,7 +331,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
 
         {/* Difficulty buttons */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider hidden md:inline">Nivel:</span>
+          <span className="text-[11px] font-mono text-ink-3 uppercase tracking-wider hidden md:inline">Nivel:</span>
           {(['Principiante', 'Intermedio', 'Avanzado'] as const).map(lvl => (
             <button
               key={lvl}
@@ -341,8 +341,8 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
                 difficulty === lvl
-                  ? "bg-white/15 text-white font-semibold border border-white/30"
-                  : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
+                  ? "bg-surface-3 text-ink font-semibold border border-white/30"
+                  : "bg-surface-2 text-ink-3 hover:text-ink hover:bg-surface-3"
               )}
             >
               {lvl}
@@ -353,66 +353,66 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
 
       {/* Gamification Stats Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="glass p-3.5 rounded-2xl border border-white/5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+        <div className="glass p-3.5 rounded-2xl border border-line flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-brand-2">
             <Trophy size={18} />
           </div>
           <div>
-            <div className="text-[10px] font-mono text-white/40 uppercase">Puntos de Oído</div>
-            <div className="text-lg font-mono font-bold text-white">+{score} <span className="text-xs text-amber-400 font-normal">PTS</span></div>
+            <div className="text-[10px] font-mono text-ink-3 uppercase">Puntos de Oído</div>
+            <div className="text-lg font-mono font-bold text-ink">+{score} <span className="text-xs text-brand-2 font-normal">PTS</span></div>
           </div>
         </div>
 
-        <div className="glass p-3.5 rounded-2xl border border-white/5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <div className="glass p-3.5 rounded-2xl border border-line flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-danger">
             <Flame size={18} />
           </div>
           <div>
-            <div className="text-[10px] font-mono text-white/40 uppercase">Racha de Aciertos</div>
-            <div className="text-lg font-mono font-bold text-rose-300 flex items-center gap-1.5">
+            <div className="text-[10px] font-mono text-ink-3 uppercase">Racha de Aciertos</div>
+            <div className="text-lg font-mono font-bold text-danger flex items-center gap-1.5">
               <span>{streak}</span>
-              <Flame size={15} className="text-rose-400 inline" />
-              <span className="text-xs text-white/30 font-normal">(Récord: {bestStreak})</span>
+              <Flame size={15} className="text-danger inline" />
+              <span className="text-xs text-ink-3 font-normal">(Récord: {bestStreak})</span>
             </div>
           </div>
         </div>
 
-        <div className="glass p-3.5 rounded-2xl border border-white/5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <div className="glass p-3.5 rounded-2xl border border-line flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-ok">
             <CheckCircle2 size={18} />
           </div>
           <div>
-            <div className="text-[10px] font-mono text-white/40 uppercase">Aciertos / Intentos</div>
-            <div className="text-lg font-mono font-bold text-white">{correctGuesses} <span className="text-xs text-white/40">/ {totalGuesses}</span></div>
+            <div className="text-[10px] font-mono text-ink-3 uppercase">Aciertos / Intentos</div>
+            <div className="text-lg font-mono font-bold text-ink">{correctGuesses} <span className="text-xs text-ink-3">/ {totalGuesses}</span></div>
           </div>
         </div>
 
-        <div className="glass p-3.5 rounded-2xl border border-white/5 flex items-center gap-3">
+        <div className="glass p-3.5 rounded-2xl border border-line flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
             <Award size={18} />
           </div>
           <div>
-            <div className="text-[10px] font-mono text-white/40 uppercase">Precisión Auditiva</div>
+            <div className="text-[10px] font-mono text-ink-3 uppercase">Precisión Auditiva</div>
             <div className="text-lg font-mono font-bold text-purple-300">{accuracy}%</div>
           </div>
         </div>
       </div>
 
       {/* MAIN LISTENING ARENA */}
-      <div className="glass p-6 md:p-10 rounded-3xl border border-white/10 text-center space-y-8 relative overflow-hidden bg-gradient-to-b from-white/[0.04] to-black/40 shadow-2xl">
+      <div className="glass p-6 md:p-10 rounded-3xl border border-line text-center space-y-8 relative overflow-hidden bg-gradient-to-b from-white/[0.04] to-black/40 shadow-2xl">
         
         {/* Blind Training Curtain / Visualizer */}
         <div className="max-w-xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 text-xs font-mono">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 text-brand-2 border border-amber-400/20 text-xs font-mono">
             <Headphones size={13} />
             <span>Entrenamiento a Ciegas: El teclado está oculto hasta que respondas</span>
           </div>
 
-          <h3 className="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight">
+          <h3 className="text-3xl md:text-4xl font-serif font-bold text-ink tracking-tight">
             {earMode === 'intervals' ? '¿Qué intervalo escuchás?' : '¿Qué color de tríada sonó?'}
           </h3>
 
-          <p className="text-xs sm:text-sm text-white/60 font-light max-w-md mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-ink-2 font-light max-w-md mx-auto leading-relaxed">
             {earMode === 'intervals'
               ? 'Escuchá con atención el piano. Prestá atención a si el sonido genera tensión, consonancia o una melodía conocida.'
               : 'Distingue si el acorde suena alegre (Mayor), melancólico (Menor), tenso de suspenso (Disminuido) o flotante misterioso (Aumentado).'}
@@ -420,7 +420,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
         </div>
 
         {/* Audio Playback Controls Box with Sound Waves */}
-        <div className="p-6 md:p-8 rounded-3xl bg-black/40 border border-white/10 max-w-lg mx-auto space-y-6 shadow-inner relative">
+        <div className="p-6 md:p-8 rounded-3xl bg-black/40 border border-line max-w-lg mx-auto space-y-6 shadow-inner relative">
           
           {/* Audio Waveform Animation */}
           <div className="flex items-center justify-center gap-1.5 h-12">
@@ -442,7 +442,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                 }}
                 className={cn(
                   "w-1.5 rounded-full origin-center transition-colors",
-                  isPlayingAudio ? "bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]" : "bg-white/20"
+                  isPlayingAudio ? "bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]" : "bg-surface-3"
                 )}
                 style={{ height: '36px' }}
               />
@@ -467,16 +467,16 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               id="btn-play-slow"
               onClick={() => earMode === 'intervals' ? playIntervalAudio('slow') : playTriadAudio('slow')}
               disabled={isPlayingAudio}
-              className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 text-xs font-mono transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line text-xs font-mono transition-all disabled:opacity-50"
             >
-              <Gauge size={13} className="text-amber-400" />
+              <Gauge size={13} className="text-brand-2" />
               <span>Más Lento</span>
             </button>
           </div>
 
           {/* Style toggles (Melodic vs Harmonic) */}
-          <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-[11px] font-mono text-white/40">Modo de toque:</span>
+          <div className="pt-2 border-t border-line flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[11px] font-mono text-ink-3">Modo de toque:</span>
             {earMode === 'intervals' ? (
               <>
                 <button
@@ -488,7 +488,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    intervalPlayStyle === 'ascending' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    intervalPlayStyle === 'ascending' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <ArrowUpRight size={13} />
@@ -504,7 +504,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    intervalPlayStyle === 'descending' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    intervalPlayStyle === 'descending' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <ArrowDownRight size={13} />
@@ -520,7 +520,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    intervalPlayStyle === 'harmonic' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    intervalPlayStyle === 'harmonic' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <Layers size={13} />
@@ -538,7 +538,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    triadPlayStyle === 'arpeggioUp' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    triadPlayStyle === 'arpeggioUp' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <ArrowUpRight size={13} />
@@ -554,7 +554,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    triadPlayStyle === 'block' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    triadPlayStyle === 'block' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <Layers size={13} />
@@ -570,7 +570,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   }}
                   className={cn(
                     "flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
-                    triadPlayStyle === 'arpeggioDown' ? "bg-white/20 text-white font-bold" : "text-white/40 hover:text-white/80"
+                    triadPlayStyle === 'arpeggioDown' ? "bg-surface-3 text-ink font-bold" : "text-ink-3 hover:text-ink-2"
                   )}
                 >
                   <ArrowDownRight size={13} />
@@ -586,7 +586,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               type="button"
               id="btn-hint"
               onClick={() => setShowHint(prev => !prev)}
-              className="flex items-center gap-1.5 text-xs font-mono text-amber-300 hover:text-amber-200 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-mono text-brand-2 hover:text-brand-2 transition-colors"
             >
               <Lightbulb size={13} />
               <span>{showHint ? 'Ocultar Pista' : 'Pedir Pista Nemotécnica'}</span>
@@ -600,20 +600,20 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-3.5 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-xs text-amber-200 text-left space-y-1 font-mono"
+                className="p-3.5 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-xs text-brand-2 text-left space-y-1 font-mono"
               >
-                <div className="font-bold flex items-center gap-1.5 text-amber-300">
+                <div className="font-bold flex items-center gap-1.5 text-brand-2">
                   <Sparkles size={13} />
                   <span>Pista del Maestro:</span>
                 </div>
                 {earMode === 'intervals' && intervalChallenge ? (
-                  <p className="text-white/80 flex items-start gap-1.5">
-                    <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-ink-2 flex items-start gap-1.5">
+                    <Lightbulb size={13} className="text-brand-2 shrink-0 mt-0.5" />
                     <span><em>Canción guía:</em> Este intervalo suena exactamente en el inicio de <strong>"{intervalChallenge.interval.famousSong}"</strong>. {intervalChallenge.interval.moodDescription}</span>
                   </p>
                 ) : triadChallenge ? (
-                  <p className="text-white/80 flex items-start gap-1.5">
-                    <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-ink-2 flex items-start gap-1.5">
+                    <Lightbulb size={13} className="text-brand-2 shrink-0 mt-0.5" />
                     <span><em>Carácter acústico:</em> La tríada {triadChallenge.qualityInfo.name} transmite una emoción de <strong>{triadChallenge.qualityInfo.description}</strong>.</span>
                   </p>
                 ) : null}
@@ -624,7 +624,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
 
         {/* GUESS OPTIONS CARDS */}
         <div className="space-y-4 max-w-4xl mx-auto">
-          <div className="text-xs font-mono text-white/40 uppercase tracking-wider text-left">
+          <div className="text-xs font-mono text-ink-3 uppercase tracking-wider text-left">
             Seleccioná tu respuesta:
           </div>
 
@@ -635,14 +635,14 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                 const isTarget = intervalChallenge?.interval.id === interval.id;
                 const hasAnswered = intervalFeedback !== 'idle';
 
-                let buttonStyle = "bg-white/5 border-white/10 hover:bg-white/10 text-white";
+                let buttonStyle = "bg-surface-2 border-line hover:bg-surface-3 text-ink";
                 if (hasAnswered) {
                   if (isTarget) {
-                    buttonStyle = "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+                    buttonStyle = "bg-emerald-500/20 border-emerald-400 text-ok shadow-[0_0_20px_rgba(16,185,129,0.3)]";
                   } else if (isSelected && !isTarget) {
-                    buttonStyle = "bg-rose-500/20 border-rose-400 text-rose-300 opacity-60";
+                    buttonStyle = "bg-rose-500/20 border-rose-400 text-danger opacity-60";
                   } else {
-                    buttonStyle = "opacity-30 bg-white/5 border-white/5";
+                    buttonStyle = "opacity-30 bg-surface-2 border-line";
                   }
                 }
 
@@ -660,17 +660,17 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-base font-bold font-serif">{interval.shortName}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white/60">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-3 text-ink-2">
                         {interval.semitones} semitonos
                       </span>
                     </div>
 
-                    <div className="text-[11px] font-mono text-white/50 group-hover:text-white/70 line-clamp-1">
+                    <div className="text-[11px] font-mono text-ink-3 group-hover:text-ink-2 line-clamp-1">
                       {interval.famousSong}
                     </div>
 
                     {hasAnswered && isTarget && (
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-bold mt-1">
+                      <div className="flex items-center gap-1 text-[11px] font-mono text-ok font-bold mt-1">
                         <CheckCircle2 size={12} />
                         <span>¡Respuesta correcta!</span>
                       </div>
@@ -686,14 +686,14 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                 const isTarget = triadChallenge?.quality === quality.id;
                 const hasAnswered = triadFeedback !== 'idle';
 
-                let cardStyle = "bg-white/5 border-white/10 hover:bg-white/10 text-white";
+                let cardStyle = "bg-surface-2 border-line hover:bg-surface-3 text-ink";
                 if (hasAnswered) {
                   if (isTarget) {
-                    cardStyle = "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+                    cardStyle = "bg-emerald-500/20 border-emerald-400 text-ok shadow-[0_0_20px_rgba(16,185,129,0.3)]";
                   } else if (isSelected && !isTarget) {
-                    cardStyle = "bg-rose-500/20 border-rose-400 text-rose-300 opacity-60";
+                    cardStyle = "bg-rose-500/20 border-rose-400 text-danger opacity-60";
                   } else {
-                    cardStyle = "opacity-30 bg-white/5 border-white/5";
+                    cardStyle = "opacity-30 bg-surface-2 border-line";
                   }
                 }
 
@@ -711,24 +711,24 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
                   >
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xl font-serif font-bold text-white group-hover:text-amber-300 transition-colors">
+                        <span className="text-xl font-serif font-bold text-ink group-hover:text-brand-2 transition-colors">
                           {quality.name}
                         </span>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-white/10 text-amber-300">
+                        <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-surface-3 text-brand-2">
                           {quality.symbol || 'Triad'}
                         </span>
                       </div>
-                      <div className="text-xs font-mono text-white/50">
+                      <div className="text-xs font-mono text-ink-3">
                         {quality.semitoneIntervals.join(' - ')} semitonos
                       </div>
                     </div>
 
-                    <p className="text-xs text-white/60 font-light leading-relaxed">
+                    <p className="text-xs text-ink-2 font-light leading-relaxed">
                       {quality.description}
                     </p>
 
                     {hasAnswered && isTarget && (
-                      <div className="flex items-center gap-1 text-xs font-mono text-emerald-400 font-bold">
+                      <div className="flex items-center gap-1 text-xs font-mono text-ok font-bold">
                         <CheckCircle2 size={13} />
                         <span>¡Tríada Identificada!</span>
                       </div>
@@ -747,19 +747,19 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="p-6 rounded-3xl bg-black/50 border border-white/10 max-w-2xl mx-auto space-y-6 text-left"
+              className="p-6 rounded-3xl bg-black/50 border border-line max-w-2xl mx-auto space-y-6 text-left"
             >
               {/* Maestro Aurelio Voice Banner */}
               <div className="flex items-start justify-between gap-4 p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0 font-serif text-lg">
-                    <GraduationCap size={20} className="text-amber-400" />
+                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-brand-2 shrink-0 font-serif text-lg">
+                    <GraduationCap size={20} className="text-brand-2" />
                   </div>
                   <div>
-                    <div className="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
+                    <div className="text-xs font-mono text-brand-2 font-bold uppercase tracking-wider">
                       Maestro Aurelio (Montevideo)
                     </div>
-                    <p className="text-sm text-white/90 font-light mt-0.5">
+                    <p className="text-sm text-ink font-light mt-0.5">
                       "{maestroComment}"
                     </p>
                   </div>
@@ -777,53 +777,53 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               </div>
 
               {/* Solution Analysis Card */}
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3 font-mono text-xs">
-                <div className="text-white/40 uppercase tracking-wider text-[11px] font-bold">
+              <div className="p-4 rounded-2xl bg-surface-2 border border-line space-y-3 font-mono text-xs">
+                <div className="text-ink-3 uppercase tracking-wider text-[11px] font-bold">
                   Análisis Armónico de la Solución:
                 </div>
 
                 {earMode === 'intervals' && intervalChallenge ? (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Notas Tocadas:</div>
-                      <div className="text-base font-bold text-amber-300">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Notas Tocadas:</div>
+                      <div className="text-base font-bold text-brand-2">
                         {intervalChallenge.rootNote} → {intervalChallenge.targetNote}
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Distancia:</div>
-                      <div className="text-base font-bold text-emerald-400">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Distancia:</div>
+                      <div className="text-base font-bold text-ok">
                         {intervalChallenge.semitones} Semitonos ({intervalChallenge.interval.shortName})
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Canción Guía:</div>
-                      <div className="text-xs font-bold text-white/90">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Canción Guía:</div>
+                      <div className="text-xs font-bold text-ink">
                         {intervalChallenge.interval.famousSong}
                       </div>
                     </div>
                   </div>
                 ) : triadChallenge ? (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Acorde Tocado:</div>
-                      <div className="text-base font-bold text-amber-300">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Acorde Tocado:</div>
+                      <div className="text-base font-bold text-brand-2">
                         {triadChallenge.root} {triadChallenge.qualityInfo.name}
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Estructura de Notas:</div>
-                      <div className="text-base font-bold text-emerald-400">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Estructura de Notas:</div>
+                      <div className="text-base font-bold text-ok">
                         {triadChallenge.notes.join(' - ')}
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="text-white/40 text-[10px]">Intervalos:</div>
-                      <div className="text-xs font-bold text-white/90">
+                    <div className="p-3 rounded-xl bg-black/40 border border-line">
+                      <div className="text-ink-3 text-[10px]">Intervalos:</div>
+                      <div className="text-xs font-bold text-ink">
                         {triadChallenge.qualityInfo.semitoneIntervals.join(' / ')} semitonos
                       </div>
                     </div>
@@ -833,9 +833,9 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
 
               {/* Interactive Piano Reveal */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono text-white/50">
+                <div className="flex items-center justify-between text-xs font-mono text-ink-3">
                   <span>Visualización física en el teclado:</span>
-                  <span className="text-emerald-400 font-bold">● Notas que sonaron</span>
+                  <span className="text-ok font-bold">● Notas que sonaron</span>
                 </div>
                 <div className="pt-2">
                   <Piano
@@ -854,7 +854,7 @@ export const EarTrainingGym: React.FC<EarTrainingGymProps> = ({ onScoreGain }) =
               </div>
 
               {/* Next Challenge Action */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-white/10">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-line">
                 <button
                   type="button"
                   id="btn-next-ear-challenge"

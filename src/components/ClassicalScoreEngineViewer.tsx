@@ -272,18 +272,18 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
   }, [currentExercise]);
 
   return (
-    <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-8">
+    <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-8">
       {/* HEADER: MODULE IDENTITY */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-white/10 pb-6">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-line pb-6">
         <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-brand-2 text-xs font-mono font-bold uppercase tracking-wider">
             <Layers size={14} />
             <span>Módulo de Partituras Técnicas (JSON / MIDI)</span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
+          <h2 className="text-2xl md:text-3xl font-serif font-bold text-ink">
             Visualizador & Filtro de Ejercicios Clásicos
           </h2>
-          <p className="text-xs md:text-sm text-white/60 font-light leading-relaxed">
+          <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed">
             Filtra de manera automática los estudios de <strong>Hanon</strong>, <strong>Czerny</strong> y <strong>Suzuki</strong>. Visualiza la digitación anatómica exacta (dedos 1 al 5), inspecciona partituras estructuradas en <strong>JSON</strong>, exporta archivos <strong>MIDI (.mid)</strong> o importa tus propios estudios.
           </p>
         </div>
@@ -302,22 +302,22 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
       </div>
 
       {/* FILTER CONTROLS BAR */}
-      <div className="space-y-4 p-5 rounded-2xl bg-black/40 border border-white/10">
+      <div className="space-y-4 p-5 rounded-2xl bg-black/40 border border-line">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-mono text-white/50">
-            <Filter size={14} className="text-amber-400" />
-            <span className="font-bold uppercase tracking-wider text-white/80">Filtros Automáticos:</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-ink-3">
+            <Filter size={14} className="text-brand-2" />
+            <span className="font-bold uppercase tracking-wider text-ink-2">Filtros Automáticos:</span>
           </div>
 
           {/* Quick Search */}
           <div className="relative w-full sm:w-64">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
             <input
               type="text"
               placeholder="Buscar por título, compás, tono..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 font-mono transition-colors"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-2 border border-line text-xs text-ink placeholder-white/40 focus:outline-none focus:border-amber-400 font-mono transition-colors"
             />
           </div>
         </div>
@@ -326,7 +326,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
           {/* 1. Método / Libro */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-white/40">Colección / Método:</label>
+            <label className="text-[11px] font-mono text-ink-3">Colección / Método:</label>
             <div className="flex flex-wrap gap-1.5">
               {[
                 { id: 'all', label: 'Todos' },
@@ -342,7 +342,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                     "px-2.5 py-1 rounded-lg text-xs font-mono transition-all",
                     selectedBookFilter === b.id
                       ? "bg-amber-400 text-black font-bold shadow"
-                      : "bg-white/5 text-white/60 hover:text-white"
+                      : "bg-surface-2 text-ink-2 hover:text-ink"
                   )}
                 >
                   {b.label}
@@ -353,7 +353,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
           {/* 2. Dificultad */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-white/40">Nivel de Dificultad:</label>
+            <label className="text-[11px] font-mono text-ink-3">Nivel de Dificultad:</label>
             <div className="flex flex-wrap gap-1.5">
               {[
                 { id: 'all', label: 'Todos' },
@@ -369,7 +369,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                     "px-2.5 py-1 rounded-lg text-xs font-mono transition-all",
                     difficultyFilter === d.id
                       ? "bg-emerald-400 text-black font-bold shadow"
-                      : "bg-white/5 text-white/60 hover:text-white"
+                      : "bg-surface-2 text-ink-2 hover:text-ink"
                   )}
                 >
                   {d.label}
@@ -380,7 +380,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
           {/* 3. Rango de Tempo */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-white/40">Rango de Tempo Sugerido:</label>
+            <label className="text-[11px] font-mono text-ink-3">Rango de Tempo Sugerido:</label>
             <div className="flex flex-wrap gap-1.5">
               {[
                 { id: 'all', label: 'Todos' },
@@ -396,7 +396,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                     "px-2.5 py-1 rounded-lg text-xs font-mono transition-all",
                     tempoRangeFilter === t.id
                       ? "bg-purple-400 text-black font-bold shadow"
-                      : "bg-white/5 text-white/60 hover:text-white"
+                      : "bg-surface-2 text-ink-2 hover:text-ink"
                   )}
                 >
                   {t.label}
@@ -407,19 +407,19 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
         </div>
 
         {/* Counter of matching exercises */}
-        <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-white/40">
+        <div className="pt-2 border-t border-line flex items-center justify-between text-[11px] font-mono text-ink-3">
           <span>
             Mostrando <strong>{filteredExercises.length}</strong> de {allExercises.length} partituras técnicas disponibles
           </span>
           {filteredExercises.length === 0 && (
-            <span className="text-amber-400">No hay ejercicios con los filtros seleccionados. Intenta ampliar los criterios.</span>
+            <span className="text-brand-2">No hay ejercicios con los filtros seleccionados. Intenta ampliar los criterios.</span>
           )}
         </div>
       </div>
 
       {/* HORIZONTAL CAROUSEL OF FILTERED EXERCISES */}
       <div className="space-y-2">
-        <div className="text-xs font-mono text-white/50 px-1">
+        <div className="text-xs font-mono text-ink-3 px-1">
           Partituras Seleccionables ({filteredExercises.length}):
         </div>
         <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
@@ -436,30 +436,30 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                 className={cn(
                   "p-3.5 rounded-2xl border text-left transition-all shrink-0 w-64 flex flex-col justify-between gap-2.5",
                   isSelected
-                    ? "bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-400/10"
-                    : "bg-black/40 border-white/10 text-white/70 hover:border-white/20 hover:bg-black/60"
+                    ? "bg-amber-400/15 border-amber-400 text-ink shadow-lg shadow-amber-400/10"
+                    : "bg-black/40 border-line text-ink-2 hover:border-line-strong hover:bg-black/60"
                 )}
               >
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[10px] font-mono">
-                    <span className="uppercase font-bold text-amber-400">
+                    <span className="uppercase font-bold text-brand-2">
                       {ex.bookId} • Nº {ex.exerciseNumber}
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-semibold">
+                    <span className="px-1.5 py-0.5 rounded bg-surface-3 text-ink-2 font-semibold">
                       {ex.difficulty}
                     </span>
                   </div>
-                  <div className="font-serif font-bold text-sm text-white line-clamp-1">
+                  <div className="font-serif font-bold text-sm text-ink line-clamp-1">
                     {ex.title}
                   </div>
-                  <div className="text-[11px] text-white/40 line-clamp-1 font-light">
+                  <div className="text-[11px] text-ink-3 line-clamp-1 font-light">
                     {ex.focusTechnique}
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/50">
+                <div className="pt-2 border-t border-line flex items-center justify-between text-[10px] font-mono text-ink-3">
                   <span>♩ = {ex.recommendedBpm} BPM</span>
-                  <span className={cn("font-bold flex items-center gap-1", isSelected ? "text-amber-300" : "")}>
+                  <span className={cn("font-bold flex items-center gap-1", isSelected ? "text-brand-2" : "")}>
                     <span>{isSelected ? 'Abierta' : 'Ver'}</span>
                     <ChevronRight size={12} />
                   </span>
@@ -471,29 +471,29 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
       </div>
 
       {/* TEMPO CONTROL & AUDIO PLAYBACK CONSOLE */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-black/80 via-[#0e1320] to-black/80 border border-amber-500/30 space-y-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/10 pb-5">
+      <div className="p-6 rounded-3xl bg-surface border border-brand-line space-y-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-line pb-5">
           {/* Active Exercise Overview */}
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
+            <div className="flex items-center gap-2 text-xs font-mono text-brand-2">
               <Sparkles size={14} />
               <span className="uppercase font-bold tracking-wider">Partitura en Ejecución</span>
-              <span className="text-white/40">•</span>
-              <span className="text-white/60">{currentExercise.keySignature}</span>
-              <span className="text-white/40">•</span>
-              <span className="text-white/60">Compás {currentExercise.timeSignature}</span>
+              <span className="text-ink-3">•</span>
+              <span className="text-ink-2">{currentExercise.keySignature}</span>
+              <span className="text-ink-3">•</span>
+              <span className="text-ink-2">Compás {currentExercise.timeSignature}</span>
             </div>
-            <h3 className="text-2xl font-serif font-bold text-white">
+            <h3 className="text-2xl font-serif font-bold text-ink">
               {currentExercise.title}
             </h3>
-            <p className="text-xs text-white/60 font-light">
+            <p className="text-xs text-ink-2 font-light">
               {currentExercise.subtitle}
             </p>
           </div>
 
           {/* Hand Mode Toggle */}
-          <div className="flex items-center gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/10 text-xs font-mono">
-            <span className="text-white/40 px-2 hidden sm:inline">Pista:</span>
+          <div className="flex items-center gap-1.5 p-1 bg-black/60 rounded-2xl border border-line text-xs font-mono">
+            <span className="text-ink-3 px-2 hidden sm:inline">Pista:</span>
             {[
               { id: 'right', label: 'MD (Sol)', Icon: Hand, iconClass: 'rotate-12' },
               { id: 'left', label: 'MI (Fa)', Icon: Hand, iconClass: '-scale-x-100 -rotate-12' },
@@ -513,7 +513,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all",
                     activeHandMode === m.id
                       ? "bg-amber-400 text-black font-bold shadow"
-                      : "text-white/60 hover:text-white"
+                      : "text-ink-2 hover:text-ink"
                   )}
                 >
                   <ModeIcon size={14} className={m.iconClass} />
@@ -529,12 +529,12 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
           {/* Suggested Tempo Showcase */}
           <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-mono text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <div className="text-[11px] font-mono text-brand-2 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Clock size={13} />
                 <span>Tempo Sugerido por el Método</span>
               </div>
-              <div className="text-2xl font-mono font-bold text-white">
-                ♩ = {currentExercise.recommendedBpm} <span className="text-xs text-white/50 font-normal">BPM</span>
+              <div className="text-2xl font-mono font-bold text-ink">
+                ♩ = {currentExercise.recommendedBpm} <span className="text-xs text-ink-3 font-normal">BPM</span>
               </div>
             </div>
 
@@ -549,10 +549,10 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
           </div>
 
           {/* Interactive Tempo Slider */}
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+          <div className="p-4 rounded-2xl bg-black/40 border border-line space-y-2">
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white/60">Tempo de Práctica Activo:</span>
-              <span className="text-amber-400 font-bold text-sm">{tempoBpm} BPM</span>
+              <span className="text-ink-2">Tempo de Práctica Activo:</span>
+              <span className="text-brand-2 font-bold text-sm">{tempoBpm} BPM</span>
             </div>
             <input
               type="range"
@@ -564,25 +564,25 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
               className="w-full accent-amber-400 cursor-pointer"
             />
             {/* Quick Multiplier Presets */}
-            <div className="flex items-center justify-between text-[10px] font-mono text-white/40 pt-1">
+            <div className="flex items-center justify-between text-[10px] font-mono text-ink-3 pt-1">
               <button
                 type="button"
                 onClick={() => handleSetTempoPreset(0.7)}
-                className="hover:text-amber-300 transition-colors"
+                className="hover:text-brand-2 transition-colors"
               >
                 70% (Lento didáctico)
               </button>
               <button
                 type="button"
                 onClick={() => handleSetTempoPreset(1.0)}
-                className="hover:text-amber-300 font-bold text-amber-400/80 transition-colors"
+                className="hover:text-brand-2 font-bold text-brand-2/80 transition-colors"
               >
                 100% (Sugerido)
               </button>
               <button
                 type="button"
                 onClick={() => handleSetTempoPreset(1.25)}
-                className="hover:text-amber-300 transition-colors"
+                className="hover:text-brand-2 transition-colors"
               >
                 125% (Virtuoso)
               </button>
@@ -590,14 +590,14 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
           </div>
 
           {/* Master Play / Pause Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={togglePlayback}
               className={cn(
                 "flex-1 py-3.5 px-6 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xl",
                 isPlaying
-                  ? "bg-rose-500 hover:bg-rose-600 text-white animate-pulse"
+                  ? "bg-rose-500 hover:bg-rose-600 text-ink animate-pulse"
                   : "bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20"
               )}
             >
@@ -626,7 +626,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                 stopPlayback();
                 setActivePlaybackStep(0);
               }}
-              className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors"
+              className="p-3.5 rounded-2xl bg-surface-3 hover:bg-surface-3 text-ink border border-line transition-colors"
               title="Reiniciar partitura al compás 1"
             >
               <RotateCcw size={16} />
@@ -638,8 +638,10 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
       {/* SCORE VIEWER TABS: SHEET MUSIC / SCORE JSON / MIDI / UPLOAD */}
       <div className="space-y-4">
         {/* Tab Headers */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
+          {/* En el celular las cuatro pestañas no entran: se deslizan en vez de
+              empujar la página entera 150 px a la derecha. */}
+          <div className="flex items-center gap-2 min-w-0 max-w-full overflow-x-auto no-scrollbar">
             {[
               { id: 'sheet', label: 'Partitura Técnica & Digitación', Icon: Music },
               { id: 'json', label: 'Partitura JSON', Icon: FileJson },
@@ -653,10 +655,10 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono transition-all",
+                    "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono transition-all shrink-0 whitespace-nowrap",
                     activeTab === tab.id
-                      ? "bg-white/15 text-white font-bold border border-white/20 shadow"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
+                      ? "bg-surface-3 text-ink font-bold border border-line-strong shadow"
+                      : "text-ink-3 hover:text-ink hover:bg-surface-2"
                   )}
                 >
                   <TabIcon size={14} />
@@ -670,7 +672,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
           <button
             type="button"
             onClick={() => maestroVoice.speak(currentExercise.maestroAdvice)}
-            className="flex items-center gap-1.5 text-xs font-mono text-amber-400 hover:text-amber-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-mono text-brand-2 hover:text-brand-2 transition-colors"
           >
             <Volume2 size={13} />
             <span>Instrucción del Maestro</span>
@@ -681,15 +683,15 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
         {activeTab === 'sheet' && (
           <div className="space-y-6">
             {/* Grand Staff Score Canvas Component */}
-            <div className="p-6 rounded-3xl bg-[#0a0d14] border border-white/10 space-y-4 overflow-hidden">
-              <div className="flex items-center justify-between text-xs font-mono text-white/50 border-b border-white/10 pb-3">
+            <div className="p-6 rounded-3xl bg-surface border border-line space-y-4 overflow-hidden">
+              <div className="flex items-center justify-between text-xs font-mono text-ink-3 border-b border-line pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-white uppercase">{currentExercise.title}</span>
-                  <span className="text-white/40">•</span>
+                  <span className="font-bold text-ink uppercase">{currentExercise.title}</span>
+                  <span className="text-ink-3">•</span>
                   <span>Compás {currentExercise.timeSignature}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-amber-400">
+                  <span className="text-brand-2">
                     Nota {activePlaybackStep + 1} de {activeTrackNotes.length}
                   </span>
                 </div>
@@ -697,7 +699,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
               {/* Graphical Staff Rendering */}
               <div className="overflow-x-auto pb-3 no-scrollbar">
-                <div className="min-w-[650px] p-4 bg-black/40 rounded-2xl border border-white/5">
+                <div className="min-w-[650px] p-4 bg-black/40 rounded-2xl border border-line">
                   <svg viewBox="0 0 750 160" className="w-full h-44 drop-shadow">
                     {/* Clef Labels & 5 Staff Lines for Treble (Clave de Sol) */}
                     <g className="opacity-80">
@@ -708,11 +710,11 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                           y1={y}
                           x2="730"
                           y2={y}
-                          stroke="rgba(255,255,255,0.3)"
+                          stroke="var(--score-line)"
                           strokeWidth="1.2"
                         />
                       ))}
-                      <text x="15" y="45" fill="#fcd34d" fontSize="16" fontFamily="serif" fontWeight="bold">
+                      <text x="15" y="45" fill="var(--color-brand)" fontSize="16" fontFamily="serif" fontWeight="bold">
                         𝄞 Sol
                       </text>
                     </g>
@@ -726,11 +728,11 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                           y1={y}
                           x2="730"
                           y2={y}
-                          stroke="rgba(255,255,255,0.3)"
+                          stroke="var(--score-line)"
                           strokeWidth="1.2"
                         />
                       ))}
-                      <text x="15" y="125" fill="#6ee7b7" fontSize="16" fontFamily="serif" fontWeight="bold">
+                      <text x="15" y="125" fill="var(--color-ok)" fontSize="16" fontFamily="serif" fontWeight="bold">
                         𝄢 Fa
                       </text>
                     </g>
@@ -769,7 +771,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                               y1={65}
                               x2={x + 8}
                               y2={65}
-                              stroke="rgba(255,255,255,0.6)"
+                              stroke="var(--score-dim)"
                               strokeWidth="1.5"
                             />
                           )}
@@ -781,7 +783,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             rx="5.5"
                             ry="4"
                             transform={`rotate(-20 ${x} ${y})`}
-                            fill={isCurrent ? "#fbbf24" : "#ffffff"}
+                            fill={isCurrent ? "#fbbf24" : "var(--score-ink)"}
                             stroke={isCurrent ? "#fef08a" : "none"}
                             strokeWidth="1.5"
                           />
@@ -792,7 +794,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             y1={y}
                             x2={x + 4.5}
                             y2={y - 20}
-                            stroke={isCurrent ? "#fbbf24" : "rgba(255,255,255,0.85)"}
+                            stroke={isCurrent ? "#fbbf24" : "var(--score-stem)"}
                             strokeWidth="1.5"
                           />
 
@@ -803,7 +805,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             width="12"
                             height="11"
                             rx="3"
-                            fill={isCurrent ? "#fbbf24" : "rgba(255,255,255,0.15)"}
+                            fill={isCurrent ? "#fbbf24" : "var(--score-soft)"}
                           />
                           <text
                             x={x}
@@ -824,7 +826,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             textAnchor="middle"
                             fontSize="7.5"
                             fontFamily="monospace"
-                            fill={isCurrent ? "#fbbf24" : "rgba(255,255,255,0.4)"}
+                            fill={isCurrent ? "#fbbf24" : "var(--score-dim)"}
                           >
                             {n.note}
                           </text>
@@ -866,7 +868,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             rx="5.5"
                             ry="4"
                             transform={`rotate(-20 ${x} ${y})`}
-                            fill={isCurrent ? "#34d399" : "#ffffff"}
+                            fill={isCurrent ? "#34d399" : "var(--score-ink)"}
                             stroke={isCurrent ? "#a7f3d0" : "none"}
                             strokeWidth="1.5"
                           />
@@ -877,7 +879,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             y1={y}
                             x2={x - 4.5}
                             y2={y + 20}
-                            stroke={isCurrent ? "#34d399" : "rgba(255,255,255,0.85)"}
+                            stroke={isCurrent ? "#34d399" : "var(--score-stem)"}
                             strokeWidth="1.5"
                           />
 
@@ -888,7 +890,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             width="12"
                             height="11"
                             rx="3"
-                            fill={isCurrent ? "#34d399" : "rgba(255,255,255,0.15)"}
+                            fill={isCurrent ? "#34d399" : "var(--score-soft)"}
                           />
                           <text
                             x={x}
@@ -909,7 +911,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                             textAnchor="middle"
                             fontSize="7.5"
                             fontFamily="monospace"
-                            fill={isCurrent ? "#34d399" : "rgba(255,255,255,0.4)"}
+                            fill={isCurrent ? "#34d399" : "var(--score-dim)"}
                           >
                             {n.note}
                           </text>
@@ -933,13 +935,13 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
         {/* TAB CONTENT: 2. JSON SCORE INSPECTOR */}
         {activeTab === 'json' && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-black/50 border border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-black/50 border border-line">
               <div className="space-y-0.5">
-                <div className="text-xs font-mono font-bold text-white flex items-center gap-2">
-                  <FileJson size={14} className="text-amber-400" />
+                <div className="text-xs font-mono font-bold text-ink flex items-center gap-2">
+                  <FileJson size={14} className="text-brand-2" />
                   <span>Estructura Estándar de Partitura (ConservatoryClassicalScore)</span>
                 </div>
-                <div className="text-[11px] font-mono text-white/50">
+                <div className="text-[11px] font-mono text-ink-3">
                   Formato portable compatible con motores de notación, apps móviles y archivado de ejercicios.
                 </div>
               </div>
@@ -948,9 +950,9 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                 <button
                   type="button"
                   onClick={handleCopyJSON}
-                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono flex items-center gap-1.5 transition-all"
+                  className="px-3.5 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-ink text-xs font-mono flex items-center gap-1.5 transition-all"
                 >
-                  {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                  {isCopied ? <Check size={13} className="text-ok" /> : <Copy size={13} />}
                   <span>{isCopied ? '¡Copiado!' : 'Copiar JSON'}</span>
                 </button>
                 <button
@@ -965,7 +967,7 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
             </div>
 
             {/* Code Display */}
-            <div className="p-4 rounded-2xl bg-[#0a0d14] border border-white/10 max-h-96 overflow-y-auto font-mono text-xs text-amber-200/90 leading-relaxed">
+            <div className="p-4 rounded-2xl bg-surface border border-line max-h-96 overflow-y-auto font-mono text-xs text-brand-2/90 leading-relaxed">
               <pre>{activeScoreJSON}</pre>
             </div>
           </div>
@@ -973,40 +975,40 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
         {/* TAB CONTENT: 3. EXPORT MIDI (.MID) */}
         {activeTab === 'midi' && (
-          <div className="p-8 rounded-3xl bg-black/60 border border-white/10 space-y-6 text-center max-w-xl mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-300 mx-auto flex items-center justify-center">
+          <div className="p-8 rounded-3xl bg-black/60 border border-line space-y-6 text-center max-w-xl mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-brand-2 mx-auto flex items-center justify-center">
               <Music size={32} />
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xl font-serif font-bold text-white">
+              <h4 className="text-xl font-serif font-bold text-ink">
                 Exportar Archivo MIDI Estándar (.mid)
               </h4>
-              <p className="text-xs text-white/60 font-light leading-relaxed">
+              <p className="text-xs text-ink-2 font-light leading-relaxed">
                 Genera al vuelo un archivo binario <strong>MIDI Tipo 1</strong> con pistas separadas de <strong>Mano Derecha</strong> (Canal 1) y <strong>Mano Izquierda</strong> (Canal 2), programado a <strong>{tempoBpm} BPM</strong>.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-left text-xs font-mono text-white/70 space-y-2">
+            <div className="p-4 rounded-2xl bg-surface-2 border border-line text-left text-xs font-mono text-ink-2 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Título de Pista:</span>
-                <span className="text-white font-semibold">{currentExercise.title}</span>
+                <span className="text-ink-3">Título de Pista:</span>
+                <span className="text-ink font-semibold">{currentExercise.title}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Tempo metronómico:</span>
-                <span className="text-amber-400 font-bold">{tempoBpm} BPM</span>
+                <span className="text-ink-3">Tempo metronómico:</span>
+                <span className="text-brand-2 font-bold">{tempoBpm} BPM</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Pista 1:</span>
+                <span className="text-ink-3">Pista 1:</span>
                 <span>Mano Derecha (Clave de Sol)</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Pista 2:</span>
+                <span className="text-ink-3">Pista 2:</span>
                 <span>Mano Izquierda (Clave de Fa)</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Compatibilidad:</span>
-                <span className="text-emerald-400">DAWs, MuseScore, Teclados Yamaha/Roland</span>
+                <span className="text-ink-3">Compatibilidad:</span>
+                <span className="text-ok">DAWs, MuseScore, Teclados Yamaha/Roland</span>
               </div>
             </div>
 
@@ -1023,21 +1025,21 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
         {/* TAB CONTENT: 4. IMPORT / UPLOAD SCORE FILE */}
         {activeTab === 'upload' && (
-          <div className="p-8 rounded-3xl bg-black/60 border border-white/10 space-y-6 max-w-xl mx-auto">
+          <div className="p-8 rounded-3xl bg-black/60 border border-line space-y-6 max-w-xl mx-auto">
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 mx-auto flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-ok mx-auto flex items-center justify-center">
                 <Upload size={28} />
               </div>
-              <h4 className="text-xl font-serif font-bold text-white">
+              <h4 className="text-xl font-serif font-bold text-ink">
                 Cargar Partitura Externa
               </h4>
-              <p className="text-xs text-white/60 font-light leading-relaxed">
+              <p className="text-xs text-ink-2 font-light leading-relaxed">
                 Importa un archivo de partitura en formato <strong>.json</strong> o <strong>.mid (MIDI)</strong>. El analizador extraerá automáticamente las notas, las dividirá por manos y calculará las digitaciones técnicas sugeridas.
               </p>
             </div>
 
             {/* Drag & Drop or Click input */}
-            <div className="border-2 border-dashed border-white/20 hover:border-amber-400/60 rounded-3xl p-8 text-center space-y-3 transition-colors cursor-pointer relative bg-white/[0.02]">
+            <div className="border-2 border-dashed border-line-strong hover:border-amber-400/60 rounded-3xl p-8 text-center space-y-3 transition-colors cursor-pointer relative bg-white/[0.02]">
               <input
                 type="file"
                 accept=".json,.mid,.midi"
@@ -1047,12 +1049,12 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
                 }}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
               />
-              <FileText size={32} className="mx-auto text-white/40" />
+              <FileText size={32} className="mx-auto text-ink-3" />
               <div className="space-y-1">
-                <div className="text-xs font-mono font-bold text-white">
+                <div className="text-xs font-mono font-bold text-ink">
                   Arrastra un archivo aquí o haz clic para examinar
                 </div>
-                <div className="text-[11px] font-mono text-white/40">
+                <div className="text-[11px] font-mono text-ink-3">
                   Formatos soportados: .json (Partitura Técnica) o .mid (Archivo MIDI)
                 </div>
               </div>
@@ -1060,14 +1062,14 @@ export const ClassicalScoreEngineViewer: React.FC<ClassicalScoreEngineViewerProp
 
             {/* Feedback messages */}
             {uploadSuccess && (
-              <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+              <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-ok text-xs font-mono flex items-center gap-2">
                 <CheckCircle2 size={16} className="shrink-0" />
                 <span>{uploadSuccess}</span>
               </div>
             )}
 
             {uploadError && (
-              <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs font-mono flex items-center gap-2">
+              <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-danger text-xs font-mono flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{uploadError}</span>
               </div>

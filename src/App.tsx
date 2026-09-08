@@ -1,45 +1,220 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import type { SelectedChordInfo } from './components/ChordChart';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  GraduationCap, Music, Compass, Target, MessageSquare, 
-  Sparkles, Award, RotateCcw, Volume2, Bot, CheckCircle2,
-  Zap, Timer, Sliders, Flame, Disc, Maximize2, FileAudio,
-  BookOpen, Music2, Piano as PianoIcon
-} from 'lucide-react';
-import { Piano } from './components/Piano';
-import { ChordChart, SelectedChordInfo } from './components/ChordChart';
-import { ScaleProgressMap } from './components/ScaleProgressMap';
-import { StaffVisualizer } from './components/StaffVisualizer';
-import { ExerciseSystem } from './components/ExerciseSystem';
-import { ToneWaterfallGym } from './components/ToneWaterfallGym';
-import { WavBackingStudio } from './components/WavBackingStudio';
-import { LessonViewer } from './components/LessonViewer';
+import { Award, BookOpen, Music2, Piano as PianoIcon } from 'lucide-react';
 import { CurriculumRoadmap } from './components/CurriculumRoadmap';
-import { CircleOfFifths } from './components/CircleOfFifths';
-import { Metronome } from './components/Metronome';
-import { InstructorChatModal } from './components/InstructorChatModal';
-import { QuickPracticeModal } from './components/QuickPracticeModal';
-import { LessonCelebrationModal } from './components/LessonCelebrationModal';
-import { CurriculumProgressBar } from './components/CurriculumProgressBar';
-import { ClassicalMethodsGym } from './components/ClassicalMethodsGym';
+import { Sidebar } from './components/shell/Sidebar';
+import { TopBar } from './components/shell/TopBar';
+import { BottomNav } from './components/shell/BottomNav';
+import { PageHeader } from './components/ui/PageHeader';
+import { TabId } from './components/shell/navConfig';
+import { UpdateToast } from './components/shell/UpdateToast';
+import { registerServiceWorker } from './lib/pwa';
+import { startAutoSync, pull } from './lib/profileSync';
+import { me, claimQrToken, type AuthState, type AuthUser } from './lib/auth';
+import { LoginScreen } from './components/LoginScreen';
+import { DailyRoutineCard } from './components/DailyRoutineCard';
+import { itemKey, type RoutineItem } from './lib/scaleRoutine';
+import { startReminderWatch } from './lib/reminders';
+import { WaterfallSong } from './lib/midiWaterfall';
 import { triggerCurriculumConfetti } from './lib/celebration';
-import { LESSONS, Lesson, UserProgress, DEFAULT_USER_PROGRESS } from './types';
+import { LESSONS, Lesson, LessonPractice, UserProgress, DEFAULT_USER_PROGRESS } from './types';
+import { spellChordNotes } from './lib/musicGymTheory';
+import { midi } from './lib/midi';
 import { cn } from './lib/utils';
-import { 
-  SoundPreset, 
-  SOUND_PRESETS, 
-  getSavedSoundPreset, 
-  saveSoundPreset, 
-  soundEngine,
+import {
+  SoundPreset,
+  SOUND_PRESETS,
+  getSavedSoundPreset,
+  saveSoundPreset,
   SplitKeyboardConfig,
   getSavedSplitConfig,
-  saveSplitConfig
-} from './lib/soundPresets';
+  saveSplitConfig,
+} from './lib/soundPresetsInfo';
+
+/* El motor de sonido arrastra Tone.js (~200 kB). Acá sólo se usa para la
+   nota de muestra al cambiar de timbre, así que se trae recién cuando alguien
+   toca ese control, no antes de ver la primera pantalla. */
+const playSample = async (note: string, preset: SoundPreset, dur: string) => {
+  const { soundEngine } = await import('./lib/soundPresets');
+  soundEngine.playNote(note, preset, dur);
+};
+
+/* ------------------------------------------------------------------ *
+ *  Carga diferida por sección
+ *
+ *  Todo entraba en un solo paquete de 1,6 MB: para ver el currículo se
+ *  descargaban también la catarata, el estudio de audio, los ocho gimnasios y
+ *  Tone.js entero. Cada sección se trae recién cuando se entra, que es la
+ *  diferencia entre abrir la app en un celular con datos y esperar.
+ * ------------------------------------------------------------------ */
+const Piano = lazy(() => import('./components/Piano').then(m => ({ default: m.Piano })));
+const ChordChart = lazy(() => import('./components/ChordChart').then(m => ({ default: m.ChordChart })));
+const ScaleProgressMap = lazy(() => import('./components/ScaleProgressMap').then(m => ({ default: m.ScaleProgressMap })));
+const StaffVisualizer = lazy(() => import('./components/StaffVisualizer').then(m => ({ default: m.StaffVisualizer })));
+const ExerciseSystem = lazy(() => import('./components/ExerciseSystem').then(m => ({ default: m.ExerciseSystem })));
+const ToneWaterfallGym = lazy(() => import('./components/ToneWaterfallGym').then(m => ({ default: m.ToneWaterfallGym })));
+const WavBackingStudio = lazy(() => import('./components/WavBackingStudio').then(m => ({ default: m.WavBackingStudio })));
+const LessonViewer = lazy(() => import('./components/LessonViewer').then(m => ({ default: m.LessonViewer })));
+const CircleOfFifths = lazy(() => import('./components/CircleOfFifths').then(m => ({ default: m.CircleOfFifths })));
+const InstructorChatModal = lazy(() => import('./components/InstructorChatModal').then(m => ({ default: m.InstructorChatModal })));
+const QuickPracticeModal = lazy(() => import('./components/QuickPracticeModal').then(m => ({ default: m.QuickPracticeModal })));
+const LessonCelebrationModal = lazy(() => import('./components/LessonCelebrationModal').then(m => ({ default: m.LessonCelebrationModal })));
+const ClassicalMethodsGym = lazy(() => import('./components/ClassicalMethodsGym').then(m => ({ default: m.ClassicalMethodsGym })));
+
+/**
+ * Con la app ya dibujada y el navegador sin nada que hacer, se traen los
+ * trozos de las secciones. Así la navegación sigue siendo instantánea y —lo
+ * que importa más— quedan en la caché del service worker, o sea que la app
+ * sigue andando sin conexión aunque no hayas entrado antes a esa sección.
+ * No se hace si el sistema pide ahorrar datos.
+ */
+function warmSections() {
+  const conn = (navigator as any).connection;
+  if (conn?.saveData || /2g/.test(conn?.effectiveType ?? '')) return;
+  const idle = (window as any).requestIdleCallback ?? ((f: () => void) => setTimeout(f, 2500));
+  idle(() => {
+    void import('./components/LessonViewer');
+    void import('./components/ExerciseSystem');
+    void import('./components/ToneWaterfallGym');
+    void import('./components/ClassicalMethodsGym');
+    void import('./components/ChordChart');
+    void import('./components/CircleOfFifths');
+  });
+}
+
+/** Mientras baja el trozo que falta. Ocupa alto para que no salte el layout. */
+const SectionFallback: React.FC = () => (
+  <div className="min-h-[50vh] flex items-center justify-center gap-2 text-ink-3 text-sm">
+    <span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+    Cargando…
+  </div>
+);
 
 const STORAGE_KEY = 'pianomaster_user_progress_v2';
 
+type GymCategory = LessonPractice['gym'];
+
+/**
+ * El currículo puede crecer con lecciones intercaladas en medio del recorrido.
+ * Si a alguien ya se le había destrabado la lección 12, no tiene sentido que
+ * una lección nueva insertada en la 8 le aparezca con candado: se destraba
+ * todo lo anterior al punto más lejano que ya había alcanzado.
+ */
+function migrateProgress(saved: UserProgress): UserProgress {
+  const reached = [...saved.unlockedLessons, ...saved.completedLessons]
+    .map(id => LESSONS.findIndex(l => l.id === id))
+    .filter(i => i >= 0);
+  if (!reached.length) return saved;
+  const furthest = Math.max(...reached);
+  const unlocked = new Set(saved.unlockedLessons);
+  LESSONS.slice(0, furthest + 1).forEach(l => unlocked.add(l.id));
+  return { ...saved, unlockedLessons: [...unlocked] };
+}
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'classicalMethods' | 'waterfall' | 'wavStudio' | 'chords' | 'circle' | 'gym'>('curriculum');
+  const [activeTab, setActiveTab] = useState<TabId>('curriculum');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => localStorage.getItem('pianomaster_sidebar') === 'collapsed');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
+  // Piezas transcriptas desde Bases .WAV que se mandan a la Catarata de Tonos
+  const [importedSongs, setImportedSongs] = useState<WaterfallSong[]>([]);
+  const [requestedSongId, setRequestedSongId] = useState<string | null>(null);
+  const handleExportToWaterfall = (song: WaterfallSong) => {
+    setImportedSongs(prev => [song, ...prev.filter(s => s.id !== song.id)]);
+    setRequestedSongId(song.id);
+    setActiveTab('waterfall');
+    setSelectedLesson(null);
+    window.scrollTo({ top: 0 });
+  };
+
+  // Service worker: offline + aviso cuando hay versión nueva
+  const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
+  useEffect(() => {
+    registerServiceWorker(apply => setApplyUpdate(() => apply));
+    warmSections();
+    /* Si el permiso de MIDI ya está dado, el instrumento queda andando desde
+       el arranque en cualquier pantalla. Si todavía no, no se pide acá: el
+       cartel del navegador aparecería sin que nadie lo haya pedido. */
+    void midi.initIfAllowed();
+  }, []);
+
+  /* Sesión. Mientras se resuelve no se pinta nada: si no, se ve un destello
+     de la app antes del login. Sin red se usa la copia local del usuario, para
+     que la PWA siga abriendo y se pueda practicar igual. */
+  const [auth, setAuth] = useState<AuthState | null>(null);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const qrToken = url.searchParams.get('login');
+    const clean = () => {
+      url.searchParams.delete('login');
+      window.history.replaceState({}, '', url.toString());
+    };
+    if (qrToken) {
+      // El QR del escritorio abre /?login=<token>: el celular canjea y entra
+      void claimQrToken(qrToken)
+        .then(user => { clean(); void pull(); setAuth({ user, signupOpen: false, needsCode: false, firstRun: false, offline: false }); })
+        .catch(() => { clean(); void me().then(setAuth); });
+      return;
+    }
+    void me().then(setAuth);
+  }, []);
+
+  // Sincroniza al abrir y al volver del segundo plano, nunca en un intervalo:
+  // el progreso cambia cuando se aprueba una lección, no cada 30 segundos.
+  useEffect(() => {
+    if (!auth?.user) return;
+    return startReminderWatch();
+  }, [auth?.user?.id]);
+
+  useEffect(() => {
+    if (!auth?.user) return;
+    return startAutoSync(() => {
+      /* Recargar es la forma simple de que todos los componentes relean el
+         progreso nuevo, pero nunca puede volverse un bucle: como mucho una
+         recarga por pestaña, y si hiciera falta otra se pide a mano. */
+      try {
+        if (sessionStorage.getItem('pianomaster_synced_reload')) return;
+        sessionStorage.setItem('pianomaster_synced_reload', '1');
+      } catch { /* modo privado: se recarga igual, una vez */ }
+      window.location.reload();
+    });
+  }, [auth?.user?.id]);
+
+  // Ir al gimnasio con una escala concreta de la rutina ya elegida
+  const practiceRoutineItem = (item: RoutineItem) => {
+    try { localStorage.setItem('pianomaster_routine_focus', itemKey(item.pc, item.scaleId)); } catch { /* modo privado */ }
+    goToGym('scales');
+  };
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => setAiEnabled(Boolean(d?.aiEnabled)))
+      .catch(() => setAiEnabled(false));
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(c => {
+      localStorage.setItem('pianomaster_sidebar', c ? 'expanded' : 'collapsed');
+      return !c;
+    });
+  };
+
+  // Gimnasio al que apunta la lección abierta (el enganche "practicar esto")
+  const [gymCategory, setGymCategory] = useState<GymCategory>('scales');
+  const goToGym = (category: GymCategory) => {
+    setGymCategory(category);
+    setActiveTab('gym');
+    setSelectedLesson(null);
+    window.scrollTo({ top: 0 });
+  };
+
+  const navigate = (id: TabId) => {
+    setActiveTab(id);
+    if (id !== 'curriculum') setSelectedLesson(null);
+    window.scrollTo({ top: 0 });
+  };
   const [layoutWidth, setLayoutWidth] = useState<'ultra' | 'wide' | 'standard'>(() => {
     return (localStorage.getItem('pianomaster_layout_width') as any) || 'ultra';
   });
@@ -50,7 +225,7 @@ export default function App() {
   };
 
   const getContainerWidthClass = () => {
-    if (layoutWidth === 'ultra') return 'w-full max-w-[98%] 2xl:max-w-[1880px] mx-auto';
+    if (layoutWidth === 'ultra') return 'w-full max-w-[1880px] mx-auto';
     if (layoutWidth === 'wide') return 'w-full max-w-[1550px] mx-auto';
     return 'w-full max-w-7xl mx-auto';
   };
@@ -97,7 +272,7 @@ export default function App() {
   const handleGlobalSoundPresetChange = (newPreset: SoundPreset) => {
     setSoundPreset(newPreset);
     saveSoundPreset(newPreset);
-    soundEngine.playNote('C4', newPreset, '0.4n');
+    void playSample('C4', newPreset, '0.4n');
   };
 
   const handleGlobalSplitToggle = () => {
@@ -108,10 +283,8 @@ export default function App() {
     setSplitConfig(updated);
     saveSplitConfig(updated);
     if (updated.enabled) {
-      soundEngine.playNote('C3', updated.leftPreset, '0.4n');
-      setTimeout(() => {
-        soundEngine.playNote('G4', updated.rightPreset, '0.5n');
-      }, 200);
+      void playSample('C3', updated.leftPreset, '0.4n');
+      setTimeout(() => { void playSample('G4', updated.rightPreset, '0.5n'); }, 200);
     }
   };
 
@@ -119,7 +292,7 @@ export default function App() {
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
+      if (saved) return migrateProgress(JSON.parse(saved));
     } catch {
       // ignore
     }
@@ -171,24 +344,37 @@ export default function App() {
     });
   };
 
+  /**
+   * Lo que el nivel de partida regala: quien arranca en Intermedio ya sabe lo
+   * de Principiante, y quien arranca en Avanzado, lo de Intermedio también.
+   * Se deduce del campo `level` de cada lección en vez de una lista de ids
+   * escrita a mano —esa lista se quedó vieja apenas se intercalaron lecciones
+   * nuevas y dejó de destrabar nada.
+   */
+  const levelFloor = (level: UserProgress['userLevel']): string[] => {
+    const incluye: Record<UserProgress['userLevel'], Lesson['level'][]> = {
+      Principiante: [],
+      Intermedio: ['Principiante'],
+      Avanzado: ['Principiante', 'Intermedio'],
+    };
+    return LESSONS.filter(l => incluye[level].includes(l.level)).map(l => l.id);
+  };
+
   const handleSetUserLevel = (level: 'Principiante' | 'Intermedio' | 'Avanzado') => {
     setUserProgress(prev => {
-      let unlocked = [...prev.unlockedLessons];
-      if (level === 'Intermedio') {
-        // Unlock up to lesson 7
-        ['1', '2', '3', '4', '5', '6', '7'].forEach(id => {
-          if (!unlocked.includes(id)) unlocked.push(id);
-        });
-      } else if (level === 'Avanzado') {
-        // Unlock up to lesson 13
-        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'].forEach(id => {
-          if (!unlocked.includes(id)) unlocked.push(id);
-        });
+      /* Bajar de nivel vuelve a poner el candado en lo que nunca se aprobó:
+         si no, elegir Avanzado una vez destrababa el currículo para siempre.
+         Lo aprobado, lo que sigue a cada lección aprobada y la primera lección
+         no se tocan nunca. */
+      const unlocked = new Set<string>([LESSONS[0].id, ...prev.completedLessons, ...levelFloor(level)]);
+      for (const id of prev.completedLessons) {
+        const next = LESSONS[LESSONS.findIndex(l => l.id === id) + 1];
+        if (next) unlocked.add(next.id);
       }
       return {
         ...prev,
         userLevel: level,
-        unlockedLessons: unlocked,
+        unlockedLessons: LESSONS.filter(l => unlocked.has(l.id)).map(l => l.id),
       };
     });
   };
@@ -212,379 +398,281 @@ export default function App() {
 
   const completedCount = userProgress.completedLessons.length;
   const progressPercent = Math.round((completedCount / LESSONS.length) * 100);
+  const containerClass = getContainerWidthClass();
+
+  if (!auth) {
+    return (
+      <div className="min-h-dvh bg-bg flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-brand text-brand-ink flex items-center justify-center font-serif font-bold animate-pulse">P</div>
+      </div>
+    );
+  }
+  if (!auth.user) {
+    return <LoginScreen state={auth} onAuthenticated={user => {
+      // Traer el perfil de la cuenta antes de entrar, para no arrancar con el
+      // progreso del dispositivo y pisarlo después.
+      void pull().finally(() => { try { sessionStorage.removeItem('pianomaster_synced_reload'); } catch { /* ignorar */ } window.location.reload(); });
+    }} />;
+  }
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-white flex flex-col selection:bg-amber-400/30 selection:text-amber-200">
-      {/* Top Conservatory Command Header */}
-      <header className="sticky top-0 z-40 bg-[#090c13]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
-        <div className={cn("flex flex-wrap items-center justify-between gap-4 transition-all duration-200", getContainerWidthClass())}>
-          {/* Logo & Instructor Status */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-400 text-black flex items-center justify-center font-bold text-xl shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-              <PianoIcon size={22} className="text-black" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-serif font-bold text-lg text-white">PianoMaster</span>
-                <span className="text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  Conservatorio Flexible & Tutor 0 a 100
-                </span>
-              </div>
-              <div className="text-[11px] text-white/50 flex items-center gap-1.5 font-light">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Maestro Aurelio disponible</span>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-bg text-ink flex">
+      <Sidebar
+        active={activeTab}
+        onNavigate={navigate}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={toggleSidebar}
+        onOpenMaestro={() => setIsInstructorChatOpen(true)}
+        aiEnabled={aiEnabled}
+      />
 
-          {/* Center: Metronome */}
-          <div className="hidden md:flex items-center">
-            <Metronome />
-          </div>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <TopBar
+          active={activeTab}
+          userProgress={userProgress}
+          onQuickPractice={() => setIsQuickPracticeOpen(true)}
+          onOpenMaestro={() => setIsInstructorChatOpen(true)}
+          containerClass={containerClass}
+          sidebarCollapsed={sidebarCollapsed}
+          onToggleSidebar={toggleSidebar}
+          settings={{
+            open: settingsOpen,
+            onOpenChange: setSettingsOpen,
+            layoutWidth,
+            onLayoutWidthChange: handleLayoutWidthChange,
+            soundPreset,
+            onSoundPresetChange: handleGlobalSoundPresetChange,
+            splitConfig,
+            onSplitToggle: handleGlobalSplitToggle,
+            user: auth.user,
+          }}
+        />
 
-          {/* Right: Progress & AI Chat Button */}
-          <div className="flex items-center gap-3">
-            <CurriculumProgressBar 
-              userProgress={userProgress} 
-              variant="compact" 
-              className="hidden sm:flex" 
-            />
-
-            {/* Quick Practice 60s Blitz Button */}
-            <button
-              type="button"
-              id="btn-header-quick-practice"
-              onClick={() => setIsQuickPracticeOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-black text-xs font-bold font-mono uppercase tracking-wider transition-all shadow-md shadow-amber-400/20 hover:scale-105 active:scale-95"
-              title="Práctica Rápida de 60 segundos basada en tus habilidades desbloqueadas"
-            >
-              <Zap size={14} className="fill-black text-black shrink-0" />
-              <span>Práctica Rápida</span>
-              <span className="px-1.5 py-0.5 rounded bg-black/25 text-black text-[10px] font-extrabold">
-                60s
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsInstructorChatOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold uppercase tracking-wider transition-all border border-white/10 hover:scale-105"
-            >
-              <Bot size={15} className="text-amber-400" />
-              <span className="hidden sm:inline">Consultar al Maestro</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Workspace Navigation Bar */}
-      <div className="border-b border-white/5 bg-[#0a0d16] px-4">
-        <div className={cn("flex flex-col xl:flex-row xl:items-center justify-between gap-3 py-2 transition-all duration-200", getContainerWidthClass())}>
-          {/* Main Module Tabs */}
-          <div className="flex gap-2 md:gap-3 overflow-x-auto no-scrollbar">
-            {[
-              { id: 'curriculum', label: 'Currículo 0 a 100', icon: GraduationCap },
-              { id: 'classicalMethods', label: 'Métodos Clásicos', icon: BookOpen, badge: '3 LIBROS' },
-              { id: 'waterfall', label: 'Catarata de Tonos', icon: Flame, badge: 'MIDI' },
-              { id: 'wavStudio', label: 'Bases .WAV Jam', icon: Disc, badge: 'AUDIO' },
-              { id: 'chords', label: 'Biblioteca de Acordes', icon: Music },
-              { id: 'circle', label: 'Círculo de Quintas', icon: Compass },
-              { id: 'gym', label: 'Gimnasio Práctico', icon: Target },
-            ].map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              const isWaterfall = tab.id === 'waterfall';
-              const isWav = tab.id === 'wavStudio';
-              const isClassical = tab.id === 'classicalMethods';
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  id={`nav-tab-${tab.id}`}
-                  onClick={() => {
-                    setActiveTab(tab.id as any);
-                    if (tab.id !== 'curriculum') {
-                      setSelectedLesson(null);
-                    }
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-mono whitespace-nowrap transition-all",
-                    isActive
-                      ? isWaterfall
-                        ? "bg-gradient-to-r from-cyan-400 to-sky-500 text-black font-bold shadow-lg shadow-cyan-500/30"
-                        : isWav
-                          ? "bg-gradient-to-r from-amber-400 to-orange-400 text-black font-bold shadow-lg shadow-amber-400/30"
-                          : isClassical
-                            ? "bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400 text-black font-bold shadow-lg shadow-amber-400/30"
-                            : "bg-amber-400 text-black font-bold shadow"
-                      : "text-white/60 hover:text-white hover:bg-white/5",
-                    isWaterfall && !isActive && "text-cyan-300 hover:text-cyan-200",
-                    isWav && !isActive && "text-amber-300 hover:text-amber-200",
-                    isClassical && !isActive && "text-amber-200 hover:text-amber-100"
-                  )}
+          {/* Main Working View */}
+              <main className={cn(
+            "flex-1 w-full transition-all duration-300",
+            activeTab === 'waterfall' ? 'p-0 pb-[60px] lg:pb-0 max-w-none' : cn("px-4 sm:px-6 lg:px-8 py-6 md:py-8 pb-24 lg:pb-10", containerClass)
+          )}>
+            <Suspense fallback={<SectionFallback />}>
+            <AnimatePresence mode="wait">
+              {/* TAB 1: CURRÍCULO 0 A 100 */}
+              {activeTab === 'curriculum' && (
+                <motion.div
+                  key="curriculum"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
                 >
-                  <Icon size={16} className={isWaterfall && !isActive ? "text-cyan-400" : isWav && !isActive ? "text-amber-400" : isClassical && !isActive ? "text-amber-300" : ""} />
-                  <span>{tab.label}</span>
-                  {'badge' in tab && (
-                    <span className={cn(
-                      "text-[9px] px-1.5 py-0.2 rounded font-extrabold",
-                      isActive ? "bg-black/30 text-black" : isWav ? "bg-amber-400/20 text-amber-300 border border-amber-400/40" : isClassical ? "bg-amber-400/25 text-amber-300 border border-amber-400/40" : "bg-cyan-400/20 text-cyan-300 border border-cyan-400/40"
-                    )}>
-                      {tab.badge}
-                    </span>
+                  {selectedLesson ? (
+                    <LessonViewer
+                      lesson={selectedLesson}
+                      userProgress={userProgress}
+                      onBack={() => setSelectedLesson(null)}
+                      onSelectLesson={(id) => {
+                        const found = LESSONS.find(l => l.id === id);
+                        if (found) setSelectedLesson(found);
+                      }}
+                      onPassLesson={handlePassLesson}
+                      onGoToGym={goToGym}
+                    />
+                  ) : (
+                    <>
+                    <DailyRoutineCard onPractice={practiceRoutineItem} />
+                    <CurriculumRoadmap
+                      userProgress={userProgress}
+                      onSelectLesson={(lesson) => setSelectedLesson(lesson)}
+                      onSetLevel={handleSetUserLevel}
+                    />
+                    </>
                   )}
-                </button>
-              );
-            })}
-          </div>
+                </motion.div>
+              )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Layout Width Selector Toggle */}
-            <div className="flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/10 shadow-inner">
-              <span className="text-[10px] font-mono text-white/40 px-1.5 flex items-center gap-1">
-                <Maximize2 size={11} className="text-amber-400" />
-                <span className="hidden xl:inline">Ancho:</span>
-              </span>
-              {[
-                { id: 'ultra', label: 'Ultra-Flex', short: 'Ultra (98%)' },
-                { id: 'wide', label: 'Panorámico', short: '1550px' },
-                { id: 'standard', label: 'Estándar', short: '1280px' },
-              ].map(mode => (
-                <button
-                  key={mode.id}
-                  type="button"
-                  onClick={() => handleLayoutWidthChange(mode.id as any)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-xl text-xs font-mono transition-all",
-                    layoutWidth === mode.id
-                      ? "bg-amber-400 text-black font-bold shadow"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                  )}
-                  title={`Cambiar diseño a modo ${mode.label}`}
+              {/* TAB: MÉTODOS CLÁSICOS (HANON, CZERNY, SUZUKI) */}
+              {activeTab === 'classicalMethods' && (
+                <motion.div
+                  key="classicalMethods"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
                 >
-                  <span className="hidden sm:inline">{mode.label}</span>
-                  <span className="sm:hidden">{mode.short}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Global Sound Selector */}
-            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/10 shadow-inner">
-              <span className="text-[10px] font-mono text-white/40 px-2 flex items-center gap-1">
-                <Volume2 size={12} className="text-amber-400" />
-                <span>Sonido:</span>
-              </span>
-              {SOUND_PRESETS.map((preset) => {
-                const isSelected = soundPreset === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleGlobalSoundPresetChange(preset.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono transition-all",
-                      isSelected
-                        ? "bg-amber-400 text-black font-bold shadow scale-[1.02]"
-                        : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                    title={preset.description}
-                  >
-                    <span>{preset.icon}</span>
-                    <span className="hidden lg:inline">{preset.label}</span>
-                    <span className="lg:hidden">{preset.shortLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Global Split Keyboard Quick Toggle in Header */}
-            <button
-              type="button"
-              id="btn-header-split-toggle"
-              onClick={handleGlobalSplitToggle}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-mono transition-all border shadow-inner",
-                splitConfig.enabled
-                  ? "bg-indigo-600 text-white border-indigo-400 font-bold shadow-md shadow-indigo-500/30 scale-[1.02]"
-                  : "bg-black/40 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+                  <ClassicalMethodsGym onScoreGain={handleScoreGain} />
+                </motion.div>
               )}
-              title="Dividir teclado: timbres independientes para mano izquierda (acompañamiento) y derecha (melodía)"
-            >
-              <Sliders size={13} className={splitConfig.enabled ? "text-indigo-200" : "text-amber-400"} />
-              <span className="hidden sm:inline">Teclado Dividido</span>
-              <span className="sm:hidden">Split</span>
-              <span className={cn(
-                "px-1.5 py-0.5 rounded text-[9px] font-extrabold",
-                splitConfig.enabled ? "bg-white/25 text-white" : "bg-black/40 text-white/40"
-              )}>
-                {splitConfig.enabled ? 'ON' : 'OFF'}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Main Working View */}
-      <main className={cn("flex-1 w-full px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-12 transition-all duration-300", getContainerWidthClass())}>
-        <AnimatePresence mode="wait">
-          {/* TAB 1: CURRÍCULO 0 A 100 */}
-          {activeTab === 'curriculum' && (
-            <motion.div
-              key="curriculum"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-8"
-            >
-              {selectedLesson ? (
-                <LessonViewer
-                  lesson={selectedLesson}
-                  userProgress={userProgress}
-                  onBack={() => setSelectedLesson(null)}
-                  onSelectLesson={(id) => {
-                    const found = LESSONS.find(l => l.id === id);
-                    if (found) setSelectedLesson(found);
-                  }}
-                  onPassLesson={handlePassLesson}
-                />
-              ) : (
-                <CurriculumRoadmap
-                  userProgress={userProgress}
-                  onSelectLesson={(lesson) => setSelectedLesson(lesson)}
-                  onSetLevel={handleSetUserLevel}
-                />
+              {/* TAB: CATARATA DE TONOS (PIANO ROLL WATERFALL & MIDIs) */}
+              {activeTab === 'waterfall' && (
+                <motion.div
+                  key="waterfall"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <ToneWaterfallGym onScoreGain={handleScoreGain} extraSongs={importedSongs} requestedSongId={requestedSongId} />
+                </motion.div>
               )}
-            </motion.div>
-          )}
 
-          {/* TAB: MÉTODOS CLÁSICOS (HANON, CZERNY, SUZUKI) */}
-          {activeTab === 'classicalMethods' && (
-            <motion.div
-              key="classicalMethods"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              <ClassicalMethodsGym onScoreGain={handleScoreGain} />
-            </motion.div>
-          )}
+              {/* TAB: BASES .WAV JAM PLAY-ALONG */}
+              {activeTab === 'wavStudio' && (
+                <motion.div
+                  key="wavStudio"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <WavBackingStudio onExportToWaterfall={handleExportToWaterfall} />
+                </motion.div>
+              )}
 
-          {/* TAB: CATARATA DE TONOS (PIANO ROLL WATERFALL & MIDIs) */}
-          {activeTab === 'waterfall' && (
-            <motion.div
-              key="waterfall"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              <div className="text-center max-w-3xl mx-auto space-y-2">
-                <span className="text-cyan-400 text-xs font-mono uppercase tracking-widest font-bold">
-                  Cascada Visual & Ejercitación con Archivos MIDI
-                </span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
-                  Catarata de Tonos
-                </h2>
-                <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
-                  Observa cómo descienden los tonos en cascada directamente sobre las teclas: azul cyan para la melodía (mano derecha) y rojo coral para bajos y acordes (mano izquierda). Sube tus propios archivos MIDI o ejercita con obras de repertorio universal en Modo Espera o Modo Flujo.
-                </p>
-              </div>
+              {/* TAB 2: BIBLIOTECA DE ACORDES & MAPA DE ESCALAS */}
+              {activeTab === 'chords' && (
+                <motion.div
+                  key="chords"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
+                >
+                  {/* SUB-NAVIGATION: ACORDES vs MAPA DE ESCALAS */}
+                  <PageHeader
+                    eyebrow={chordLibrarySubTab === 'chords' ? 'Visualizador armónico y partituras' : 'Progreso tonal del pianista'}
+                    title={chordLibrarySubTab === 'chords' ? 'Biblioteca de acordes e inversiones' : 'Mapa de escalas y dominio tonal'}
+                    description={chordLibrarySubTab === 'chords'
+                      ? 'Elegí la nota raíz, la inversión y el tipo de acorde. La notación en pentagrama se actualiza en tiempo real.'
+                      : <>Tu dominio de <strong className="text-ink">escalas mayores</strong>, <strong className="text-ink">menores armónicas</strong> y <strong className="text-ink">menores melódicas</strong> en las 12 tonalidades.</>}
+                  />
 
-              <ToneWaterfallGym onScoreGain={handleScoreGain} />
-            </motion.div>
-          )}
-
-          {/* TAB: BASES .WAV JAM PLAY-ALONG */}
-          {activeTab === 'wavStudio' && (
-            <motion.div
-              key="wavStudio"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              <WavBackingStudio />
-            </motion.div>
-          )}
-
-          {/* TAB 2: BIBLIOTECA DE ACORDES & MAPA DE ESCALAS */}
-          {activeTab === 'chords' && (
-            <motion.div
-              key="chords"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-8"
-            >
-              {/* SUB-NAVIGATION: ACORDES vs MAPA DE ESCALAS */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2 p-1.5 glass rounded-2xl border border-white/10 text-xs font-mono">
-                  <button
-                    type="button"
-                    onClick={() => setChordLibrarySubTab('chords')}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold",
-                      chordLibrarySubTab === 'chords'
-                        ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
-                        : "text-white/60 hover:text-white"
-                    )}
-                  >
-                    <BookOpen size={14} />
-                    <span>Acordes e Inversiones</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setChordLibrarySubTab('scaleMap')}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold",
-                      chordLibrarySubTab === 'scaleMap'
-                        ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
-                        : "text-white/60 hover:text-white"
-                    )}
-                  >
-                    <Award size={14} />
-                    <span>Mapa de Escalas</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 text-black font-extrabold uppercase hidden md:inline">
-                      Progreso Tonal
-                    </span>
-                  </button>
-                </div>
-
-                {/* View Mode Switcher for Staff & Piano */}
-                <div className="flex items-center gap-1.5 p-1 glass rounded-2xl border border-white/10 text-xs font-mono">
-                  <span className="text-white/40 px-2 hidden sm:inline">Visualización:</span>
-                  {[
-                    { id: 'both', label: 'Partitura + Teclado', Icon: BookOpen },
-                    { id: 'staff', label: 'Solo Pentagrama', Icon: Music2 },
-                    { id: 'piano', label: 'Solo Teclado', Icon: PianoIcon },
-                  ].map(mode => {
-                    const ModeIcon = mode.Icon;
-                    return (
-                      <button
-                        key={mode.id}
-                        type="button"
-                        onClick={() => setChordViewMode(mode.id as any)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all",
-                          chordViewMode === mode.id
-                            ? "bg-amber-400 text-black font-bold shadow"
-                            : "text-white/60 hover:text-white"
-                        )}
-                      >
-                        <ModeIcon size={14} />
-                        <span>{mode.label}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="seg">
+                      <button type="button" data-active={chordLibrarySubTab === 'chords'} onClick={() => setChordLibrarySubTab('chords')} className="seg-item flex items-center gap-1.5">
+                        <BookOpen size={13} /> Acordes e inversiones
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
+                      <button type="button" data-active={chordLibrarySubTab === 'scaleMap'} onClick={() => setChordLibrarySubTab('scaleMap')} className="seg-item flex items-center gap-1.5">
+                        <Award size={13} /> Mapa de escalas
+                      </button>
+                    </div>
 
-              {/* Real-time Staff Visualizer */}
-              {activePianoChord.length > 0 && (
-                <div className="space-y-6">
-                  {(chordViewMode === 'both' || chordViewMode === 'staff') && (
+                    <div className="seg">
+                      {[
+                        { id: 'both', label: 'Partitura + teclado', Icon: BookOpen },
+                        { id: 'staff', label: 'Pentagrama', Icon: Music2 },
+                        { id: 'piano', label: 'Teclado', Icon: PianoIcon },
+                      ].map(mode => {
+                        const ModeIcon = mode.Icon;
+                        return (
+                          <button key={mode.id} type="button" data-active={chordViewMode === mode.id} onClick={() => setChordViewMode(mode.id as any)} className="seg-item flex items-center gap-1.5">
+                            <ModeIcon size={13} /> {mode.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Real-time Staff Visualizer */}
+                  {activePianoChord.length > 0 && (
+                    <div className="space-y-6">
+                      {(chordViewMode === 'both' || chordViewMode === 'staff') && (
+                        <StaffVisualizer
+                          notes={activePianoChord}
+                          chordName={activeChordInfo.name}
+                          root={activeChordInfo.root}
+                          chordType={activeChordInfo.type}
+                          inversion={activeChordInfo.inversion}
+                        />
+                      )}
+
+                      {/* Piano Keyboard Display for Selected Chord or Scale */}
+                      {(chordViewMode === 'both' || chordViewMode === 'piano') && (
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center text-xs text-ink-3 px-1">
+                            <span>Teclado</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActivePianoChord([]);
+                                setActiveChordInfo({
+                                  root: '',
+                                  type: '',
+                                  inversion: 0,
+                                  name: 'Sin acorde o escala seleccionada'
+                                });
+                              }}
+                              className="btn btn-ghost btn-sm text-brand-2"
+                            >
+                              Limpiar teclado
+                            </button>
+                          </div>
+                          <Piano 
+                            activeNotes={activePianoChord} 
+                            chordRoot={activeChordInfo.root || undefined}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SUB-VIEW 1: CHORDS & INVERSIONS */}
+                  {chordLibrarySubTab === 'chords' && (
+                    <div className="space-y-8">
+                      <ChordChart 
+                        onChordSelect={(keys, info) => {
+                          setActivePianoChord(keys);
+                          if (info) {
+                            setActiveChordInfo(info);
+                          }
+                        }}
+                        onOpenScaleMap={() => setChordLibrarySubTab('scaleMap')}
+                      />
+                    </div>
+                  )}
+
+                  {/* SUB-VIEW 2: MAPA DE ESCALAS & DOMINIO TONAL */}
+                  {chordLibrarySubTab === 'scaleMap' && (
+                    <div className="space-y-8">
+                      <ScaleProgressMap
+                        onSelectScaleForPiano={(notes, info) => {
+                          setActivePianoChord(notes);
+                          setActiveChordInfo({
+                            root: info.root,
+                            type: info.type,
+                            inversion: 0,
+                            name: info.name,
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* TAB 3: CÍRCULO DE QUINTAS */}
+              {activeTab === 'circle' && (
+                <motion.div
+                  key="circle"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-10"
+                >
+                  <CircleOfFifths onSelectChordKeys={(keys, rootName) => {
+                    setActivePianoChord(keys);
+                    // El nombre se arma con la escritura de la tonalidad, no con
+                    // los nombres de tecla: Reb mayor es Db-F-Ab, no C#-F-G#.
+                    const escrito = spellChordNotes(rootName, keys).map(k => k.replace(/\d/, ''));
+                    setActiveChordInfo({
+                      root: rootName,
+                      type: 'Acorde Tonal',
+                      inversion: 0,
+                      name: `Acorde Tonal (${escrito.join('-')})`
+                    });
+                  }} />
+
+                  {/* Synchronized Notation & Acoustic Piano */}
+                  <div className="pt-4 space-y-6">
                     <StaffVisualizer
                       notes={activePianoChord}
                       chordName={activeChordInfo.name}
@@ -592,166 +680,71 @@ export default function App() {
                       chordType={activeChordInfo.type}
                       inversion={activeChordInfo.inversion}
                     />
-                  )}
-
-                  {/* Piano Keyboard Display for Selected Chord or Scale */}
-                  {(chordViewMode === 'both' || chordViewMode === 'piano') && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center text-xs font-mono text-white/50 px-2">
-                        <span>Visualización en el Teclado:</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActivePianoChord([]);
-                            setActiveChordInfo({
-                              root: '',
-                              type: '',
-                              inversion: 0,
-                              name: 'Sin acorde o escala seleccionada'
-                            });
-                          }}
-                          className="text-xs font-mono text-amber-400 hover:underline"
-                        >
-                          Limpiar Teclado
-                        </button>
-                      </div>
-                      <Piano 
-                        activeNotes={activePianoChord} 
-                        chordRoot={activeChordInfo.root || undefined}
-                      />
+                    <div className="space-y-2">
+                      <div className="text-xs text-ink-3 px-1">Teclado sincronizado</div>
+                      <Piano activeNotes={activePianoChord} />
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* SUB-VIEW 1: CHORDS & INVERSIONS */}
-              {chordLibrarySubTab === 'chords' && (
-                <div className="space-y-8">
-                  <div className="text-center max-w-2xl mx-auto space-y-2">
-                    <span className="text-amber-400 text-xs font-mono uppercase tracking-widest">
-                      Visualizador Armónico & Partituras
-                    </span>
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
-                      Biblioteca Completa de Acordes e Inversiones
-                    </h2>
-                    <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
-                      Selecciona la nota raíz, la inversión y el tipo de acorde. Observa la notación en pentagrama en tiempo real para mejorar tu lectura a primera vista y consulta las teclas en el teclado.
-                    </p>
                   </div>
-
-                  <ChordChart 
-                    onChordSelect={(keys, info) => {
-                      setActivePianoChord(keys);
-                      if (info) {
-                        setActiveChordInfo(info);
-                      }
-                    }}
-                    onOpenScaleMap={() => setChordLibrarySubTab('scaleMap')}
-                  />
-                </div>
+                </motion.div>
               )}
 
-              {/* SUB-VIEW 2: MAPA DE ESCALAS & DOMINIO TONAL */}
-              {chordLibrarySubTab === 'scaleMap' && (
-                <div className="space-y-8">
-                  <div className="text-center max-w-2xl mx-auto space-y-2">
-                    <span className="text-amber-400 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-1.5">
-                      <Award size={13} />
-                      <span>Progreso Tonal del Pianista</span>
-                    </span>
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
-                      Mapa de Escalas & Dominio Tonal
-                    </h2>
-                    <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">
-                      Monitorea tu dominio en las 3 familias fundamentales del piano clásico y moderno: <strong className="text-white">Escalas Mayores</strong>, <strong className="text-white">Menores Armónicas</strong> y <strong className="text-white">Menores Melódicas</strong> a través de las 12 tonalidades.
-                    </p>
-                  </div>
-
-                  <ScaleProgressMap
-                    onSelectScaleForPiano={(notes, info) => {
-                      setActivePianoChord(notes);
-                      setActiveChordInfo({
-                        root: info.root,
-                        type: info.type,
-                        inversion: 0,
-                        name: info.name,
-                      });
-                    }}
-                  />
-                </div>
+              {/* TAB 4: GIMNASIO PRÁCTICO */}
+              {activeTab === 'gym' && (
+                <motion.div
+                  key="gym"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
+                >
+                  <ExerciseSystem key={gymCategory} initialCategory={gymCategory} />
+                </motion.div>
               )}
-            </motion.div>
-          )}
+            </AnimatePresence>
+            </Suspense>
+              </main>
 
-          {/* TAB 3: CÍRCULO DE QUINTAS */}
-          {activeTab === 'circle' && (
-            <motion.div
-              key="circle"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-10"
-            >
-              <CircleOfFifths onSelectChordKeys={(keys) => {
-                setActivePianoChord(keys);
-                setActiveChordInfo({
-                  root: keys[0]?.replace(/\d/, '') || 'C',
-                  type: 'Acorde Tonal',
-                  inversion: 0,
-                  name: `Acorde Tonal (${keys.map(k => k.replace(/\d/, '')).join('-')})`
-                });
-              }} />
 
-              {/* Synchronized Notation & Acoustic Piano */}
-              <div className="pt-4 space-y-6">
-                <StaffVisualizer
-                  notes={activePianoChord}
-                  chordName={activeChordInfo.name}
-                  root={activeChordInfo.root}
-                  chordType={activeChordInfo.type}
-                  inversion={activeChordInfo.inversion}
-                />
-                <div className="space-y-2">
-                  <div className="text-xs font-mono text-white/50 px-2">Teclado Acústico Sincronizado:</div>
-                  <Piano activeNotes={activePianoChord} />
-                </div>
-              </div>
-            </motion.div>
-          )}
+        <footer className={cn("hidden border-t border-line py-5 px-8 text-xs text-ink-3", activeTab !== 'waterfall' && "lg:block")}>
+          <div className={cn("flex items-center justify-between gap-4", containerClass)}>
+            <div className="flex items-center gap-2">
+              <PianoIcon size={14} className="text-brand" />
+              <span className="text-ink-2 font-medium">PianoMaster</span>
+              <span>· Conservatorio y tutor virtual de piano</span>
+            </div>
+            <div>Metodología adaptativa · de 0 a 100 con el Maestro Aurelio</div>
+          </div>
+        </footer>
+      </div>
 
-          {/* TAB 4: GIMNASIO PRÁCTICO */}
-          {activeTab === 'gym' && (
-            <motion.div
-              key="gym"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-8"
-            >
-              <ExerciseSystem />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+      <BottomNav
+        active={activeTab}
+        onNavigate={navigate}
+        onOpenMaestro={() => setIsInstructorChatOpen(true)}
+      />
 
       {/* Global Maestro Aurelio Chat Modal */}
-      <InstructorChatModal
+      {/* Los modales se montan recién cuando se abren: montados desde el
+          principio, sus trozos se bajaban apenas entrabas aunque no los
+          abrieras nunca. */}
+      <Suspense fallback={null}>
+      {isInstructorChatOpen && <InstructorChatModal
         isOpen={isInstructorChatOpen}
         onClose={() => setIsInstructorChatOpen(false)}
         currentLesson={selectedLesson || undefined}
         userLevel={userProgress.userLevel}
-      />
+      />}
 
       {/* Quick Practice 60s Blitz Modal */}
-      <QuickPracticeModal
+      {isQuickPracticeOpen && <QuickPracticeModal
         isOpen={isQuickPracticeOpen}
         onClose={() => setIsQuickPracticeOpen(false)}
         userProgress={userProgress}
         onSessionComplete={handleQuickPracticeComplete}
-      />
+      />}
 
       {/* Lesson Completion Celebration Modal with Confetti & Fanfare */}
-      <LessonCelebrationModal
+      {celebratingLesson !== null && <LessonCelebrationModal
         isOpen={celebratingLesson !== null}
         lesson={celebratingLesson?.lesson || null}
         score={celebratingLesson?.score || 100}
@@ -765,21 +758,12 @@ export default function App() {
             setActiveTab('curriculum');
           }
         }}
-      />
+      />}
+      </Suspense>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-4 text-center text-xs text-white/40 font-mono">
-        <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-200", getContainerWidthClass())}>
-          <div className="flex items-center gap-2">
-            <PianoIcon size={16} className="text-amber-400" />
-            <span className="text-white font-semibold">PianoMaster</span>
-            <span>— Conservatorio y Tutor Virtual de Piano</span>
-          </div>
-          <div>
-            Metodología pedagógica adaptativa • De 0 a 100 con Maestro Aurelio
-          </div>
-        </div>
-      </footer>
+      {applyUpdate && (
+        <UpdateToast onApply={applyUpdate} onDismiss={() => setApplyUpdate(null)} />
+      )}
     </div>
   );
 }

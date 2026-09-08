@@ -1,0 +1,27 @@
+{
+  "name": "PianoMaster — Conservatorio virtual",
+  "short_name": "PianoMaster",
+  "description": "Instructor virtual de piano de 0 a 100: lecciones, gimnasio de escalas, catarata de tonos y separación de instrumentos para armar bases.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "lang": "es-UY",
+  "dir": "ltr",
+  "categories": ["education", "music"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Catarata de Tonos", "short_name": "Catarata", "url": "/?tab=waterfall", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Gimnasio de escalas", "short_name": "Gimnasio", "url": "/?tab=gym", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Currículo 0 a 100", "short_name": "Currículo", "url": "/?tab=curriculum", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

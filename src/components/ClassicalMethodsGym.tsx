@@ -228,7 +228,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
   return (
     <div className="space-y-10">
       {/* MODULE NAVIGATION BAR */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-black/60 border border-white/10">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-black/60 border border-line">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
@@ -237,7 +237,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
               "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all uppercase tracking-wider",
               gymViewMode === 'score_module'
                 ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                : "text-ink-2 hover:text-ink hover:bg-surface-2"
             )}
           >
             <Layers size={15} />
@@ -251,7 +251,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
               "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all uppercase tracking-wider",
               gymViewMode === 'guided_practice'
                 ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                : "text-ink-2 hover:text-ink hover:bg-surface-2"
             )}
           >
             <Target size={15} />
@@ -259,7 +259,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           </button>
         </div>
 
-        <div className="text-[11px] font-mono text-white/40 hidden md:flex items-center gap-2 px-3">
+        <div className="text-[11px] font-mono text-ink-3 hidden md:flex items-center gap-2 px-3">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>Hanon • Czerny • Suzuki Integrados</span>
         </div>
@@ -278,14 +278,14 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           {/* 3 BOOKS BANNER & SELECTOR CARDS */}
       <div className="space-y-4">
         <div className="text-center max-w-3xl mx-auto space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold tracking-widest uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-brand-2 text-xs font-mono font-bold tracking-widest uppercase">
             <BookOpen size={14} />
             <span>Trilogía de Métodos Clásicos Universales</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-ink">
             Biblioteca de los 3 Grandes Métodos
           </h2>
-          <p className="text-xs md:text-sm text-white/60 font-light leading-relaxed">
+          <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed">
             Los tres pilares pedagógicos de todo conservatorio: la mecánica pura de <strong>Hanon</strong>, la técnica y lectura clásica de <strong>Czerny</strong>, y el oído musical y musicalidad bella de <strong>Suzuki</strong>.
           </p>
         </div>
@@ -303,7 +303,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                   "relative p-6 rounded-3xl text-left transition-all duration-300 flex flex-col justify-between border overflow-hidden group",
                   isSelected
                     ? "ring-2 shadow-2xl scale-[1.02]"
-                    : "bg-[#0b0e17] border-white/10 hover:border-white/20 opacity-85 hover:opacity-100"
+                    : "bg-surface border-line hover:border-line-strong opacity-85 hover:opacity-100"
                 )}
                 style={{
                   backgroundColor: isSelected ? book.colorScheme.coverBg : '#0b0e17',
@@ -323,27 +323,27 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                   >
                     {book.coverTag}
                   </span>
-                  <span className="text-[11px] font-mono text-white/40">
+                  <span className="text-[11px] font-mono text-ink-3">
                     {book.volumeOrOpus}
                   </span>
                 </div>
 
                 {/* Book Title & Cover Graphic Accent */}
                 <div className="space-y-1.5 mb-5">
-                  <h3 className="text-xl md:text-2xl font-serif font-bold text-white group-hover:text-amber-300 transition-colors">
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-ink group-hover:text-brand-2 transition-colors">
                     {book.title}
                   </h3>
-                  <div className="text-xs font-mono text-white/50">
+                  <div className="text-xs font-mono text-ink-3">
                     {book.author}
                   </div>
-                  <p className="text-xs text-white/70 line-clamp-2 pt-1 font-light">
+                  <p className="text-xs text-ink-2 line-clamp-2 pt-1 font-light">
                     {book.subtitle}
                   </p>
                 </div>
 
                 {/* Footer specs */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                  <span className="text-white/40">
+                <div className="pt-3 border-t border-line flex items-center justify-between text-xs font-mono">
+                  <span className="text-ink-3">
                     {book.exercises.length} Ejercicios Clave
                   </span>
                   <span 
@@ -372,14 +372,14 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: currentBook.colorScheme.primary }}
               />
-              <span className="text-xs font-mono uppercase tracking-widest text-white/60">
+              <span className="text-xs font-mono uppercase tracking-widest text-ink-2">
                 Pedagogía Oficial: {currentBook.author}
               </span>
             </div>
-            <h3 className="text-2xl font-serif font-bold text-white">
+            <h3 className="text-2xl font-serif font-bold text-ink">
               {currentBook.title} — {currentBook.volumeOrOpus}
             </h3>
-            <p className="text-xs md:text-sm text-white/70 font-light leading-relaxed">
+            <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed">
               {currentBook.description}
             </p>
           </div>
@@ -388,9 +388,9 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           <button
             type="button"
             onClick={() => maestroVoice.speak(currentBook.methodology)}
-            className="px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-white flex items-center gap-2 transition-all hover:scale-105 active:scale-95 whitespace-nowrap shadow"
+            className="px-4 py-2.5 rounded-2xl bg-surface-2 hover:bg-surface-3 border border-line-strong text-xs font-mono text-ink flex items-center gap-2 transition-all hover:scale-105 active:scale-95 whitespace-nowrap shadow"
           >
-            <Volume2 size={15} className="text-amber-400" />
+            <Volume2 size={15} className="text-brand-2" />
             <span>Escuchar Enfoque del Método</span>
           </button>
         </div>
@@ -400,9 +400,9 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           {currentBook.keyBenefits.map((benefit, i) => (
             <div 
               key={i} 
-              className="p-3.5 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-2.5 text-xs text-white/80"
+              className="p-3.5 rounded-2xl bg-black/40 border border-line flex items-start gap-2.5 text-xs text-ink-2"
             >
-              <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 size={16} className="text-ok shrink-0 mt-0.5" />
               <span className="font-light leading-snug">{benefit}</span>
             </div>
           ))}
@@ -418,9 +418,9 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
       {/* EXERCISE SELECTION TABS & WORKSPACE */}
       <div className="space-y-6">
         {/* Filter and Exercise Selector Bar */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-line pb-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-mono text-white/40 mr-1">Dificultad:</span>
+            <span className="text-xs font-mono text-ink-3 mr-1">Dificultad:</span>
             {(['Todos', 'Principiante', 'Intermedio', 'Avanzado'] as const).map(diff => (
               <button
                 key={diff}
@@ -430,7 +430,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                   "px-3 py-1.5 rounded-xl text-xs font-mono transition-all",
                   difficultyFilter === diff
                     ? "bg-amber-400 text-black font-bold shadow"
-                    : "text-white/60 hover:text-white bg-white/5"
+                    : "text-ink-2 hover:text-ink bg-surface-2"
                 )}
               >
                 {diff}
@@ -439,8 +439,8 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           </div>
 
           {/* Hand Mode Selector */}
-          <div className="flex items-center gap-1.5 p-1 bg-black/50 rounded-2xl border border-white/10 text-xs font-mono">
-            <span className="text-white/40 px-2 hidden sm:inline">Mano:</span>
+          <div className="flex items-center gap-1.5 p-1 bg-black/50 rounded-2xl border border-line text-xs font-mono">
+            <span className="text-ink-3 px-2 hidden sm:inline">Mano:</span>
             {[
               { id: 'right', label: 'Derecha (MD)', Icon: Hand, iconClass: 'rotate-12' },
               { id: 'left', label: 'Izquierda (MI)', Icon: Hand, iconClass: '-scale-x-100 -rotate-12' },
@@ -461,7 +461,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all",
                     handMode === m.id
                       ? "bg-amber-400 text-black font-bold shadow"
-                      : "text-white/60 hover:text-white"
+                      : "text-ink-2 hover:text-ink"
                   )}
                 >
                   <ModeIcon size={14} className={m.iconClass} />
@@ -485,31 +485,31 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                   "p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between gap-3",
                   isThis
                     ? "bg-amber-400/15 border-amber-400/50 shadow-lg shadow-amber-400/10"
-                    : "bg-black/30 border-white/10 hover:border-white/20 hover:bg-black/50"
+                    : "bg-black/30 border-line hover:border-line-strong hover:bg-black/50"
                 )}
               >
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="font-bold text-amber-400">
+                    <span className="font-bold text-brand-2">
                       Nº {ex.exerciseNumber} • {ex.keySignature}
                     </span>
                     <span className={cn(
                       "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                      ex.difficulty === 'Principiante' ? "bg-emerald-500/20 text-emerald-300" :
-                      ex.difficulty === 'Intermedio' ? "bg-amber-500/20 text-amber-300" : "bg-purple-500/20 text-purple-300"
+                      ex.difficulty === 'Principiante' ? "bg-emerald-500/20 text-ok" :
+                      ex.difficulty === 'Intermedio' ? "bg-amber-500/20 text-brand-2" : "bg-purple-500/20 text-purple-300"
                     )}>
                       {ex.difficulty}
                     </span>
                   </div>
-                  <div className="font-serif font-bold text-base text-white">
+                  <div className="font-serif font-bold text-base text-ink">
                     {ex.title}
                   </div>
-                  <div className="text-xs text-white/50 line-clamp-1 font-light">
+                  <div className="text-xs text-ink-3 line-clamp-1 font-light">
                     {ex.subtitle}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between text-[11px] font-mono text-ink-3 pt-2 border-t border-line">
                   <span>Tempo: {ex.recommendedBpm} BPM</span>
                   <div className="flex items-center gap-2">
                     <button
@@ -518,13 +518,13 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                         e.stopPropagation();
                         handleOpenWaterfallDemo(ex);
                       }}
-                      className="px-2 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold flex items-center gap-1 transition-all"
+                      className="px-2 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-info border border-cyan-500/40 text-[10px] font-mono font-bold flex items-center gap-1 transition-all"
                       title="Ver en Catarata de Tonos con Digitación"
                     >
-                      <Flame size={11} className="text-cyan-400" />
+                      <Flame size={11} className="text-info" />
                       <span>Catarata</span>
                     </button>
-                    <span className={cn("font-bold flex items-center gap-1", isThis ? "text-amber-300" : "text-white/40")}>
+                    <span className={cn("font-bold flex items-center gap-1", isThis ? "text-brand-2" : "text-ink-3")}>
                       <span>{isThis ? 'Activo' : 'Cargar'}</span>
                       <ChevronRight size={13} />
                     </span>
@@ -537,18 +537,18 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
       </div>
 
       {/* ACTIVE EXERCISE INTERACTIVE STAGE */}
-      <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 space-y-8">
+      <div className="glass p-6 md:p-8 rounded-3xl border border-line space-y-8">
         {/* Header with Title & Controls */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/10 pb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-line pb-6">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
+            <div className="flex items-center gap-2 text-xs font-mono text-brand-2">
               <Sparkles size={14} />
               <span>Estudio Activo • {currentBook.title}</span>
             </div>
-            <h3 className="text-2xl md:text-3xl font-serif font-bold text-white">
+            <h3 className="text-2xl md:text-3xl font-serif font-bold text-ink">
               {selectedExercise.title}
             </h3>
-            <p className="text-xs md:text-sm text-white/60 font-light">
+            <p className="text-xs md:text-sm text-ink-2 font-light">
               {selectedExercise.focusTechnique}
             </p>
           </div>
@@ -556,9 +556,9 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           {/* Control Buttons (Demo, Practice, Tempo) */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Metronome / BPM Slider */}
-            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-2xl border border-white/10 text-xs font-mono">
-              <span className="text-white/40">Tempo:</span>
-              <span className="text-amber-400 font-bold w-12 text-center">{tempoBpm} BPM</span>
+            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-2xl border border-line text-xs font-mono">
+              <span className="text-ink-3">Tempo:</span>
+              <span className="text-brand-2 font-bold w-12 text-center">{tempoBpm} BPM</span>
               <input
                 type="range"
                 min={40}
@@ -577,11 +577,11 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
               className={cn(
                 "px-4 py-2.5 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow",
                 isPlayingDemo
-                  ? "bg-rose-500 text-white animate-pulse"
-                  : "bg-white/10 hover:bg-white/20 text-white border border-white/15"
+                  ? "bg-rose-500 text-ink animate-pulse"
+                  : "bg-surface-3 hover:bg-surface-3 text-ink border border-line-strong"
               )}
             >
-              {isPlayingDemo ? <Pause size={15} /> : <Play size={15} className="text-amber-400" />}
+              {isPlayingDemo ? <Pause size={15} /> : <Play size={15} className="text-brand-2" />}
               <span>{isPlayingDemo ? 'Pausar Demo' : 'Escuchar Demo'}</span>
             </button>
 
@@ -616,10 +616,10 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
             <button
               type="button"
               onClick={() => setGymViewMode('score_module')}
-              className="px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+              className="px-4 py-2.5 rounded-2xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
               title="Abrir en el Módulo de Partituras Técnicas"
             >
-              <Layers size={14} className="text-amber-400" />
+              <Layers size={14} className="text-brand-2" />
               <span>Ver Partitura Técnica</span>
             </button>
           </div>
@@ -627,19 +627,19 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
 
         {/* INTERACTIVE SHEET MUSIC & FINGERING DISPLAY */}
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-white/50">
-            <span className="flex items-center gap-1.5 text-white">
-              <BookOpen size={14} className="text-amber-400" />
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-ink-3">
+            <span className="flex items-center gap-1.5 text-ink">
+              <BookOpen size={14} className="text-brand-2" />
               <span>Partitura Secuencial con Digitaciones Clásicas (1=Pulgar, 2=Índice, 3=Medio, 4=Anular, 5=Meñique):</span>
             </span>
 
             {isInteractivePractice && (
               <div className="flex items-center gap-3 text-xs">
-                <span className="text-emerald-400 font-bold">
+                <span className="text-ok font-bold">
                   Nota {practiceProgressIdx + 1} de {activeSequence.length}
                 </span>
                 {streakCount > 0 && (
-                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                  <span className="text-brand-2 font-bold flex items-center gap-1">
                     <Flame size={13} /> {streakCount} Racha
                   </span>
                 )}
@@ -648,7 +648,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           </div>
 
           {/* Interactive Notes Ribbon with Fingerings */}
-          <div className="p-4 rounded-3xl bg-black/50 border border-white/10 overflow-x-auto no-scrollbar">
+          <div className="p-4 rounded-3xl bg-black/50 border border-line overflow-x-auto no-scrollbar">
             <div className="flex items-center gap-2 min-w-max py-2 px-1">
               {activeSequence.map((item, idx) => {
                 const isCurrent = isInteractivePractice 
@@ -664,14 +664,14 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                       isCurrent
                         ? "bg-amber-400 text-black border-amber-300 scale-110 shadow-lg shadow-amber-400/40 z-10"
                         : isPast
-                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 opacity-80"
-                          : "bg-white/5 text-white/70 border-white/10"
+                          ? "bg-emerald-500/20 text-ok border-emerald-500/40 opacity-80"
+                          : "bg-surface-2 text-ink-2 border-line"
                     )}
                   >
                     {/* Fingering Number at Top */}
                     <div className={cn(
                       "text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full mb-1",
-                      isCurrent ? "bg-black/30 text-black" : "bg-white/10 text-white/60"
+                      isCurrent ? "bg-black/30 text-black" : "bg-surface-3 text-ink-2"
                     )}>
                       Dedo {item.fingering}
                     </div>
@@ -682,7 +682,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                     </div>
 
                     {/* Hand indicator */}
-                    <div className={cn("text-[9px] font-mono pt-1", isCurrent ? "text-black/70" : "text-white/40")}>
+                    <div className={cn("text-[9px] font-mono pt-1", isCurrent ? "text-black/70" : "text-ink-3")}>
                       {item.hand === 'right' ? 'MD' : 'MI'}
                     </div>
 
@@ -699,10 +699,10 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
 
         {/* PIANO KEYBOARD COMPONENT */}
         <div className="space-y-3 pt-2">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-white/50 px-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-ink-3 px-1">
             <span>
               {isInteractivePractice ? (
-                <span className="text-amber-400 font-bold animate-pulse">
+                <span className="text-brand-2 font-bold animate-pulse">
                   Toca la nota resaltada en el teclado o usa tus teclas físicas:
                 </span>
               ) : (
@@ -712,8 +712,8 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
 
             {currentExpectedNote && (
               <div className="flex items-center gap-2">
-                <span className="text-white/40">Nota esperada:</span>
-                <span className="px-2.5 py-1 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+                <span className="text-ink-3">Nota esperada:</span>
+                <span className="px-2.5 py-1 rounded-xl bg-amber-400/20 text-brand-2 border border-amber-400/30 font-bold">
                   {currentExpectedNote.note} (Dedo {currentExpectedNote.fingering} {currentExpectedNote.hand === 'right' ? 'Mano Derecha' : 'Mano Izquierda'})
                 </span>
               </div>
@@ -737,14 +737,14 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
               exit={{ opacity: 0, scale: 0.95 }}
               className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-emerald-950/80 via-black to-amber-950/80 border border-emerald-500/40 text-center space-y-4 shadow-2xl"
             >
-              <div className="w-16 h-16 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-ok flex items-center justify-center mx-auto">
                 <Trophy size={32} />
               </div>
               <div className="space-y-1">
-                <h4 className="text-2xl font-serif font-bold text-white">
+                <h4 className="text-2xl font-serif font-bold text-ink">
                   ¡Ejercicio Completado con Éxito!
                 </h4>
-                <p className="text-xs md:text-sm text-white/70 font-light">
+                <p className="text-xs md:text-sm text-ink-2 font-light">
                   Has ejecutado todas las notas con la digitación correcta de <strong>{selectedExercise.title}</strong>.
                 </p>
               </div>
@@ -753,7 +753,7 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
                 <button
                   type="button"
                   onClick={() => triggerCurriculumConfetti('grand')}
-                  className="px-4 py-2.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/30 text-xs font-mono font-bold flex items-center gap-2 transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-brand-2 border border-amber-400/30 text-xs font-mono font-bold flex items-center gap-2 transition-all"
                 >
                   <PartyPopper size={15} />
                   <span>Celebrar con Confeti</span>
@@ -774,23 +774,23 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
         {/* MAESTRO AURELIO PEDAGOGICAL ADVICE */}
         <div className="p-6 rounded-3xl bg-black/40 border border-amber-500/30 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-brand-2 uppercase tracking-widest">
               <Sparkles size={14} />
               <span>Instrucción del Maestro Aurelio</span>
             </div>
             <button
               type="button"
               onClick={() => maestroVoice.speak(selectedExercise.maestroAdvice)}
-              className="flex items-center gap-1.5 text-xs font-mono text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs font-mono text-ink-2 hover:text-ink transition-colors"
             >
-              <Volume2 size={13} className="text-amber-400" />
+              <Volume2 size={13} className="text-brand-2" />
               <span>Escuchar voz</span>
             </button>
           </div>
-          <p className="text-xs md:text-sm text-white/80 font-light leading-relaxed italic">
+          <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed italic">
             "{selectedExercise.maestroAdvice}"
           </p>
-          <div className="text-[11px] font-mono text-white/40 pt-1 border-t border-white/5">
+          <div className="text-[11px] font-mono text-ink-3 pt-1 border-t border-line">
             Nota histórica: {selectedExercise.historicalNote}
           </div>
         </div>
@@ -804,8 +804,8 @@ export const ClassicalMethodsGym: React.FC<ClassicalMethodsGymProps> = ({
           isOpen={isWaterfallModalOpen}
           onClose={() => setIsWaterfallModalOpen(false)}
           title={waterfallExercise?.title || selectedExercise.title}
-          subtitle={`${waterfallExercise?.focusTechnique || selectedExercise.focusTechnique} • ${CLASSICAL_BOOKS.find(b => b.id === (waterfallExercise?.bookId || selectedExercise.bookId))?.author || activeBook.author}`}
-          composer={CLASSICAL_BOOKS.find(b => b.id === (waterfallExercise?.bookId || selectedExercise.bookId))?.author || activeBook.author}
+          subtitle={`${waterfallExercise?.focusTechnique || selectedExercise.focusTechnique} • ${CLASSICAL_BOOKS.find(b => b.id === (waterfallExercise?.bookId || selectedExercise.bookId))?.author || currentBook.author}`}
+          composer={CLASSICAL_BOOKS.find(b => b.id === (waterfallExercise?.bookId || selectedExercise.bookId))?.author || currentBook.author}
           bpm={tempoBpm || waterfallExercise?.recommendedBpm || selectedExercise.recommendedBpm}
           notes={buildWaterfallFromMethodNotes(
             (waterfallExercise || selectedExercise).rightHandNotes,

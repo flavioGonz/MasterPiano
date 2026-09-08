@@ -601,29 +601,29 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
       {/* VIEW 1: GENERATOR & SEQUENCE CONFIGURATION */}
       {/* ------------------------------------------------------------- */}
       {sessionStage === 'config' && (
-        <div className="glass p-6 md:p-8 rounded-3xl border border-amber-400/30 space-y-8 bg-gradient-to-b from-[#0f1320] to-[#080a11]">
+        <div className="p-6 md:p-8 rounded-3xl border border-brand-line space-y-8 bg-surface">
           {/* Header Banner */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-400 text-black flex items-center justify-center font-bold shadow-md shadow-amber-400/30">
                   <Compass size={18} />
                 </div>
-                <span className="text-xs font-mono uppercase tracking-widest text-amber-400 font-semibold">
+                <span className="text-xs font-mono uppercase tracking-widest text-brand-2 font-semibold">
                   Generador de Secuencias • Gimnasio Práctico
                 </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-serif font-bold text-ink">
                 Entrenamiento por Ciclo de Quintas
               </h2>
-              <p className="text-xs md:text-sm text-white/60 font-light max-w-2xl">
+              <p className="text-xs md:text-sm text-ink-2 font-light max-w-2xl">
                 Crea rutinas sistemáticas de escalas conectadas a través de la rueda armónica universal. Domina las armaduras de clave con velocidad y digitación impecable.
               </p>
             </div>
 
             {/* Quick Stats Pill */}
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl text-xs font-mono text-white/70 self-start md:self-auto">
-              <Sparkles size={14} className="text-amber-400" />
+            <div className="flex items-center gap-2 bg-surface-2 border border-line px-4 py-2 rounded-2xl text-xs font-mono text-ink-2 self-start md:self-auto">
+              <Sparkles size={14} className="text-brand-2" />
               <span>{selectedRoots.length} tonalidades seleccionadas</span>
             </div>
           </div>
@@ -632,21 +632,21 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/40 text-xs font-mono font-bold flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-amber-400/20 text-brand-2 border border-amber-400/40 text-xs font-mono font-bold flex items-center justify-center">
                   1
                 </span>
-                <h3 className="font-serif font-bold text-white text-base md:text-lg">
+                <h3 className="font-serif font-bold text-ink text-base md:text-lg">
                   Configurar Tonalidades del Ciclo
                 </h3>
               </div>
 
               {/* Quick Presets */}
               <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
-                <span className="text-white/40 text-[11px] mr-1 hidden sm:inline">Presets:</span>
+                <span className="text-ink-3 text-[11px] mr-1 hidden sm:inline">Presets:</span>
                 <button
                   type="button"
                   onClick={() => applyPreset('beginner')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-colors flex items-center gap-1.5"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                   <span>Básicas (C, G, F)</span>
@@ -654,7 +654,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 <button
                   type="button"
                   onClick={() => applyPreset('intermediate')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-colors flex items-center gap-1.5"
                 >
                   <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
                   <span>Intermedio (6 claves)</span>
@@ -662,21 +662,21 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 <button
                   type="button"
                   onClick={() => applyPreset('sharps')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-colors"
                 >
                   ↗ Sostenidos (7)
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('flats')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-colors"
                 >
                   ↙ Bemoles (6)
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('all12')}
-                  className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors font-bold flex items-center gap-1.5"
+                  className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-brand-2 border border-amber-400/30 transition-colors font-bold flex items-center gap-1.5"
                 >
                   <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
                   <span>Ciclo Completo (12)</span>
@@ -698,14 +698,14 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     className={cn(
                       "p-3 rounded-2xl border text-left font-mono transition-all relative flex flex-col justify-between group",
                       isSelected
-                        ? "bg-amber-400/15 border-amber-400 text-white shadow-md shadow-amber-400/10 scale-[1.02]"
-                        : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+                        ? "bg-amber-400/15 border-amber-400 text-ink shadow-md shadow-amber-400/10 scale-[1.02]"
+                        : "bg-surface-2 border-line text-ink-3 hover:bg-surface-3 hover:text-ink"
                     )}
                   >
                     <div className="flex items-center justify-between gap-1">
                       <span className={cn(
                         "text-base font-serif font-bold",
-                        isSelected ? "text-amber-300" : "text-white/70"
+                        isSelected ? "text-brand-2" : "text-ink-2"
                       )}>
                         {keyDef.root}
                       </span>
@@ -714,17 +714,17 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                           {orderIndex + 1}
                         </span>
                       ) : (
-                        <span className="w-5 h-5 rounded-full border border-white/20 text-transparent flex items-center justify-center text-[10px]">
+                        <span className="w-5 h-5 rounded-full border border-line-strong text-transparent flex items-center justify-center text-[10px]">
                           +
                         </span>
                       )}
                     </div>
 
                     <div className="mt-2 space-y-0.5">
-                      <div className="text-[11px] font-semibold truncate text-white/90">
+                      <div className="text-[11px] font-semibold truncate text-ink">
                         {keyDef.name.split(' ')[0]}
                       </div>
-                      <div className="text-[10px] text-white/40 truncate">
+                      <div className="text-[10px] text-ink-3 truncate">
                         {keyDef.accidentalsShort}
                       </div>
                     </div>
@@ -732,18 +732,18 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 );
               })}
             </div>
-            <div className="text-[11px] text-white/40 font-mono flex items-center justify-between">
+            <div className="text-[11px] text-ink-3 font-mono flex items-center justify-between">
               <span>Haz clic en cualquier tonalidad para añadirla o quitarla de la secuencia activa.</span>
-              <span className="text-amber-400">{selectedRoots.length} de 12 activas</span>
+              <span className="text-brand-2">{selectedRoots.length} de 12 activas</span>
             </div>
           </div>
 
           {/* Section 2: Scale Type & Hand & Movement Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             {/* Scale Type */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-mono text-white/50">
-                <Music size={14} className="text-emerald-400" />
+            <div className="p-4 rounded-2xl bg-surface-2 border border-line space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-mono text-ink-3">
+                <Music size={14} className="text-ok" />
                 <span>Tipo de Escala en la Secuencia:</span>
               </div>
               <div className="space-y-1.5">
@@ -755,8 +755,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     className={cn(
                       "w-full px-3 py-2 rounded-xl text-xs font-mono flex items-center justify-between border transition-all text-left",
                       selectedScaleId === scale.id
-                        ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold"
-                        : "bg-white/5 border-white/5 text-white/60 hover:text-white"
+                        ? "bg-emerald-500/20 border-emerald-400 text-ok font-bold"
+                        : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                     )}
                   >
                     <span>{scale.name}</span>
@@ -767,8 +767,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
             </div>
 
             {/* Hand Selection */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-mono text-white/50">
+            <div className="p-4 rounded-2xl bg-surface-2 border border-line space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-mono text-ink-3">
                 <Hand size={14} />
                 <span>Mano & Técnica de Digitación:</span>
               </div>
@@ -779,13 +779,13 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                   className={cn(
                     "p-3 rounded-xl border text-center font-mono transition-all",
                     selectedHand === 'right'
-                      ? "bg-amber-400/20 border-amber-400 text-amber-300 font-bold"
-                      : "bg-white/5 border-white/5 text-white/60 hover:text-white"
+                      ? "bg-amber-400/20 border-amber-400 text-brand-2 font-bold"
+                      : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                   )}
                 >
-                  <div className="flex justify-center text-amber-400"><Hand size={20} /></div>
+                  <div className="flex justify-center text-brand-2"><Hand size={20} /></div>
                   <div className="text-xs font-bold mt-1">Mano Derecha</div>
-                  <div className="text-[10px] text-white/40">Dedos 1-2-3-1-2-3-4-5</div>
+                  <div className="text-[10px] text-ink-3">Dedos 1-2-3-1-2-3-4-5</div>
                 </button>
 
                 <button
@@ -795,18 +795,18 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     "p-3 rounded-xl border text-center font-mono transition-all",
                     selectedHand === 'left'
                       ? "bg-indigo-500/20 border-indigo-400 text-indigo-300 font-bold"
-                      : "bg-white/5 border-white/5 text-white/60 hover:text-white"
+                      : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                   )}
                 >
                   <div className="flex justify-center text-indigo-400"><Hand size={20} className="scale-x-[-1]" /></div>
                   <div className="text-xs font-bold mt-1">Mano Izquierda</div>
-                  <div className="text-[10px] text-white/40">Dedos 5-4-3-2-1-3-2-1</div>
+                  <div className="text-[10px] text-ink-3">Dedos 5-4-3-2-1-3-2-1</div>
                 </button>
               </div>
 
               {/* Movement: Ascending vs Both */}
               <div className="pt-2 space-y-1">
-                <span className="text-[11px] font-mono text-white/50">Trayectoria:</span>
+                <span className="text-[11px] font-mono text-ink-3">Trayectoria:</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -814,8 +814,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     className={cn(
                       "py-2 px-2.5 rounded-xl border text-center text-xs font-mono transition-all",
                       scaleDirection === 'ascending'
-                        ? "bg-white/15 border-white/40 text-white font-bold"
-                        : "bg-white/5 border-white/5 text-white/50 hover:text-white"
+                        ? "bg-surface-3 border-white/40 text-ink font-bold"
+                        : "bg-surface-2 border-line text-ink-3 hover:text-ink"
                     )}
                   >
                     ↗ Ascendente (1 a 8)
@@ -826,8 +826,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     className={cn(
                       "py-2 px-2.5 rounded-xl border text-center text-xs font-mono transition-all",
                       scaleDirection === 'both'
-                        ? "bg-white/15 border-white/40 text-white font-bold"
-                        : "bg-white/5 border-white/5 text-white/50 hover:text-white"
+                        ? "bg-surface-3 border-white/40 text-ink font-bold"
+                        : "bg-surface-2 border-line text-ink-3 hover:text-ink"
                     )}
                   >
                     ↕ Ida y Vuelta (1-8-1)
@@ -837,13 +837,13 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
             </div>
 
             {/* Section 3: METRONOME & MINIMUM SPEED CONFIGURATION */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-              <div className="flex items-center justify-between text-xs font-mono text-white/50">
+            <div className="p-4 rounded-2xl bg-surface-2 border border-line space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono text-ink-3">
                 <div className="flex items-center gap-1.5">
-                  <Zap size={14} className="text-amber-400" />
-                  <span className="font-bold text-white">Velocidad Mínima:</span>
+                  <Zap size={14} className="text-brand-2" />
+                  <span className="font-bold text-ink">Velocidad Mínima:</span>
                 </div>
-                <span className="text-amber-400 font-bold text-sm">{minBpm} BPM</span>
+                <span className="text-brand-2 font-bold text-sm">{minBpm} BPM</span>
               </div>
 
               {/* Slider for Minimum BPM */}
@@ -855,9 +855,9 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                   step="4"
                   value={minBpm}
                   onChange={e => setMinBpm(parseInt(e.target.value, 10))}
-                  className="w-full accent-amber-400 bg-white/10 h-2 rounded-lg cursor-pointer"
+                  className="w-full accent-amber-400 bg-surface-3 h-2 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between text-[9px] font-mono text-white/40">
+                <div className="flex justify-between text-[9px] font-mono text-ink-3">
                   <span>40 (Lento)</span>
                   <span>72 (Andante)</span>
                   <span>108 (Moderato)</span>
@@ -876,7 +876,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                       "flex-1 py-1 rounded-lg text-[10px] font-mono border transition-all",
                       minBpm === bpmPreset
                         ? "bg-amber-400 text-black font-bold border-amber-300"
-                        : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                        : "bg-surface-2 border-line text-ink-2 hover:text-ink"
                     )}
                   >
                     {bpmPreset}
@@ -885,8 +885,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               </div>
 
               {/* Progression setting */}
-              <div className="pt-2 space-y-1.5 border-t border-white/5">
-                <span className="text-[11px] font-mono text-white/50">Aceleración por Tonalidad:</span>
+              <div className="pt-2 space-y-1.5 border-t border-line">
+                <span className="text-[11px] font-mono text-ink-3">Aceleración por Tonalidad:</span>
                 <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono">
                   {[
                     { id: 'fixed', label: 'Tempo Fijo', desc: 'Mismo BPM' },
@@ -900,12 +900,12 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                       className={cn(
                         "p-1.5 rounded-xl border text-center transition-all",
                         tempoProgression === prog.id
-                          ? "bg-amber-400/20 border-amber-400 text-amber-300 font-bold"
-                          : "bg-white/5 border-white/5 text-white/50 hover:text-white"
+                          ? "bg-amber-400/20 border-amber-400 text-brand-2 font-bold"
+                          : "bg-surface-2 border-line text-ink-3 hover:text-ink"
                       )}
                     >
                       <div>{prog.label}</div>
-                      <div className="text-[8px] text-white/40">{prog.desc}</div>
+                      <div className="text-[8px] text-ink-3">{prog.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -934,24 +934,24 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
       {/* VIEW 2: ACTIVE WORKOUT ARENA */}
       {/* ------------------------------------------------------------- */}
       {sessionStage === 'workout' && currentStep && (
-        <div className="glass p-5 md:p-8 rounded-3xl border border-white/10 space-y-6">
+        <div className="glass p-5 md:p-8 rounded-3xl border border-line space-y-6">
           
           {/* Top Workout Status & Navigation */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-line pb-5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold uppercase">
+                <span className="px-2 py-0.5 rounded-md bg-amber-400/20 text-brand-2 border border-amber-400/30 text-[10px] font-mono font-bold uppercase">
                   Ciclo de Quintas • Paso {currentKeyIndex + 1} de {sequenceList.length}
                 </span>
-                <span className="text-white/40 text-xs font-mono">
+                <span className="text-ink-3 text-xs font-mono">
                   {currentStep.keyDef.accidentalsShort}
                 </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mt-1">
+              <h2 className="text-2xl md:text-3xl font-serif font-bold text-ink mt-1">
                 Escala de {currentStep.keyDef.name}
               </h2>
-              <p className="text-xs text-amber-300/80 font-mono mt-0.5 flex items-center gap-1">
-                <Lightbulb size={13} className="text-amber-400 shrink-0" />
+              <p className="text-xs text-brand-2/80 font-mono mt-0.5 flex items-center gap-1">
+                <Lightbulb size={13} className="text-brand-2 shrink-0" />
                 <span>Relativa Menor: {currentStep.keyDef.relativeMinor} • {currentStep.keyDef.accidentals}</span>
               </p>
             </div>
@@ -959,7 +959,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
             {/* Metronome HUD in Workout */}
             <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
               {/* Metronome Beat Lights (4 pulses) */}
-              <div className="flex items-center gap-1.5 bg-black/40 px-3 py-2 rounded-2xl border border-white/10 font-mono text-xs">
+              <div className="flex items-center gap-1.5 bg-black/40 px-3 py-2 rounded-2xl border border-line font-mono text-xs">
                 <div className="flex items-center gap-1 mr-2">
                   {[0, 1, 2, 3].map(beatIdx => (
                     <div
@@ -970,17 +970,17 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                           ? beatIdx === 0
                             ? "bg-amber-400 shadow-[0_0_10px_rgba(245,158,11,1)] scale-125"
                             : "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] scale-110"
-                          : "bg-white/15"
+                          : "bg-surface-3"
                       )}
                     />
                   ))}
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <span className="text-white/50 text-[10px]">Tempo:</span>
-                  <strong className="text-amber-300 font-bold">{currentBpm} BPM</strong>
+                  <span className="text-ink-3 text-[10px]">Tempo:</span>
+                  <strong className="text-brand-2 font-bold">{currentBpm} BPM</strong>
                   {currentBpm > minBpm && (
-                    <span className="text-[9px] text-emerald-400 font-bold">
+                    <span className="text-[9px] text-ok font-bold">
                       (+{currentBpm - minBpm})
                     </span>
                   )}
@@ -989,24 +989,24 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                 <button
                   type="button"
                   onClick={() => setIsMetronomeMuted(prev => !prev)}
-                  className="ml-2 text-white/50 hover:text-white transition-colors"
+                  className="ml-2 text-ink-3 hover:text-ink transition-colors"
                   title={isMetronomeMuted ? 'Activar sonido del metrónomo' : 'Silenciar sonido del metrónomo'}
                 >
-                  {isMetronomeMuted ? <VolumeX size={14} className="text-rose-400" /> : <Volume2 size={14} className="text-amber-400" />}
+                  {isMetronomeMuted ? <VolumeX size={14} className="text-danger" /> : <Volume2 size={14} className="text-brand-2" />}
                 </button>
               </div>
 
               {/* Score & Streak */}
-              <div className="flex items-center gap-3 bg-white/5 px-3.5 py-2 rounded-2xl border border-white/10 font-mono text-xs">
+              <div className="flex items-center gap-3 bg-surface-2 px-3.5 py-2 rounded-2xl border border-line font-mono text-xs">
                 <div>
-                  <span className="text-white/40 text-[10px] uppercase">Puntos: </span>
-                  <strong className="text-amber-400">{workoutScore}</strong>
+                  <span className="text-ink-3 text-[10px] uppercase">Puntos: </span>
+                  <strong className="text-brand-2">{workoutScore}</strong>
                 </div>
-                <div className="border-l border-white/10 pl-3">
-                  <span className="text-white/40 text-[10px] uppercase">Racha: </span>
-                  <strong className="text-rose-400 inline-flex items-center gap-1">
+                <div className="border-l border-line pl-3">
+                  <span className="text-ink-3 text-[10px] uppercase">Racha: </span>
+                  <strong className="text-danger inline-flex items-center gap-1">
                     <span>{streak}</span>
-                    <Flame size={13} className="text-rose-400" />
+                    <Flame size={13} className="text-danger" />
                   </strong>
                 </div>
               </div>
@@ -1015,7 +1015,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               <button
                 type="button"
                 onClick={() => setSessionStage('config')}
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-mono border border-white/10 transition-colors"
+                className="px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink text-xs font-mono border border-line transition-colors"
               >
                 Configuración
               </button>
@@ -1036,15 +1036,15 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     isCurrent
                       ? "bg-amber-400 text-black font-bold border-amber-300 shadow-md shadow-amber-400/20 scale-105"
                       : isPast
-                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30"
-                      : "bg-white/5 text-white/40 border-white/10"
+                      ? "bg-emerald-500/20 text-ok border-emerald-400/30"
+                      : "bg-surface-2 text-ink-3 border-line"
                   )}
                 >
-                  {isPast ? <Check size={12} className="text-emerald-400" /> : <span>{idx + 1}.</span>}
+                  {isPast ? <Check size={12} className="text-ok" /> : <span>{idx + 1}.</span>}
                   <span>{step.keyDef.root}</span>
                   <span className={cn(
                     "text-[9px] px-1 rounded",
-                    isCurrent ? "bg-black/20 text-black" : "bg-white/10 text-white/50"
+                    isCurrent ? "bg-black/20 text-black" : "bg-surface-3 text-ink-3"
                   )}>
                     {step.keyDef.accidentalsShort.split(' ')[0]}
                   </span>
@@ -1056,7 +1056,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
           {/* Count-In Alert Overlay */}
           {countInBeatsLeft > 0 && (
             <div className="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-center animate-pulse">
-              <span className="text-sm font-mono font-bold text-amber-300">
+              <span className="text-sm font-mono font-bold text-brand-2">
                 ¡Preparación al pulso! Cuenta: {countInBeatsLeft} ...
               </span>
             </div>
@@ -1064,12 +1064,12 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
 
           {/* Maestro Aurelio Pedagogical Tip for Current Scale */}
           <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-400/10 via-amber-400/5 to-transparent border border-amber-400/20 text-left flex items-start gap-3">
-            <GraduationCap size={22} className="text-amber-400 shrink-0 mt-0.5" />
+            <GraduationCap size={22} className="text-brand-2 shrink-0 mt-0.5" />
             <div className="space-y-0.5 text-xs">
-              <div className="font-mono font-bold text-amber-300 uppercase tracking-wide">
+              <div className="font-mono font-bold text-brand-2 uppercase tracking-wide">
                 Consejo del Maestro Aurelio para {currentStep.keyDef.name}:
               </div>
-              <p className="text-white/80 font-light">
+              <p className="text-ink-2 font-light">
                 {currentStep.keyDef.maestroAdvice}
               </p>
             </div>
@@ -1077,7 +1077,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
 
           {/* Interactive Stepper Visualizer */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-white/50">
+            <div className="flex items-center justify-between text-xs font-mono text-ink-3">
               <span>Notas de la escala ({currentStep.scaleType.name} - {selectedHand === 'right' ? 'Mano Derecha' : 'Mano Izquierda'}):</span>
               <span>Nota {currentNoteIndex + 1} de {targetExerciseNotes.length}</span>
             </div>
@@ -1094,10 +1094,10 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                     className={cn(
                       "p-2.5 rounded-xl border flex flex-col items-center justify-center font-mono transition-all",
                       isCurrent
-                        ? "bg-amber-400/20 border-amber-400 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)] scale-105"
+                        ? "bg-amber-400/20 border-amber-400 text-brand-2 shadow-[0_0_15px_rgba(245,158,11,0.5)] scale-105"
                         : isPast
-                        ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
-                        : "bg-white/5 border-white/10 text-white/30"
+                        ? "bg-emerald-500/20 border-emerald-400 text-ok"
+                        : "bg-surface-2 border-line text-ink-3"
                     )}
                   >
                     <span className="text-sm font-bold">{note.replace(/\d/, '')}</span>
@@ -1107,8 +1107,8 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
                       isCurrent
                         ? "bg-amber-400 text-black"
                         : isPast
-                        ? "bg-emerald-500/30 text-emerald-200"
-                        : "bg-white/10 text-white/50"
+                        ? "bg-emerald-500/30 text-ok"
+                        : "bg-surface-3 text-ink-3"
                     )}>
                       d.{finger}
                     </span>
@@ -1122,12 +1122,12 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
           <div className={cn(
             "p-3.5 rounded-2xl border flex items-center justify-between transition-all",
             isNoteError
-              ? "bg-rose-500/20 border-rose-400 text-rose-300"
-              : "bg-amber-400/10 border-amber-400/30 text-amber-300"
+              ? "bg-rose-500/20 border-rose-400 text-danger"
+              : "bg-amber-400/10 border-amber-400/30 text-brand-2"
           )}>
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                {isNoteError ? <AlertCircle size={16} className="text-rose-400" /> : <ArrowRight size={16} className="text-amber-400" />}
+              <div className="w-7 h-7 rounded-lg bg-surface-3 flex items-center justify-center shrink-0">
+                {isNoteError ? <AlertCircle size={16} className="text-danger" /> : <ArrowRight size={16} className="text-brand-2" />}
               </div>
               <div className="text-xs font-mono">
                 {isNoteError ? (
@@ -1144,7 +1144,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               <button
                 type="button"
                 onClick={handlePlayDemo}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-mono border border-white/10 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-ink text-xs font-mono border border-line transition-colors flex items-center gap-1.5"
               >
                 {isPlayingDemo ? <Pause size={12} /> : <Play size={12} />}
                 <span>{isPlayingDemo ? 'Pausar' : 'Oír Escala'}</span>
@@ -1153,7 +1153,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               <button
                 type="button"
                 onClick={handleRestartCurrentScale}
-                className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 transition-colors"
+                className="p-1.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink border border-line transition-colors"
                 title="Reiniciar escala actual"
               >
                 <RotateCcw size={14} />
@@ -1162,7 +1162,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
               <button
                 type="button"
                 onClick={handleSkipScale}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-mono border border-white/10 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-ink-2 hover:text-ink text-xs font-mono border border-line transition-colors"
               >
                 Saltar →
               </button>
@@ -1189,38 +1189,38 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
       {/* ------------------------------------------------------------- */}
       {sessionStage === 'completed' && (
         <div className="glass p-8 md:p-12 rounded-3xl border border-emerald-500/30 text-center space-y-6 max-w-xl mx-auto">
-          <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/20">
-            <Trophy size={40} className="text-emerald-400" />
+          <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 mx-auto flex items-center justify-center text-ok shadow-xl shadow-emerald-500/20">
+            <Trophy size={40} className="text-ok" />
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-mono uppercase tracking-widest text-amber-400">
+            <div className="text-xs font-mono uppercase tracking-widest text-brand-2">
               ¡Ciclo de Quintas Conquistado!
             </div>
-            <h3 className="text-3xl font-serif font-bold text-white">
+            <h3 className="text-3xl font-serif font-bold text-ink">
               ¡Entrenamiento Virtuoso Completado!
             </h3>
-            <p className="text-xs md:text-sm text-white/60 font-light leading-relaxed">
+            <p className="text-xs md:text-sm text-ink-2 font-light leading-relaxed">
               Recorriste las tonalidades del ciclo de quintas con ritmo y técnica constante. Tus reflejos para leer y ejecutar sostenidos y bemoles están cada vez más afilados.
             </p>
           </div>
 
           {/* Bento Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-left">
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-white/40 uppercase">Puntos</div>
-              <div className="text-lg font-bold text-amber-400">+{workoutScore}</div>
+            <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-[10px] text-ink-3 uppercase">Puntos</div>
+              <div className="text-lg font-bold text-brand-2">+{workoutScore}</div>
             </div>
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-white/40 uppercase">Tonalidades</div>
-              <div className="text-lg font-bold text-emerald-400">{sequenceList.length}</div>
+            <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-[10px] text-ink-3 uppercase">Tonalidades</div>
+              <div className="text-lg font-bold text-ok">{sequenceList.length}</div>
             </div>
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-white/40 uppercase">Tempo Final</div>
+            <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-[10px] text-ink-3 uppercase">Tempo Final</div>
               <div className="text-lg font-bold text-purple-300">{currentBpm} BPM</div>
             </div>
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-white/40 uppercase">Precisión</div>
+            <div className="p-3 rounded-2xl bg-surface-2 border border-line">
+              <div className="text-[10px] text-ink-3 uppercase">Precisión</div>
               <div className="text-lg font-bold text-sky-300">{accuracy}%</div>
             </div>
           </div>
@@ -1228,13 +1228,13 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
           {/* Maestro Aurelio quote */}
           <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-left flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center shrink-0">
-              <GraduationCap size={18} className="text-amber-300" />
+              <GraduationCap size={18} className="text-brand-2" />
             </div>
             <div className="space-y-1 text-xs">
-              <div className="font-mono font-bold text-amber-300 uppercase">
+              <div className="font-mono font-bold text-brand-2 uppercase">
                 Devolución del Maestro Aurelio:
               </div>
-              <p className="text-white/80 font-light">
+              <p className="text-ink-2 font-light">
                 {accuracy >= 90
                   ? '¡Impecable che! Hiciste cantar a cada tonalidad del ciclo con un pulso de metrónomo redondo y sin titubear en las alteraciones.'
                   : '¡Buen trabajo che! El paso por las tonalidades con varios bemoles o sostenidos requiere memoria muscular. Seguí entrenando con este generador a diario y vas a notar una fluidez brutal.'}
@@ -1256,7 +1256,7 @@ export const CircleScaleSequenceGym: React.FC<CircleScaleSequenceGymProps> = ({ 
             <button
               type="button"
               onClick={() => setSessionStage('config')}
-              className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-3.5 rounded-2xl bg-surface-3 hover:bg-surface-3 text-ink font-mono text-xs transition-colors flex items-center justify-center gap-2"
             >
               <Settings2 size={14} />
               <span>Configurar Otra Rutina</span>
